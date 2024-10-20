@@ -17,13 +17,13 @@ from django.contrib.auth import get_user_model
 from django.views.generic import ListView, DetailView
 from django.urls import reverse_lazy
 from django.views.generic.edit import CreateView
-from .forms import CustomUserCreationForm, UserForm
-# User = get_user_model()  # Reference your custom user model
+from .forms import CustomUserCreationForm, UserForm, CustomControlCreationForm
+User = get_user_model()  # Reference your custom user model
 from django.urls import reverse_lazy
 from django.views.generic.edit import UpdateView
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
-from .models import User
+# from .models import User
 
 
 
@@ -100,6 +100,17 @@ class UserCreateView(CreateView):
 
 
 
+class ControlCreateView(CreateView):
+    model = User
+    form_class = CustomControlCreationForm
+    template_name = "dashboard/create_control.html"  # Create this template for the registration page
+    success_url = reverse_lazy('login')  # Redirect to login page after successful registration
+
+    def form_valid(self, form):
+        # You can add any custom logic here if needed before saving the form
+        return super().form_valid(form)
+
+
 class DashboardView(TemplateView):
     template_name = "dashboard/index.html"
 
@@ -114,15 +125,17 @@ class LogoutView(View):
         messages.success(request, "You have been logged out.")
         return redirect('login')  # Change 'login' to the name of your login URL
 
-# Manage Users: List all users
+
+# Get the custom user model
+User = get_user_model()
+
 class UserListView(ListView):
-    model = User
-    template_name = 'dashboard/user_list_view.html'  # Create a template for listing users
+    model = User  # This will now refer to the custom user model
+    template_name = 'dashboard/user_list_view.html'
     context_object_name = 'users'
     
     def get_queryset(self):
-        return User.objects.all()  # Customize this query if needed (e.g., filter active users)
-
+        return User.objects.all()  # Optionally filter the users as per your requirements
 
 
 # Manage Users: View details of a specific user
@@ -149,9 +162,10 @@ class UserDetailView(UpdateView):
             'email': form.cleaned_data.get('email'),
             # 'profile_image': form.cleaned_data.get('profile_image'), # Include this if needed and make sure it's handled correctly
         }
-        
         # Update the user fields in the User model where username matches
         User.objects.filter(username=user.username).update(**updated_data)
+
+        print("oooooooooooooooooooooooooooooooooooooo")
 
         # Add a success message and return the response
         messages.success(self.request, 'User details updated successfully.')
@@ -169,21 +183,71 @@ class UserDetailView(UpdateView):
         # Fetch the user object based on the URL parameter (user ID)
         return get_object_or_404(User, pk=self.kwargs['pk'])  # Assuming you're using the user ID as a URL parameter
         
-# Manage Controls: List view for controls
+from django.views.generic import ListView
+from .models import Control
+
 class ControlListView(ListView):
-    template_name = 'control_list.html'  # Create a template for managing controls
+    model = Control
+    template_name = 'dashboard/control_listview.html'  # Your template file
     context_object_name = 'controls'
 
     def get_queryset(self):
-        # Return controls (replace with your logic for controls)
-        return []  # Modify this with appropriate control fetching logic
+        # Return the list of controls, fetch all or filter based on your logic
+        return Control.objects.all()  # Or filter controls based on the user
+
+
+from django.views.generic.edit import UpdateView
+from django.urls import reverse_lazy
+from django.contrib import messages
+from django.shortcuts import get_object_or_404
+from .models import Control
+from .forms import ControlForm  # Ensure you have a ControlForm created for your Control model
+
+class EditControlView(UpdateView):
+    model = Control
+    template_name = 'dashboard/edit_control.html'  # Ensure this template exists
+    context_object_name = 'control'
+    form_class = ControlForm  # Use the custom form created for Control
+    success_url = reverse_lazy('manage_controls')  # Redirect after successful edit
+
+    def form_valid(self, form):
+        # Get the control data from the form
+        control = form.save(commit=False)  # Don't commit the save yet
+        
+        # Prepare the data you want to update
+        updated_data = {
+            'max_order_limit': form.cleaned_data.get('max_order_limit'),
+            'max_loss_limit': form.cleaned_data.get('max_loss_limit'),
+            'max_profit_limit': form.cleaned_data.get('max_profit_limit'),
+            'max_profit_mode': form.cleaned_data.get('max_profit_mode'),
+            'max_order_count_mode': form.cleaned_data.get('max_order_count_mode'),
+            'is_killed_once': form.cleaned_data.get('is_killed_once'),
+            'user': form.cleaned_data.get('user'),  # User field should be handled
+        }
+        
+        # Update the fields in the Control model
+        Control.objects.filter(pk=control.pk).update(**updated_data)
+
+        # Add a success message and return the response
+        messages.success(self.request, 'Control settings updated successfully.')
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        # Print form errors to console for debugging
+        print(form.errors)  # This will output any validation errors in the console
+        messages.error(self.request, 'Please correct the errors below.')
+        return super().form_invalid(form)
+
+    def get_object(self, queryset=None):
+        # Fetch the control object based on the URL parameter (control ID)
+        return get_object_or_404(Control, pk=self.kwargs['pk'])  # Assuming you're using the control ID as a URL parameter
 
 
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
 import logging
-
+from dhanhq import dhanhq
 # Disable CSRF for the postback URL, as it might be a third-party service posting to this URL.
 @csrf_exempt
 def dhan_postback(request):
@@ -206,10 +270,20 @@ def dhan_postback(request):
                 UserObj = User.Objects.filter(dhan_client_id= dhanClientId).first()
                 dhan_access_token = UserObj.dhan_access_token
                 print("dhan_access_tokendhan_access_token", dhan_access_token)
-
-            
-            # (Optional) save data to a model if needed
-            
+                dhan = dhanhq("client_id","access_token")
+                order_list = dhan.get_order_list()
+                traded_order_count = get_traded_order_count_dhan(orderlist)
+                # fetch control data 
+                control_data = Control.objects.filter(user=UserObj).first()
+                print("control_datacontrol_datacontrol_data", control_data)
+                if control_data.max_order_count_mode:
+                    if control_data.max_order_limit <=  traded_order_count:
+                        # kill dhan
+                        response = dhanKillProcess(dhan_access_token)
+                        print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", response)
+                        return JsonResponse({'status': 'success', 'message': 'Kill Activated successfully'})
+                    else:
+                        pass
             # Return a success response
             return JsonResponse({'status': 'success', 'message': 'Data received successfully'})
         
@@ -220,3 +294,53 @@ def dhan_postback(request):
         
     # If the request method is not POST, return a method not allowed error
     return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
+
+
+def get_traded_order_count_dhan(response):
+    # Check if the response contains 'data'
+    if 'data' not in response:
+        return 0
+
+    # Filter orders with 'orderStatus' as 'TRADED'
+    traded_orders = [order for order in response['data'] if order.get('orderStatus') == 'TRADED']
+
+    # Return the count of traded orders
+    return len(traded_orders)
+
+    import http.client
+import json
+
+def dhanKillProcess(access_token):
+    # Establish HTTPS connection to the Dhan API
+    conn = http.client.HTTPSConnection("api.dhan.co")
+    
+    # Set up the payload (currently empty, modify if needed)
+    payload = json.dumps({})
+    
+    # Define headers including the access-token
+    headers = {
+        'access-token': access_token,  # Add the access token here
+        'Content-Type': "application/json",
+        'Accept': "application/json"
+    }
+    
+    try:
+        # Make the POST request to the kill switch endpoint
+        conn.request("POST", "/v2/killswitch", payload, headers)
+        
+        # Get the response
+        res = conn.getresponse()
+        data = res.read()
+        
+        # Decode the response and return as a Python dictionary
+        response_data = data.decode("utf-8")
+        return json.loads(response_data)
+    
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return None
+    
+    finally:
+        # Close the connection
+        conn.close()
+

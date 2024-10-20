@@ -1,7 +1,9 @@
 from django import forms
-from account.models import User  
+from django.contrib.auth import get_user_model
+User = get_user_model() 
 from django.core.exceptions import ValidationError
 from django.contrib.auth.forms import UserCreationForm
+
 
 class CustomUserCreationForm(UserCreationForm):
     email = forms.EmailField(required=True)
@@ -67,7 +69,7 @@ from django.views.generic import UpdateView
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.shortcuts import get_object_or_404
-# from .models import User  # Assuming User is your custom user model
+from .models import User  # Assuming User is your custom user model
 
 # Custom form for User with specified fields
 class UserForm(forms.ModelForm):
@@ -92,3 +94,42 @@ class UserForm(forms.ModelForm):
         super(UserForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control m-1'
+
+from django import forms
+from .models import Control
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+class CustomControlCreationForm(forms.ModelForm):
+    # You can add any specific fields you want for customization here
+    class Meta:
+        model = Control
+        fields = ['max_order_limit', 'max_loss_limit', 'max_profit_limit', 
+                  'max_profit_mode', 'max_order_count_mode', 'is_killed_once', 'user']
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Remove default help texts and add Bootstrap form-control class
+        for field_name, field in self.fields.items():
+            field.widget.attrs['class'] = 'form-control m-2'
+            field.help_text = None  # Remove help texts if needed
+
+
+from django import forms
+from .models import Control
+
+class ControlForm(forms.ModelForm):
+    class Meta:
+        model = Control
+        fields = ['max_order_limit', 'max_loss_limit', 'max_profit_limit','max_loss_mode',
+                  'max_profit_mode', 'max_order_count_mode', 'is_killed_once', 'user']
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Remove default help texts and add Bootstrap form-control class
+        for field_name, field in self.fields.items():
+            field.widget.attrs['class'] = 'form-control m-2'
+            field.help_text = None  # Remove help texts if needed

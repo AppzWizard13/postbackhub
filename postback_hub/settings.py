@@ -81,6 +81,7 @@ TEMPLATES = [
 
 
 WSGI_APPLICATION = 'postback_hub.wsgi.application'
+AUTH_USER_MODEL = 'account.User'
 
 
 # Database

@@ -1,0 +1,71 @@
+{% extends 'dashboard/index.html' %}
+{% load static %}
+{% block content %}
+
+<div class="container-fluid my-5" style="max-width:none">
+    <div class="card w-100">
+        <div class="card-body">
+            <h5 class="card-title fw-semibold mb-4">Manage Control Settings</h5>
+            <div class="card">
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <!-- Max Order Limit -->
+                        <div class="mb-3">
+                            <label for="id_max_order_limit" class="form-label">Max Order Limit</label>
+                            {{ form.max_order_limit }} <!-- Field for max order limit -->
+                        </div>
+
+                        <!-- Max Loss Limit -->
+                        <div class="mb-3">
+                            <label for="id_max_loss_limit" class="form-label">Max Loss Limit</label>
+                            {{ form.max_loss_limit }} <!-- Field for max loss limit -->
+                        </div>
+
+                        <!-- Max Profit Limit -->
+                        <div class="mb-3">
+                            <label for="id_max_profit_limit" class="form-label">Max Profit Limit</label>
+                            {{ form.max_profit_limit }} <!-- Field for max profit limit -->
+                        </div>
+
+                        <!-- Max Loss Mode -->
+                        <div class="mb-3">
+                            <label for="id_max_loss_mode" class="form-label">Max Loss Mode</label>
+                            {{ form.max_loss_mode }} <!-- Dropdown for enabling/disabling max profit mode -->
+                        </div>
+
+                        <!-- Max Profit Mode -->
+                        <div class="mb-3">
+                            <label for="id_max_profit_mode" class="form-label">Max Profit Mode</label>
+                            {{ form.max_profit_mode }} <!-- Dropdown for enabling/disabling max profit mode -->
+                        </div>
+
+                        <!-- Max Order Count Mode -->
+                        <div class="mb-3">
+                            <label for="id_max_order_count_mode" class="form-label">Max Order Count Mode</label>
+                            {{ form.max_order_count_mode }} <!-- Dropdown for enabling/disabling max order count mode -->
+                        </div>
+
+                        <!-- Is Killed Once -->
+                        <div class="mb-3">
+                            <label for="id_is_killed_once" class="form-label">Is Killed Once</label>
+                            {{ form.is_killed_once }} <!-- Dropdown for enabling/disabling killed once -->
+                        </div>
+
+                        <!-- User Field (Foreign Key) -->
+                        <div class="mb-3">
+                            <label for="id_user" class="form-label">User</label>
+                            {{ form.user }} <!-- Field for selecting the user -->
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
