@@ -1,0 +1,71 @@
+{% extends 'dashboard/index.html' %}
+{% load static %}
+{% block content %}
+
+<div class="container-fluid my-5" style="max-width:none">
+    <div class="card w-100">
+        <div class="card-body">
+            <h5 class="card-title fw-semibold mb-4">Manage User Details</h5>
+            <div class="card">
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="id_first_name" class="form-label">First Name</label>
+                            {{ form.first_name }}  <!-- Field for phone number -->
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_last_name" class="form-label">Last Name</label>
+                            {{ form.last_name }}  <!-- Field for profile image -->
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_phone_number" class="form-label">Phone Number</label>
+                            {{ form.phone_number }}  <!-- Field for phone number -->
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_email" class="form-label">E mail</label>
+                            {{ form.email }}  <!-- Field for phone number -->
+                        </div>
+
+                        {% comment %} <div class="mb-3">
+                            <label for="id_profile_image" class="form-label">Profile Image</label>
+                            {{ form.profile_image }}  <!-- Field for profile image -->
+                        </div> {% endcomment %}
+
+                        <div class="mb-3">
+                            <label for="id_country" class="form-label">Country</label>
+                            {{ form.country }}  <!-- Field for country -->
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_status" class="form-label">Status</label>
+                            {{ form.status }}  <!-- Field for status -->
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_role" class="form-label">Role</label>
+                            {{ form.role }}  <!-- Field for role -->
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_dhan_client_id" class="form-label">Dhan Client ID</label>
+                            {{ form.dhan_client_id }}  <!-- Field for Dhan Client ID -->
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_dhan_access_token" class="form-label">Dhan Access Token</label>
+                            {{ form.dhan_access_token }}  <!-- Field for Dhan Access Token -->
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

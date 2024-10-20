@@ -1,0 +1,66 @@
+{% extends 'dashboard/index.html' %}
+{% load static %}
+{% block content %}
+
+<div class="container-fluid" style="max-width:none">
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title fw-semibold mb-4">Category</h5>
+            
+            <div class="d-flex justify-content-end mb-3">
+                <button class="btn btn-secondary" id="addCategoryBtn">Option chain</button>
+            </div>
+            
+            <!-- Product Listing Table -->
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>SL No</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="categoryTableBody">
+                  {% for category in categories %}
+                  <tr>
+                      <td>{{ forloop.counter }}</td> <!-- Serial Number -->
+                      <td>{{ category.name }}</td>
+                      <td>{{ category.description }}</td>
+                      <td>
+                          <button class="btn btn-warning btn-sm" onclick="editCategory({{ category.id }})">Edit</button>
+                          <button class="btn btn-danger btn-sm" onclick="deleteCategory({{ category.id }})">Delete</button>
+                      </td>
+                  </tr>
+                  {% endfor %}
+              </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Category Sidebar -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="categorySidebar">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="categorySidebarTitle">Add Category</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <form id="categoryForm">
+            <input type="hidden" id="category_id" name="category_id">
+            <div class="mb-3">
+                <label for="category_name" class="form-label">Category Name</label>
+                <input type="text" class="form-control" id="category_name" name="category_name" required>
+            </div>
+            <div class="mb-3">
+                <label for="category_description" class="form-label">Category Description</label>
+                <textarea class="form-control" id="category_description" name="category_description" rows="3" required></textarea>
+            </div>
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-success">Save Category</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

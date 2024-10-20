@@ -1,0 +1,283 @@
+{% extends 'dashboard/index.html' %}
+{% load static %}
+{% block content %}
+
+<div class="container-fluid" style="max-width:none">
+    <div class="card mt-5">
+        <div class="card-body">
+            <h5 class="card-title fw-semibold mb-4">Trading Configurations</h5>
+            <div class="d-flex justify-content-end mb-3">
+                <button class="btn btn-secondary" id="addConfigurationBtn">Create Configuration</button>
+            </div>
+            <!-- Trading Configurations Listing Table -->
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>SL No</th>
+                        <th>Order Quantity</th>
+                        <th>Stoploss</th>
+                        <th>Max Trade Count</th>
+                        <th>Averaging Limit</th>
+                        <th>Active Broker</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for config in configurations %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ config.default_order_quantity }}</td>
+                        <td>{{ config.default_stop_loss }}</td>
+                        <td>{{ config.maximum_trade_count }}</td>
+                        <td>{{ config.averaging_limit }}</td>
+                        <td>{{ config.get_active_broker_display }}</td>
+                        <td>
+                            <button class="btn btn-warning btn-sm" onclick="editConfiguration({{ config.id }})">Edit</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteConfiguration({{ config.id }})">Delete</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Configuration Sidebar -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="configurationSidebar">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="configurationSidebarTitle">Create Configuration</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <form id="configurationForm">
+            <input type="hidden" id="configuration_id" name="configuration_id">
+            <!-- All fields from the TradingConfigurations model -->
+            <div class="mb-3">
+                <label for="name" class="form-label">Configuration Name</label>
+                <input type="text" class="form-control" id="name" name="name" required>
+            </div>
+            <div class="mb-3">
+                <label for="default_order_quantity" class="form-label">Order Quantity</label>
+                <input type="number" class="form-control" id="default_order_quantity" name="default_order_quantity" required>
+            </div>
+            <div class="mb-3">
+                <label for="default_stop_loss" class="form-label">Stoploss</label>
+                <input type="number" step="0.01" class="form-control" id="default_stop_loss" name="default_stop_loss" required>
+            </div>
+            <div class="mb-3">
+                <label for="reward_risk_ratio" class="form-label">Reward/Risk Ratio</label>
+                <input type="number" class="form-control" id="reward_risk_ratio" name="reward_risk_ratio" required>
+            </div>
+            <div class="mb-3">
+                <label for="maximum_loss" class="form-label">Maximum Loss</label>
+                <input type="number" class="form-control" id="maximum_loss" name="maximum_loss" required>
+            </div>
+            <div class="mb-3">
+                <label for="maximum_trade_count" class="form-label">Max Trade Count</label>
+                <input type="number" class="form-control" id="maximum_trade_count" name="maximum_trade_count" required>
+            </div>
+            <div class="mb-3">
+                <label for="capital_limit_per_order" class="form-label">Capital Limit Per Order</label>
+                <input type="number" class="form-control" id="capital_limit_per_order" name="capital_limit_per_order" required>
+            </div>
+            <div class="mb-3">
+                <label for="total_capital_usage_limit" class="form-label">Total Capital Usage Limit</label>
+                <input type="number" class="form-control" id="total_capital_usage_limit" name="total_capital_usage_limit" required>
+            </div>
+            <div class="mb-3">
+                <label for="forward_trailing_points" class="form-label">Forward Trailing Points</label>
+                <input type="number" class="form-control" id="forward_trailing_points" name="forward_trailing_points" required>
+            </div>
+            <div class="mb-3">
+                <label for="trailing_to_peak_points" class="form-label">Trailing to Peak Points</label>
+                <input type="number" class="form-control" id="trailing_to_peak_points" name="trailing_to_peak_points" required>
+            </div>
+            <div class="mb-3">
+                <label for="reverse_trailing_points" class="form-label">Reverse Trailing Points</label>
+                <input type="number" class="form-control" id="reverse_trailing_points" name="reverse_trailing_points" required>
+            </div>
+            <div class="mb-3">
+                <label for="stop_loss_limit_slippage" class="form-label">Stop Loss Limit Slippage</label>
+                <input type="number" step="0.01" class="form-control" id="stop_loss_limit_slippage" name="stop_loss_limit_slippage" required>
+            </div>
+            <div class="mb-3">
+                <label for="averaging_limit" class="form-label">Averaging Limit</label>
+                <input type="number" class="form-control" id="averaging_limit" name="averaging_limit">
+            </div>
+            <div class="mb-3">
+                <label for="order_quantity_mode" class="form-label">Order Quantity Mode</label>
+                <select name="order_quantity_mode" id="order_quantity_mode" class="form-control" required>
+                    <option value="MANUAL">Manual</option>
+                    <option value="AUTOMATIC">Automatic</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="scalping_amount_limit" class="form-label">Scalping Amount Limit</label>
+                <input type="number" class="form-control" id="scalping_amount_limit" name="scalping_amount_limit" required>
+            </div>
+            <div class="mb-3">
+                <label for="scalping_mode" class="form-label">Is Scalping Mode Active?</label>
+                <input type="checkbox" id="scalping_mode" name="scalping_mode">
+            </div>
+            <div class="mb-3">
+                <label for="scalping_stop_loss" class="form-label">Scalping Stop Loss</label>
+                <input type="number" step="0.01" class="form-control" id="scalping_stop_loss" name="scalping_stop_loss" required>
+            </div>
+            <div class="mb-3">
+                <label for="scalping_ratio" class="form-label">Scalping Reward/Risk Ratio</label>
+                <input type="number" class="form-control" id="scalping_ratio" name="scalping_ratio">
+            </div>
+            <div class="mb-3">
+                <label for="straddle_amount_limit" class="form-label">Straddle Amount Limit</label>
+                <input type="number" class="form-control" id="straddle_amount_limit" name="straddle_amount_limit">
+            </div>
+            <div class="mb-3">
+                <label for="straddle_capital_usage_limit" class="form-label">Straddle Capital Usage Limit</label>
+                <input type="number" class="form-control" id="straddle_capital_usage_limit" name="straddle_capital_usage_limit">
+            </div>
+            <div class="mb-3">
+                <label for="is_over_trade_active" class="form-label">Is Over Trade Active?</label>
+                <input type="checkbox" id="is_over_trade_active" name="is_over_trade_active">
+            </div>
+            <div class="mb-3">
+                <label for="averaging_quantity" class="form-label">Averaging Quantity</label>
+                <input type="number" class="form-control" id="averaging_quantity" name="averaging_quantity" required>
+            </div>
+            <div class="mb-3">
+                <label for="active_broker" class="form-label">Active Broker</label>
+                <select name="active_broker" id="active_broker" class="form-control" required>
+                    <option value="DHAN">DHAN</option>
+                    <option value="FYERS">FYERS</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="is_active" class="form-label">Is Active?</label>
+                <input type="checkbox" id="is_active" name="is_active" checked>
+            </div>
+            <button type="submit" class="btn btn-primary">Save Configuration</button>
+        </form>
+    </div>
+</div>    
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Function to open the sidebar for creating a new configuration
+        $('#addConfigurationBtn').on('click', function() {
+            $('#configuration_id').val(''); // Clear the hidden input for ID
+            $('#configurationForm')[0].reset(); // Reset the form
+            $('#configurationSidebarTitle').text('Create Configuration'); // Set the title
+            const sidebar = new bootstrap.Offcanvas($('#configurationSidebar')[0]);
+            sidebar.show(); // Show the sidebar
+        });
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Check if this cookie string begins with the name we want
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        const csrftoken = getCookie('csrftoken'); // Get the CSRF token from the cookie
+        
+
+        // Handle form submission for creating or editing a configuration
+        $('#configurationForm').on('submit', function(event) {
+            event.preventDefault(); // Prevent the default form submission
+
+            let formData = new FormData(this); // Get the form data
+            const configurationId = $('#configuration_id').val(); // Get the configuration ID if it exists
+            let url = '/configurations/create/'; // Default URL for creating
+
+            if (configurationId) {
+                url = `/configurations/edit/${configurationId}/`; // If ID exists, change URL to edit
+            }
+
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                headers: { 'X-CSRFToken': csrftoken }, // Pass the CSRF token
+                success: function(data) {
+                    if (data.success) {
+                        location.reload(); // Reload the page on success
+                    } else {
+                        alert('Error: ' + data.error); // Show error if any
+                    }
+                },
+                error: function(error) {
+                    console.error('Error:', error);
+                }
+            });
+        });
+
+        // Function to handle editing an existing configuration
+        function editConfiguration(configId) {
+            $.ajax({
+                url: `/configurations/get/${configId}/`, // URL for getting configuration data
+                type: 'GET',
+                headers: { 'X-CSRFToken': csrftoken }, // Pass the CSRF token
+                success: function(data) {
+                    // Populate the form with data for editing
+                    $('#configuration_id').val(data.id);
+                    $('#name').val(data.name);
+                    $('#default_order_quantity').val(data.default_order_quantity);
+                    $('#default_stop_loss').val(data.default_stop_loss);
+                    $('#reward_risk_ratio').val(data.reward_risk_ratio);
+                    $('#maximum_loss').val(data.maximum_loss);
+                    $('#maximum_trade_count').val(data.maximum_trade_count);
+                    $('#capital_limit_per_order').val(data.capital_limit_per_order);
+                    $('#total_capital_usage_limit').val(data.total_capital_usage_limit);
+                    $('#forward_trailing_points').val(data.forward_trailing_points);
+                    $('#trailing_to_peak_points').val(data.trailing_to_peak_points);
+                    $('#reverse_trailing_points').val(data.reverse_trailing_points);
+                    $('#stop_loss_limit_slippage').val(data.stop_loss_limit_slippage);
+                    $('#averaging_limit').val(data.averaging_limit);
+                    $('#order_quantity_mode').val(data.order_quantity_mode);
+                    $('#scalping_amount_limit').val(data.scalping_amount_limit);
+                    $('#scalping_stop_loss').val(data.scalping_stop_loss);
+                    $('#scalping_ratio').val(data.scalping_ratio);
+                    $('#straddle_amount_limit').val(data.straddle_amount_limit);
+                    $('#straddle_capital_usage_limit').val(data.straddle_capital_usage_limit);
+                    $('#averaging_quantity').val(data.averaging_quantity);
+                    $('#active_broker').val(data.active_broker);
+
+                    // Check if the 'is_active' checkbox should be checked
+                    if (data.is_active) {
+                        $('#is_active').prop('checked', true);
+                    } else {
+                        $('#is_active').prop('checked', false);
+                    }
+
+                    $('#configurationSidebarTitle').text('Edit Configuration'); // Set the sidebar title to 'Edit'
+                    const sidebar = new bootstrap.Offcanvas($('#configurationSidebar')[0]);
+                    sidebar.show(); // Show the sidebar
+                },
+                error: function(error) {
+                    console.error('Error:', error); // Log any error
+                }
+            });
+        }
+    });
+</script>
+
+
+
+{% endblock %}
+
+
+{% block optional_js %}
+<!-- Remove additional JS imports -->
+{% endblock %}
+

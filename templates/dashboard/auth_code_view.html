@@ -1,0 +1,56 @@
+{% extends 'dashboard/index.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="container-fluid" style="max-width:none">
+    <div class="card mt-5">
+        <div class="card-body">
+            <h5 class="card-title fw-semibold mb-4">Auth Codes</h5>
+            <!-- AuthCode Listing Table -->
+            <div class="table-responsive"> <!-- Make table responsive -->
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th class="text-nowrap">SL No</th> <!-- Ensure nowrap for serial numbers -->
+                            <th class="text-nowrap">Auth Code</th>
+                            <th class="text-nowrap">Created At</th>
+                            <th class="text-nowrap">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                      {% for authcode in authcodes %}
+                      <tr>
+                          <td>{{ forloop.counter }}</td> <!-- Serial Number -->
+                          <td>{{ authcode.code|slice:":50" }}</td> <!-- Slice to show first 50 characters -->
+                          <td>{{ authcode.created_at }}</td>
+                          <td>
+                              <!-- Copy Button -->
+                              <button class="btn btn-info btn-sm" onclick="copyToClipboard('{{ authcode.code }}')">Copy</button>
+                          </td>
+                      </tr>
+                      {% endfor %}
+                  </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for copying code -->
+<script>
+    // Function to copy the auth code to clipboard
+    function copyToClipboard(code) {
+        navigator.clipboard.writeText(code).then(function() {
+            alert('Code copied to clipboard!');
+        }, function(err) {
+            alert('Failed to copy code: ' + err);
+        });
+    }
+</script>
+
+{% endblock %}
+
+{% block optional_js %}
+<!-- Remove additional JS imports -->
+{% endblock %}

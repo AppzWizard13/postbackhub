@@ -1,0 +1,68 @@
+{% extends 'dashboard/index.html' %}
+{% load static %}
+{% block content %}
+  <!--  Body Wrapper -->
+
+  <div class="container-fluid" style="max-width:none">
+    <div class="col-lg-12 d-flex align-items-stretch mx-5 px-5">
+        <div class="row justify-content-center w-100">
+            <div class="card mb-0">
+              <div class="card-body">
+                <a href="./index" class="text-nowrap logo-img text-center d-block py-3 w-100">
+                  <img src="{% static 'dashboard/assets/images/logos/dark-logo.svg' %}" width="180" alt="Modernize Logo">
+                </a>
+                <p class="text-center">Your Social Campaigns</p>
+                <form method="post">
+                  {% csrf_token %}
+
+                  <!-- Row 1: First Name and Last Name -->
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <label for="firstNameInput" class="form-label">First Name</label>
+                      {{ form.first_name }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label for="lastNameInput" class="form-label">Last Name</label>
+                      {{ form.last_name }}
+                    </div>
+                  </div>
+
+                  <!-- Row 2: Email and Username -->
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <label for="emailInput" class="form-label">Email Address</label>
+                      {{ form.email }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label for="usernameInput" class="form-label">Username</label>
+                      {{ form.username }}
+                    </div>
+                  </div>
+
+                  <!-- Row 3: Password and Confirm Password -->
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <label for="password1Input" class="form-label">Password</label>
+                      {{ form.password1 }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label for="password2Input" class="form-label">Confirm Password</label>
+                      {{ form.password2 }}
+                    </div>
+                  </div>
+
+                  <!-- Submit button -->
+                  <button type="submit" class="btn btn-primary w-100 py-2 fs-4 mb-4 rounded-2">Create User</button>
+                  <div class="d-flex align-items-center justify-content-center">
+                    <p class="fs-4 mb-0 fw-bold">Already have an Account?</p>
+                    <a class="text-primary fw-bold ms-2" href="{% url 'login' %}">Sign In</a>
+                  </div>
+                </form>
+              </div>
+            </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% endblock %}
