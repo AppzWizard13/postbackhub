@@ -247,7 +247,6 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
 import logging
-from dhanhq import dhanhq
 # Disable CSRF for the postback URL, as it might be a third-party service posting to this URL.
 @csrf_exempt
 def dhan_postback(request):
@@ -266,12 +265,13 @@ def dhan_postback(request):
             order_id = postback_data.get("orderId")
             order_status = postback_data.get("orderStatus")
 
+            
+
             if dhanClientId:
                 UserObj = User.Objects.filter(dhan_client_id= dhanClientId).first()
                 dhan_access_token = UserObj.dhan_access_token
                 print("dhan_access_tokendhan_access_token", dhan_access_token)
-                dhan = dhanhq("client_id","access_token")
-                order_list = dhan.get_order_list()
+                order_list = GetTotalOrderList(dhan_access_token)
                 traded_order_count = get_traded_order_count_dhan(orderlist)
                 # fetch control data 
                 control_data = Control.objects.filter(user=UserObj).first()
@@ -344,3 +344,43 @@ def dhanKillProcess(access_token):
         # Close the connection
         conn.close()
 
+
+
+def GetTotalOrderList(access_token):
+    """
+    Fetches the total list of orders from the Dhan API.
+
+    Parameters:
+    access_token (str): The access token for authenticating with the Dhan API.
+
+    Returns:
+    dict: Parsed JSON response from the API containing the list of orders.
+    None: If there was an error during the request.
+    """
+    try:
+        # Create a connection to the Dhan API
+        conn = http.client.HTTPSConnection("api.dhan.co")
+
+        # Set up headers including the access token
+        headers = {
+            'access-token': access_token,
+            'Accept': "application/json"
+        }
+
+        # Make the request to get the orders
+        conn.request("GET", "/v2/orders", headers=headers)
+
+        # Get the response from the API
+        res = conn.getresponse()
+        data = res.read()
+
+        # Decode the response and convert it into a Python dictionary
+        order_data = json.loads(data.decode("utf-8"))
+
+        # Return the parsed JSON data
+        return order_data
+
+    except Exception as e:
+        # Handle any exceptions that may occur
+        print(f"Error fetching order list: {e}")
+        return None
