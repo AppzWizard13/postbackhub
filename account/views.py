@@ -265,26 +265,25 @@ def dhan_postback(request):
             order_id = postback_data.get("orderId")
             order_status = postback_data.get("orderStatus")
 
-            
-
-            if dhanClientId:
-                UserObj = User.Objects.filter(dhan_client_id= dhanClientId).first()
-                dhan_access_token = UserObj.dhan_access_token
-                print("dhan_access_tokendhan_access_token", dhan_access_token)
-                order_list = GetTotalOrderList(dhan_access_token)
-                traded_order_count = get_traded_order_count_dhan(orderlist)
-                # fetch control data 
-                control_data = Control.objects.filter(user=UserObj).first()
-                print("control_datacontrol_datacontrol_data", control_data)
-                if control_data.max_order_count_mode:
-                    if control_data.max_order_limit <=  traded_order_count:
-                        # kill dhan
-                        response = dhanKillProcess(dhan_access_token)
-                        print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", response)
-                        return JsonResponse({'status': 'success', 'message': 'Kill Activated successfully'})
-                    else:
-                        pass
-            # Return a success response
+            if dhan_client_id:
+                try :
+                    UserObj = User.Objects.filter(dhan_client_id= dhanClientId).first()
+                    dhan_access_token = UserObj.dhan_access_token
+                    print("dhan_access_tokendhan_access_token", dhan_access_token)
+                    order_list = GetTotalOrderList(dhan_access_token)
+                    traded_order_count = get_traded_order_count_dhan(orderlist)
+                    # fetch control data 
+                    control_data = Control.objects.filter(user=UserObj).first()
+                    print("control_datacontrol_datacontrol_data", control_data)
+                    if control_data.max_order_count_mode:
+                        if control_data.max_order_limit <=  traded_order_count:
+                            # kill dhan
+                            response = dhanKillProcess(dhan_access_token)
+                            print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", response)
+                            return JsonResponse({'status': 'success', 'message': 'Kill Activated successfully'})
+                        else:
+                            pass
+                # Return a success response
             return JsonResponse({'status': 'success', 'message': 'Data received successfully'})
         
         except json.JSONDecodeError:
