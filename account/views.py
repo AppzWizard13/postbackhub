@@ -23,6 +23,9 @@ from django.urls import reverse_lazy
 from django.views.generic.edit import UpdateView
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
+import http.client  # Ensure the http.client module is imported
+import json  # Import json for decoding the API response
+
 # from .models import User
 
 
@@ -247,6 +250,8 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
 import logging
+import json
+
 # Disable CSRF for the postback URL, as it might be a third-party service posting to this URL.
 @csrf_exempt
 def dhan_postback(request):
@@ -308,7 +313,6 @@ def get_traded_order_count_dhan(response):
     return len(traded_orders)
 
     import http.client
-import json
 
 def dhanKillProcess(access_token):
     # Establish HTTPS connection to the Dhan API
@@ -383,4 +387,5 @@ def GetTotalOrderList(access_token):
     except Exception as e:
         # Handle any exceptions that may occur
         print(f"Error fetching order list: {e}")
-        return None
+        order_data = {}
+        return order_data
