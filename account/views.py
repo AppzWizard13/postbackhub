@@ -268,7 +268,7 @@ def dhan_postback(request):
             
 
             if dhan_client_id:
-                UserObj = User.Objects.filter(dhan_client_id= dhanClientId).first()
+                UserObj = User.objects.filter(dhan_client_id= dhanClientId).first()
                 dhan_access_token = UserObj.dhan_access_token
                 print("dhan_access_tokendhan_access_token", dhan_access_token)
                 order_list = GetTotalOrderList(dhan_access_token)
