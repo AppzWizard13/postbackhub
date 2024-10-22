@@ -292,7 +292,8 @@ def dhan_postback(request):
                         # kill dhan
                         response = dhanKillProcess(dhan_access_token)
                         print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", response)
-                        return JsonResponse({'status': 'success', 'message': 'Kill Activated successfully'})
+                        kill_switch_status = response_json.get('killSwitchStatus', 'Status not found')
+                        return JsonResponse({'status': 'success', 'message': kill_switch_status})
                     else:
                         pass
             # Return a success response
