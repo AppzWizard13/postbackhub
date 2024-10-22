@@ -272,9 +272,6 @@ def dhan_postback(request):
             dhan_client_id = postback_data.get("dhanClientId")
             order_id = postback_data.get("orderId")
             order_status = postback_data.get("orderStatus")
-
-            
-
             if dhan_client_id:
                 UserObj = User.objects.filter(dhan_client_id= dhan_client_id).first()
                 dhan_access_token = UserObj.dhan_access_token
@@ -289,6 +286,15 @@ def dhan_postback(request):
                 print("traded_order_counttraded_order_count", traded_order_count)
                 if control_data.max_order_count_mode:
                     if control_data.max_order_limit <=  traded_order_count:
+                        # close pending orders
+                        pending_order_ids, pending_order_count = get_pending_order_list_and_count_dhan(orderlist)
+                        print("pending_order_countpending_order_count", pending_order_count)
+                        if pending_order_count > 0 :
+                            close_pending_response = closeAllPendingOrders(dhan_client_id, dhan_access_token, pending_order_ids)
+
+                        # get open poistions 
+                        position_close_response = close_all_open_positions(dhan_client_id, dhan_access_token)
+
                         # kill dhan
                         response = dhanKillProcess(dhan_access_token)
                         print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", response)
@@ -321,11 +327,28 @@ def get_traded_order_count_dhan(orderlist):
     # Return the count of traded orders
     return len(traded_orders)
 
+def get_pending_order_list_and_count_dhan(orderlist):
+    print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", orderlist)
+    
+    # Check if the response contains 'data'
+    if 'data' not in orderlist:
+        return [], 0
+
+    # Filter orders with 'orderStatus' as 'PENDING'
+    pending_orders = [order for order in orderlist['data'] if order.get('orderStatus') == 'PENDING']
+
+    # Extract the 'orderId' of pending orders
+    pending_order_ids = [order.get('orderId') for order in pending_orders]
+
+    # Return the list of pending order IDs and their count
+    return pending_order_ids, len(pending_order_ids)
+
+
 
 def dhanKillProcess(access_token):
     url = 'https://api.dhan.co/killSwitch?killSwitchStatus=ACTIVATE'
     headers = {
-        'Accept': 'application/json',
+        'Accept': 'app`l`ication/json',
         'Content-Type': 'application/json',
         'access-token': access_token
     }
@@ -381,3 +404,61 @@ def GetTotalOrderList(access_token):
         print(f"Error fetching order list: {e}")
         order_data = {}
         return order_data
+
+
+def closeAllPendingOrders(dhan_client_id, dhan_access_token, pending_order_ids):
+    # close all pending orders
+    dhan = dhanhq(dhan_client_id,dhan_access_token)
+    for order_id in pending_order_ids:
+        close_response = dhan.cancel_order(order_id)
+    return True
+    
+
+def close_all_open_positions(dhan_client_id, dhan_access_token):
+    # Initialize Dhan API client
+    dhan = dhanhq(dhan_client_id, dhan_access_token)
+    
+    # Fetch open positions from Dhan API
+    open_positions = dhan.get_positions()
+    
+    if open_positions['status'] == 'success' and open_positions['data']:
+        # Loop through each position in the response data
+        for position in open_positions['data']:
+            security_id = position['securityId']
+            exchange_segment = position['exchangeSegment']
+            net_qty = position['netQty']
+            product_type = position['productType']
+
+            # Map product type
+            product_type_map = {
+                "CNC": dhan.CNC,
+                "DAY": dhan.INTRA
+            }
+            product_type_value = product_type_map.get(product_type, dhan.CNC)
+
+            # Map exchange segment
+            exchange_segment_value = dhan.NSE_FNO if exchange_segment == "NSE_FNO" else exchange_segment
+
+            # Ensure that we are placing a sell order for positions with netQty > 0
+            if net_qty > 0:
+                # Place a sell order for each open position
+                sell_order_response = dhan.place_order(
+                    security_id=security_id,
+                    exchange_segment=exchange_segment_value,
+                    transaction_type=dhan.SELL,  # Sell order
+                    quantity=net_qty,
+                    order_type=dhan.MARKET,
+                    product_type=product_type_value,  # Product type based on position
+                    price=0  # Price set to market
+                )
+
+                # Check the response of each sell order
+                if sell_order_response['status'] != 'success':
+                    print(f"Failed to place sell order for security ID {security_id}")
+                else:
+                    print(f"Successfully placed sell order for security ID {security_id}")
+
+        return True
+    else:
+        print("No open positions found or failed to fetch open positions.")
+        return True
