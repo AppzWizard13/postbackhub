@@ -23,6 +23,7 @@ from account import urls
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('account.urls')),
+    # path('', include('scheduler.urls')),
 ]
 
 # Static and Media URL patterns

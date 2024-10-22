@@ -1,32 +1,15 @@
-# from apscheduler.schedulers.background import BackgroundScheduler
-# from dhanhq import dhanhq
-# import logging
+import logging
+import aiocron
+import requests
+import asyncio
 
-# # Dhan client setup (make sure to replace client_id and access_token with real values)
+logger = logging.getLogger(__name__)
 
-# dhan = dhanhq("your_client_id", "your_access_token")
-
-# def fetch_traded_orders():
-#     try:
-#         # Fetch the order list
-#         response = dhan.get_order_list()
-
-#         # Filter orders with status 'TRADED'
-#         traded_orders = [order for order in response if order.get('orderStatus') == 'TRADED']
-
-#         # Log or process the traded orders (for example, you can save them to the database)
-#         logging.info(f"Traded Orders: {traded_orders}")
-
-#         # Do further processing, like saving orders to the database if needed
-#         # for order in traded_orders:
-#         #     # Example: save the order to your database model
-#         #     Order.objects.create(**order)
-
-#     except Exception as e:
-#         logging.error(f"Error fetching traded orders: {e}")
-
-# # Scheduler configuration
-# def start_scheduler():
-#     scheduler = BackgroundScheduler()
-#     scheduler.add_job(fetch_traded_orders, 'interval', seconds=10)
-#     scheduler.start()
+@aiocron.crontab('*/3 * * * * *')
+async def self_ping():
+    try:
+        loop = asyncio.get_event_loop()
+        response = await loop.run_in_executor(None, requests.get, 'your_django_app_endpoint')
+        print(f"Health check response: {response.status_code}")
+    except Exception as e:
+        logger.error(f"Error in self_ping: {e}")
