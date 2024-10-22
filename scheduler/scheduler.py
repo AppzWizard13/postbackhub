@@ -18,7 +18,7 @@ def self_ping():
 
 def start():
     scheduler = BackgroundScheduler()
-    scheduler.add_job(self_ping, IntervalTrigger(seconds=360))  # Run every 3 seconds
+    scheduler.add_job(self_ping, IntervalTrigger(seconds=60))  # Run every 3 seconds
     scheduler.start()
     logger.info("Scheduler started.")
     
