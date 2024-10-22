@@ -291,7 +291,7 @@ def dhan_postback(request):
                     if control_data.max_order_limit <=  traded_order_count:
                         # kill dhan
                         response = dhanKillProcess(dhan_access_token)
-                        print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", response.killSwitchStatus)
+                        print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", response)
                         return JsonResponse({'status': 'success', 'message': 'Kill Activated successfully'})
                     else:
                         pass
@@ -329,6 +329,7 @@ def dhanKillProcess(access_token):
     }
 
     response = requests.post(url, headers=headers)
+    print("responseresponseresponseresponse", response)
     if response.status_code == 200:
         print("Kill switch activated successfully.")
     else:
