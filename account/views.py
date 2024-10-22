@@ -329,7 +329,9 @@ def dhanKillProcess(access_token):
     }
 
     response = requests.post(url, headers=headers)
-    print("responseresponseresponseresponse", response)
+    print("Response object:", response)
+    print("Response content:", response.content)  # Print raw bytes of the response
+    print("Response text:", response.text)
     if response.status_code == 200:
         print("Kill switch activated successfully.")
     else:
