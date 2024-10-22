@@ -283,6 +283,7 @@ def dhan_postback(request):
                 # fetch control data 
                 control_data = Control.objects.filter(user=UserObj).first()
                 print("control_datacontrol_datacontrol_data", control_data)
+                print("traded_order_counttraded_order_count", traded_order_count)
                 if control_data.max_order_count_mode:
                     if control_data.max_order_limit <=  traded_order_count:
                         # kill dhan
