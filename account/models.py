@@ -8,7 +8,7 @@ class User(AbstractUser):
     status = models.IntegerField(default=0, verbose_name='status', null=True)
     role = models.CharField(max_length=250, null=True)
     dhan_client_id = models.CharField(max_length=250, null=True)
-    dhan_access_token = models.CharField(max_length=250, null=True)
+    dhan_access_token = models.CharField(max_length=1000, null=True)
 
     # Adding related_name to prevent reverse accessor clashes
     groups = models.ManyToManyField(
