@@ -279,6 +279,7 @@ def dhan_postback(request):
                 print("dhan_access_tokendhan_access_token", dhan_access_token)
                 dhan = dhanhq(dhan_client_id,dhan_access_token)
                 orderlist = dhan.get_order_list()
+                print("orderlistorderlistorderlistorderlist", orderlist)
                 traded_order_count = get_traded_order_count_dhan(orderlist)  
                 # fetch control data 
                 control_data = Control.objects.filter(user=UserObj).first()
