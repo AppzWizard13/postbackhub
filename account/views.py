@@ -304,7 +304,8 @@ def dhan_postback(request):
     return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
 
 
-def get_traded_order_count_dhan(response):
+def get_traded_order_count_dhan(orderlist):
+    print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", orderlist)
     # Check if the response contains 'data'
     if 'data' not in response:
         return 0
