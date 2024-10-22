@@ -293,6 +293,7 @@ def dhan_postback(request):
                         response = dhanKillProcess(dhan_access_token)
                         print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", response)
                         kill_switch_status = response_json.get('killSwitchStatus', 'Status not found')
+                        response_json = response.json() 
                         return JsonResponse({'status': 'success', 'message': kill_switch_status})
                     else:
                         pass
