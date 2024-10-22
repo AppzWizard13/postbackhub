@@ -307,11 +307,11 @@ def dhan_postback(request):
 def get_traded_order_count_dhan(orderlist):
     print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", orderlist)
     # Check if the response contains 'data'
-    if 'data' not in response:
+    if 'data' not in orderlist:
         return 0
 
     # Filter orders with 'orderStatus' as 'TRADED'
-    traded_orders = [order for order in response['data'] if order.get('orderStatus') == 'TRADED']
+    traded_orders = [order for order in orderlist['data'] if order.get('orderStatus') == 'TRADED']
 
     # Return the count of traded orders
     return len(traded_orders)
