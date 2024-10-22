@@ -26,6 +26,8 @@ from django.contrib import messages
 import http.client  # Ensure the http.client module is imported
 import json  # Import json for decoding the API response
 from dhanhq import dhanhq
+import requests
+
 
 # from .models import User
 
@@ -289,7 +291,7 @@ def dhan_postback(request):
                     if control_data.max_order_limit <=  traded_order_count:
                         # kill dhan
                         response = dhanKillProcess(dhan_access_token)
-                        print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", response)
+                        print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", response.killSwitchStatus)
                         return JsonResponse({'status': 'success', 'message': 'Kill Activated successfully'})
                     else:
                         pass
@@ -318,41 +320,21 @@ def get_traded_order_count_dhan(orderlist):
     return len(traded_orders)
 
 
-
 def dhanKillProcess(access_token):
-    # Establish HTTPS connection to the Dhan API
-    conn = http.client.HTTPSConnection("api.dhan.co")
-    
-    # Set up the payload (currently empty, modify if needed)
-    payload = json.dumps({})
-    
-    # Define headers including the access-token
+    url = 'https://api.dhan.co/killSwitch?killSwitchStatus=ACTIVATE'
     headers = {
-        'access-token': access_token,  # Add the access token here
-        'Content-Type': "application/json",
-        'Accept': "application/json"
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'access-token': access_token
     }
-    
-    try:
-        # Make the POST request to the kill switch endpoint
-        conn.request("POST", "/v2/killswitch", payload, headers)
-        
-        # Get the response
-        res = conn.getresponse()
-        data = res.read()
-        
-        # Decode the response and return as a Python dictionary
-        response_data = data.decode("utf-8")
-        return json.loads(response_data)
-    
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        return None
-    
-    finally:
-        # Close the connection
-        conn.close()
 
+    response = requests.post(url, headers=headers)
+    if response.status_code == 200:
+        print("Kill switch activated successfully.")
+    else:
+        print(f"Failed to activate kill switch: {response.status_code}")
+    
+    return response
 
 
 def GetTotalOrderList(access_token):
