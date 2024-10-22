@@ -277,8 +277,9 @@ def dhan_postback(request):
                 UserObj = User.objects.filter(dhan_client_id= dhan_client_id).first()
                 dhan_access_token = UserObj.dhan_access_token
                 print("dhan_access_tokendhan_access_token", dhan_access_token)
-                order_list = GetTotalOrderList(dhan_access_token)
-                traded_order_count = get_traded_order_count_dhan(orderlist)
+                dhan = dhanhq(dhan_client_id,dhan_access_token)
+                orderlist = dhan.get_order_list()
+                traded_order_count = get_traded_order_count_dhan(orderlist)  
                 # fetch control data 
                 control_data = Control.objects.filter(user=UserObj).first()
                 print("control_datacontrol_datacontrol_data", control_data)
@@ -313,7 +314,7 @@ def get_traded_order_count_dhan(response):
     # Return the count of traded orders
     return len(traded_orders)
 
-    import http.client
+
 
 def dhanKillProcess(access_token):
     # Establish HTTPS connection to the Dhan API
