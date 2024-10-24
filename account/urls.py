@@ -28,6 +28,8 @@ urlpatterns = [
     path('controls/<int:pk>/', EditControlView.as_view(), name='edit-control'),  # User Detail URL (optional)
 
     path('dhan_kill_logs/', DhanKillProcessLogListView.as_view(), name='dhan-kill-log-list'),
+    path('dashboard/<slug:slug>/', DashboardView.as_view(), name='dashboard'),
+
 
     
 

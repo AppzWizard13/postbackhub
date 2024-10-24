@@ -27,10 +27,7 @@ import http.client  # Ensure the http.client module is imported
 import json  # Import json for decoding the API response
 from dhanhq import dhanhq
 import requests
-
-
-# from .models import User
-
+from datetime import datetime
 
 
 
@@ -122,22 +119,86 @@ class DashboardView(TemplateView):
     template_name = "dashboard/index.html"
 
     def dispatch(self, request, *args, **kwargs):
-        # Add custom logic before calling the parent class's dispatch method
-        self.users = User.objects.filter(is_active=True)  # Query the users
-        self.dashboard_view  = True
-        
+        # Fetch slug from the URL if present, or default to using request.user
+        self.slug = kwargs.get('slug')
+        self.users = User.objects.filter(is_active=True)  # Query the active users
+        self.dashboard_view = True
+
         # Call the parent class's dispatch method
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         # Get the existing context
         context = super().get_context_data(**kwargs)
+
+        # If slug is present, use it to fetch the user associated with that slug
+        if self.slug:
+            user = User.objects.filter(username=self.slug).first()  # Adjust filter based on your slug logic
+        else:
+            # Use request.user if no slug is provided
+            user = self.request.user
+
+        # Fetch dhan_client_id and dhan_access_token from the user
+        dhan_client_id = user.dhan_client_id
+        dhan_access_token = user.dhan_access_token
+
+        # Fetch data from DHAN API using the user's credentials
+        dhan = dhanhq(dhan_client_id, dhan_access_token)
+        fund_data = dhan.get_fund_limits()
+        orderlistdata = dhan.get_order_list()
+        traded_orders = get_traded_order_filter_dhan(orderlistdata)
+        order_count = get_traded_order_count(orderlistdata)
+        total_expense = order_count * 35
+
+        position_data = dhan.get_positions()
+        current_date = datetime.now().date()
+        positions = position_data['data']
+        total_realized_profit = sum(position['realizedProfit'] for position in positions) if positions else 0.00
+
+        # Sample static position data (this should ideally come from the API)
+        position_data_json = json.dumps(position_data['data'])
+        actual_profit = total_realized_profit - total_expense
+
+        # Add data to context
+        context['fund_data'] = fund_data
+        context['orderlistdata'] = traded_orders
+        context['position_data'] = position_data
+        context['current_date'] = current_date
+        context['position_data_json'] = position_data_json
+        context['total_realized_profit'] = total_realized_profit
+        context['total_expense'] = total_expense
+        context['order_count'] = order_count
+        context['orderlistdata'] = orderlistdata
+        context['actual_profit'] = actual_profit
+
+
+        
+
+        # Add the slug to the context if needed
+        context['slug'] = self.slug
         
         # Add the users to the context
         context['users'] = self.users
         context['dashboard_view'] = self.dashboard_view
-        
+
         return context
+
+
+def get_traded_order_count(order_list):
+    if 'data' not in order_list:
+        return 0
+    return len([order for order in order_list['data'] if order.get('orderStatus') == 'TRADED'])
+
+def get_traded_order_filter_dhan(response):
+    # Check if the response contains 'data'
+    if 'data' not in response:
+        return 0
+
+    # Filter orders with 'orderStatus' as 'TRADED'
+    traded_orders = [order for order in response['data'] if order.get('orderStatus') == 'TRADED']
+
+    # Return the count of traded orders
+    return traded_orders
 
 
 class LogoutView(View):

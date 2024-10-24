@@ -208,13 +208,25 @@
               </div>
               {% if dashboard_view %}
               <div>
-                <select class="form-select">
-                    {% for user in users %}
-                        <option value="{{ user.id }}">{{ user.username }}</option>
-                    {% endfor %}
-                </select>
+                  <select class="form-select" id="userSelect">
+                      <option value="" selected disabled>Select a user</option>
+                      {% for user in users %}
+                          <option value="{{ user.username }}">{{ user.username }}</option>
+                      {% endfor %}
+                  </select>
               </div>
               {% endif %}
+              
+              <script>
+                  // Add event listener to the dropdown
+                  document.getElementById('userSelect').addEventListener('change', function() {
+                      var selectedUser = this.value;
+                      if (selectedUser) {
+                          // Redirect to the dashboard for the selected user
+                          window.location.href = "/dashboard/" + selectedUser + "/";
+                      }
+                  });
+              </script>
               <li class="nav-item dropdown">
                 <a class="nav-link nav-icon-hover" href="javascript:void(0)" id="drop2" data-bs-toggle="dropdown"
                   aria-expanded="false">
@@ -316,85 +328,88 @@
                               <i class="ti ti-arrow-down-right text-danger"></i>
                             </span>
                             <p class="text-dark me-1 fs-3 mb-0">+9%</p>
-                            <p class="fs-3 mb-0">last year</p>
+                            <p class="fs-3 mb-0">last day</p>
                           </div>
                         </div>
                         <div class="col-4">
                           <div class="d-flex justify-content-end">
-                            <div
-                              class="text-white bg-secondary rounded-circle p-6 d-flex align-items-center justify-content-center">
-                              <i class="ti ti-currency-dollar fs-6"></i>
+                            <div class="mb-3 mb-sm-0 pr-5">
+                              <a class="btn btn-primary mx-3 fs-4 fw-bolder d-block" 
+                                 style="border-width: 3px; border-style: solid;">
+                                Actual Profit </br>{{ actual_profit }}
+                              </a>
                             </div>
                           </div>
                         </div>
+                        
                       </div>
                     </div>
                     <div id="earning"></div>
                   </div>
                 </div>
-                {% comment %} <div class="col-lg-12">
+                <div class="col-lg-12">
                   <!-- Monthly Earnings -->
                   <div class="card">
                     <div class="card-body">
                       <div class="row alig n-items-start">
                         <div class="col-8">
-                          <h5 class="card-title mb-9 fw-semibold"> Today Status </h5>
-                          <h4 class="fw-semibold mb-3">₹ {{total_realized_profit}}</h4>
+                          <h5 class="card-title mb-9 fw-semibold"> Today Expense </h5>
+                          <h4 class="fw-semibold mb-3">₹ {{total_expense}}</h4>
                           <div class="d-flex align-items-center pb-1">
                             <span
                               class="me-2 rounded-circle bg-light-danger round-20 d-flex align-items-center justify-content-center">
                               <i class="ti ti-arrow-down-right text-danger"></i>
                             </span>
                             <p class="text-dark me-1 fs-3 mb-0">+9%</p>
-                            <p class="fs-3 mb-0">last year</p>
+                            <p class="fs-3 mb-0">last day</p>
                           </div>
                         </div>
                         <div class="col-4">
                           <div class="d-flex justify-content-end">
-                            <div
-                              class="text-white bg-secondary rounded-circle p-6 d-flex align-items-center justify-content-center">
-                              <i class="ti ti-currency-dollar fs-6"></i>
+                            <div class="mb-3 mb-sm-0 pr-5">
+                              <a class="btn btn-primary mx-3 fs-4 fw-bolder d-block" 
+                                 style="border-width: 3px; border-style: solid;">
+                                Order Count </br>{{ order_count }}
+                              </a>
                             </div>
                           </div>
                         </div>
+                        
+                        
                       </div>
                     </div>
                     <!-- <div id=""></div> -->
                   </div>
-                </div> {% endcomment %}
+                </div>
               </div>
             </div>
           </div>
           <div class="row">
-            <div class="col-lg-6 d-flex align-items-stretch" >
+            <div class="col-lg-6 d-flex align-items-stretch">
               <div class="card w-100">
                 <div class="card-body p-4">
-                  <h5 class="card-title fw-semibold mb-4">Positions</h5>
-                  <div class="table-responsive">
-                    <table class="table text-nowrap mb-0 align-middle">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                      <h5 class="card-title fw-semibold mb-0">Positions</h5>
+                      <!-- Pagination Controls -->
+                      <div class="pagination-controls d-flex align-items-center">
+                          <button id="prevPagepos" class="btn btn-primary rounded-circle me-2">‹</button>
+                          <span id="pageInfopos" class="mx-2"></span>
+                            <button id="nextPagepos" class="btn btn-primary rounded-circle">›</button>
+                        </div>
+                    </div>
+                  <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                    <table class="table text-nowrap mb-0 align-middle" id="positionsTable">
                       <thead class="text-dark fs-4">
                         <tr>
-                          <th class="border-bottom-0">
-                            <h6 class="fw-semibold mb-0">Trading Symbol</h6>
-                          </th>
-                          <th class="border-bottom-0">
-                            <h6 class="fw-semibold mb-0">Position Type</h6>
-                          </th>
-                          <th class="border-bottom-0">
-                            <h6 class="fw-semibold mb-0">Buy Quantity</h6>
-                          </th>
-                          <th class="border-bottom-0">
-                            <h6 class="fw-semibold mb-0">Buy Average Price</h6>
-                          </th>
-                          <th class="border-bottom-0">
-                            <h6 class="fw-semibold mb-0">Realized Profit</h6>
-                          </th>
-                          <th class="border-bottom-0">
-                            <h6 class="fw-semibold mb-0">Unrealized Profit</h6>
-                          </th>
+                          <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Trading Symbol</h6></th>
+                          <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Position Type</h6></th>
+                          <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Buy Quantity</h6></th>
+                          <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Buy Average Price</h6></th>
+                          <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Realized Profit</h6></th>
+                          <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Unrealized Profit</h6></th>
                         </tr>
                       </thead>
-                      <tbody>
+                      <tbody id="positionsTableBody">
                         {% for position in position_data.data %}
                         <tr>
                           <td class="border-bottom-0">
@@ -410,7 +425,6 @@
                             <h6 class="fw-semibold mb-0">₹{{ position.buyAvg|floatformat:2 }}</h6>
                           </td>
                           <td class="border-bottom-0">
-                            <!-- Color coded based on realized profit value -->
                             {% if position.realizedProfit > 0 %}
                             <span class="badge bg-success rounded-3 fw-semibold">₹{{ position.realizedProfit|floatformat:2 }}</span>
                             {% elif position.realizedProfit < 0 and position.realizedProfit > -100 %}
@@ -435,73 +449,163 @@
               </div>
             </div>
             
-            
   
             <div class="col-lg-6 d-flex align-items-stretch">
               <div class="card w-100">
                   <div class="card-body p-4">
-                      <h5 class="card-title fw-semibold mb-4">Recent Transactions</h5>
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                      <h5 class="card-title fw-semibold mb-0">Recent Transactions</h5>
+                      <!-- Pagination Controls -->
+                      <div class="pagination-controls d-flex align-items-center">
+                          <button id="prevPage" class="btn btn-primary rounded-circle me-2">‹</button>
+                          <span id="pageInfo" class="mx-2"></span>
+                            <button id="nextPage" class="btn btn-primary rounded-circle">›</button>
+                        </div>
+                    </div>
                       <div class="table-responsive">
                           <table class="table text-nowrap mb-0 align-middle">
+                            <table class="table">
                               <thead class="text-dark fs-4">
                                   <tr>
-                                      <th class="border-bottom-0">
-                                          <h6 class="fw-semibold mb-0">Order ID</h6>
-                                      </th>
-  
-                                      <th class="border-bottom-0">
-                                          <h6 class="fw-semibold mb-0">Status</h6>
-                                      </th>
-                                      <th class="border-bottom-0">
-                                          <h6 class="fw-semibold mb-0">Transaction</h6>
-                                      </th>
-                                      <th class="border-bottom-0">
-                                          <h6 class="fw-semibold mb-0">Quantity</h6>
-                                      </th>
-                                      <th class="border-bottom-0">
-                                          <h6 class="fw-semibold mb-0">Price</h6>
-                                      </th>
-                                      <th class="border-bottom-0">
-                                        <h6 class="fw-semibold mb-0">Order Time</h6>
-                                      </th>
+                                      <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Order ID</h6></th>
+                                      <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Status</h6></th>
+                                      <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Transaction</h6></th>
+                                      <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Quantity</h6></th>
+                                      <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Price</h6></th>
+                                      <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Order Time</h6></th>
                                   </tr>
                               </thead>
-                              <tbody>
+                              <tbody id="ordersTableBody">
                                   {% for order in orderlistdata.data %}
                                   <tr>
+                                      <td class="border-bottom-0"><h6 class="fw-semibold mb-0">{{ order.orderId }}</h6></td>
                                       <td class="border-bottom-0">
-                                          <h6 class="fw-semibold mb-0">{{ order.orderId }}</h6>
-                                      </td>
-                                      <td class="border-bottom-0">
-                                          <span class="fw-normal">
-                                              {% if order.orderStatus == 'PENDING' %}
-                                              <span class="badge bg-warning rounded-3 fw-semibold">Pending</span>
-                                              {% elif order.orderStatus == 'COMPLETED' %}
-                                              <span class="badge bg-success rounded-3 fw-semibold">Completed</span>
-                                              {% else %}
-                                              <span class="badge bg-secondary rounded-3 fw-semibold">{{ order.orderStatus }}</span>
-                                              {% endif %}
-                                          </span>
+                                          {% if order.orderStatus == 'PENDING' %}
+                                          <span class="badge bg-warning rounded-3 fw-semibold">Pending</span>
+                                          {% elif order.orderStatus == 'COMPLETED' %}
+                                          <span class="badge bg-success rounded-3 fw-semibold">Completed</span>
+                                          {% else %}
+                                          <span class="badge bg-secondary rounded-3 fw-semibold">{{ order.orderStatus }}</span>
+                                          {% endif %}
                                       </td>
                                       <td class="border-bottom-0">
                                           <p class="badge bg-success rounded-3 fw-semibold">{{ order.transactionType }}</p>
                                       </td>
-                                      <td class="border-bottom-0">
-                                          <h6 class="fw-semibold mb-0">{{ order.quantity }}</h6>
-                                      </td>
-                                      <td class="border-bottom-0">
-                                          <h6 class="fw-semibold mb-0 fs-4">₹{{ order.price|floatformat:2 }}</h6>
-                                      </td>
-                                      <td class="border-bottom-0">
-                                        <h6 class="fw-semibold mb-0">{{ order.createTime }}</h6>
-                                      </td>
-                                  </tr>
-                                  {% empty %}
-                                  <tr>
-                                      <td colspan="5" class="text-center fw-semibold">No Recent Transactions Found</td>
+                                      <td class="border-bottom-0"><h6 class="fw-semibold mb-0">{{ order.quantity }}</h6></td>
+                                      <td class="border-bottom-0"><h6 class="fw-semibold mb-0 fs-4">₹{{ order.price|floatformat:2 }}</h6></td>
+                                      <td class="border-bottom-0"><h6 class="fw-semibold mb-0">{{ order.createTime }}</h6></td>
                                   </tr>
                                   {% endfor %}
                               </tbody>
+                          </table>
+                          
+
+                          
+                          <script>
+                              // JavaScript Pagination Logic
+                              document.addEventListener('DOMContentLoaded', function() {
+                                  const rowsPerPage = 6; // Number of rows per page
+                                  const tableBody = document.getElementById('ordersTableBody');
+                                  const rows = tableBody.getElementsByTagName('tr');
+                                  const totalRows = rows.length;
+                                  let currentPage = 1;
+                                  let totalPages = Math.ceil(totalRows / rowsPerPage);
+                          
+                                  // Display page info
+                                  const pageInfo = document.getElementById('pageInfo');
+                                  pageInfo.innerText = `Page ${currentPage} of ${totalPages}`;
+                          
+                                  // Function to display a specific page
+                                  function displayPage(page) {
+                                      // Hide all rows
+                                      for (let i = 0; i < totalRows; i++) {
+                                          rows[i].style.display = 'none';
+                                      }
+                          
+                                      // Display the rows for the current page
+                                      let start = (page - 1) * rowsPerPage;
+                                      let end = Math.min(start + rowsPerPage, totalRows);
+                                      for (let i = start; i < end; i++) {
+                                          rows[i].style.display = '';
+                                      }
+                          
+                                      // Update page info
+                                      pageInfo.innerText = `Page ${page} of ${totalPages}`;
+                                  }
+                          
+                                  // Initial display
+                                  displayPage(currentPage);
+                          
+                                  // Pagination controls
+                                  document.getElementById('prevPage').addEventListener('click', function() {
+                                      if (currentPage > 1) {
+                                          currentPage--;
+                                          displayPage(currentPage);
+                                      }
+                                  });
+                          
+                                  document.getElementById('nextPage').addEventListener('click', function() {
+                                      if (currentPage < totalPages) {
+                                          currentPage++;
+                                          displayPage(currentPage);
+                                      }
+                                  });
+                              });
+
+                              const rowsPerPage = 6;
+                              let currentPage = 1;
+
+                              const tableBody = document.getElementById('positionsTableBody');
+                              const prevButton = document.getElementById('prevPagepos');
+                              const nextButton = document.getElementById('nextPagepos');
+                              const pageInfo = document.getElementById('pageInfopos');
+
+                              function displayTable() {
+                                const rows = tableBody.getElementsByTagName('tr');
+                                const totalPages = Math.ceil(rows.length / rowsPerPage);
+
+                                // Hide all rows initially
+                                for (let i = 0; i < rows.length; i++) {
+                                  rows[i].style.display = 'none';
+                                }
+
+                                // Calculate the start and end index for the current page
+                                const start = (currentPage - 1) * rowsPerPage;
+                                const end = Math.min(start + rowsPerPage, rows.length);
+
+                                // Display rows for the current page
+                                for (let i = start; i < end; i++) {
+                                  rows[i].style.display = '';
+                                }
+
+                                // Update pagination controls
+                                pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+                                prevButton.disabled = currentPage === 1;
+                                nextButton.disabled = currentPage === totalPages || totalPages === 0;
+                              }
+
+                              // Event listeners for pagination buttons
+                              prevButton.addEventListener('click', () => {
+                                if (currentPage > 1) {
+                                  currentPage--;
+                                  displayTable();
+                                }
+                              });
+
+                              nextButton.addEventListener('click', () => {
+                                const totalRows = tableBody.getElementsByTagName('tr').length;
+                                const totalPages = Math.ceil(totalRows / rowsPerPage);
+                                if (currentPage < totalPages) {
+                                  currentPage++;
+                                  displayTable();
+                                }
+                              });
+
+                              // Initial display of the table
+                              displayTable();
+
+                          </script>
+                          
                           </table>
                       </div>
                   </div>
@@ -527,6 +631,9 @@
   <script src="{% static 'dashboard/assets/libs/apexcharts/dist/apexcharts.min.js' %}"></script>
     <!-- Optional JS files block -->
     {% block optional_js %}
+    <script type="application/json" id="positions-data">
+      {{ position_data_json|safe }}
+    </script>
     <script src="{% static 'dashboard/assets/js/dashboard.js' %}"></script>
     <script src="{% static 'dashboard/assets/libs/apexcharts/dist/apexcharts.min.js' %}"></script>
     {% endblock %}
