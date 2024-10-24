@@ -431,12 +431,13 @@ def start_scheduler():
 
     # Self-ping every 58 seconds
     scheduler.add_job(self_ping, IntervalTrigger(seconds=58))
+    scheduler.add_job(auto_order_count_monitoring_process, IntervalTrigger(seconds=60))
 
-    # Monitor process only on weekdays (Mon-Fri) between 9:14 AM to 3:30 PM
-    scheduler.add_job(
-        auto_order_count_monitoring_process,
-        CronTrigger(day_of_week='mon-fri', hour='9-15', minute='*', second='0')
-    )
+    # # Monitor process only on weekdays (Mon-Fri) between 9:14 AM to 3:30 PM
+    # scheduler.add_job(
+    #     auto_order_count_monitoring_process,
+    #     CronTrigger(day_of_week='mon-fri', hour='9-15', minute='*', second='0')
+    # )
 
     scheduler.start()
     logger.info("Scheduler started.")
