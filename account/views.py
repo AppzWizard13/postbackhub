@@ -224,6 +224,7 @@ class EditControlView(UpdateView):
         # Prepare the data you want to update
         updated_data = {
             'max_order_limit': form.cleaned_data.get('max_order_limit'),
+            'peak_order_limit': form.cleaned_data.get('peak_order_limit'),
             'max_loss_limit': form.cleaned_data.get('max_loss_limit'),
             'max_profit_limit': form.cleaned_data.get('max_profit_limit'),
             'max_profit_mode': form.cleaned_data.get('max_profit_mode'),

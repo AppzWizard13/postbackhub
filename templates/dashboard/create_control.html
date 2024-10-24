@@ -17,12 +17,12 @@
                                 {{ form.max_order_limit }}
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label for="id_max_loss_limit" class="form-label">Max Loss Limit</label>
-                                {{ form.max_loss_limit }}
+                                <label for="id_peak_order_limit" class="form-label">Peak Order Limit</label>
+                                {{ form.peak_order_limit }}
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label for="id_max_profit_limit" class="form-label">Max Profit Limit</label>
-                                {{ form.max_profit_limit }}
+                                <label for="id_max_loss_limit" class="form-label">Max Loss Limit</label>
+                                {{ form.max_loss_limit }}
                             </div>
                         </div>
 
@@ -45,7 +45,10 @@
 
                         <!-- Row 3: Max Order Count Mode and Is Killed Once -->
                         <div class="row">
-
+                            <div class="col-md-4 mb-3">
+                                <label for="id_max_profit_limit" class="form-label">Max Profit Limit</label>
+                                {{ form.max_profit_limit }}
+                            </div>
                             <div class="col-md-6 mb-3">
                                 <label for="id_is_killed_once" class="form-label">Is Killed Once</label>
                                 {{ form.is_killed_once }}
