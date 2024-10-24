@@ -359,11 +359,12 @@ def handle_order_limits(user, dhan, order_list, traded_order_count, control_data
     pending_order_ids, pending_order_count = get_pending_order_list_and_count(order_list)
 
     if control_data.max_order_count_mode:
-        if control_data.max_order_limit <= traded_order_count and not user.kill_switch_1:
+        if control_data.max_order_limit >= traded_order_count and not user.kill_switch_1:
             close_all_orders_and_positions(user, dhan, pending_order_ids)
             activate_kill_switch(user, dhan_access_token, traded_order_count)
-        elif control_data.peak_order_limit <= traded_order_count and user.kill_switch_1:
+        elif control_data.peak_order_limit >= traded_order_count and user.kill_switch_1:
             close_all_orders_and_positions(user, dhan, pending_order_ids)
+            activate_kill_switch(user, dhan_access_token, traded_order_count)
 
 def get_traded_order_count(order_list):
     if 'data' not in order_list:
