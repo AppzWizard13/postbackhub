@@ -12,52 +12,55 @@
                         {% csrf_token %}
                         <div class="mb-3">
                             <label for="id_first_name" class="form-label">First Name</label>
-                            {{ form.first_name }}  <!-- Field for phone number -->
+                            {{ form.first_name }}
                         </div>
 
                         <div class="mb-3">
                             <label for="id_last_name" class="form-label">Last Name</label>
-                            {{ form.last_name }}  <!-- Field for profile image -->
+                            {{ form.last_name }}
                         </div>
                         
                         <div class="mb-3">
                             <label for="id_phone_number" class="form-label">Phone Number</label>
-                            {{ form.phone_number }}  <!-- Field for phone number -->
+                            {{ form.phone_number }}
                         </div>
 
                         <div class="mb-3">
-                            <label for="id_email" class="form-label">E mail</label>
-                            {{ form.email }}  <!-- Field for phone number -->
+                            <label for="id_email" class="form-label">E-mail</label>
+                            {{ form.email }}
                         </div>
 
-                        {% comment %} <div class="mb-3">
+                        {% comment %} 
+                        <div class="mb-3">
                             <label for="id_profile_image" class="form-label">Profile Image</label>
-                            {{ form.profile_image }}  <!-- Field for profile image -->
-                        </div> {% endcomment %}
+                            {{ form.profile_image }}
+                        </div> 
+                        {% endcomment %}
 
                         <div class="mb-3">
                             <label for="id_country" class="form-label">Country</label>
-                            {{ form.country }}  <!-- Field for country -->
+                            {{ form.country }}
                         </div>
 
                         <div class="mb-3">
                             <label for="id_status" class="form-label">Status</label>
-                            {{ form.status }}  <!-- Field for status -->
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="id_role" class="form-label">Role</label>
-                            {{ form.role }}  <!-- Field for role -->
+                            {{ form.status }}
                         </div>
 
                         <div class="mb-3">
                             <label for="id_dhan_client_id" class="form-label">Dhan Client ID</label>
-                            {{ form.dhan_client_id }}  <!-- Field for Dhan Client ID -->
+                            {{ form.dhan_client_id }}
                         </div>
 
                         <div class="mb-3">
                             <label for="id_dhan_access_token" class="form-label">Dhan Access Token</label>
-                            {{ form.dhan_access_token }}  <!-- Field for Dhan Access Token -->
+                            {{ form.dhan_access_token }}
+                        </div>
+
+                        <!-- Toggle Button for is_active field -->
+                        <div class="mb-3 form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="id_is_active" name="is_active" {% if form.is_active.value %}checked{% endif %}>
+                            <label class="form-check-label" for="id_is_active">Active</label>
                         </div>
 
                         <button type="submit" class="btn btn-primary">Submit</button>

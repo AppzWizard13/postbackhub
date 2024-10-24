@@ -1,5 +1,7 @@
 from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.db import models
+from django.utils import timezone
+
 
 class User(AbstractUser):
     phone_number = models.CharField(max_length=12, null=True)
@@ -9,6 +11,9 @@ class User(AbstractUser):
     role = models.CharField(max_length=250, null=True)
     dhan_client_id = models.CharField(max_length=250, null=True)
     dhan_access_token = models.CharField(max_length=1000, null=True)
+    is_active = models.BooleanField(default=False)  # New is_active field
+    kill_switch_1  = models.BooleanField(default=False)  # New is_kill_1  field
+    kill_switch_2 = models.BooleanField(default=False)  # New is_kill_2  field
 
     # Adding related_name to prevent reverse accessor clashes
     groups = models.ManyToManyField(
@@ -40,6 +45,7 @@ class Control(models.Model):
     ]
 
     max_order_limit = models.IntegerField(default=0)
+    peak_order_limit = models.IntegerField(default=0)
     max_loss_limit = models.FloatField(default=0.0)
     max_profit_limit = models.FloatField(default=0.0)
     max_loss_mode = models.CharField(max_length=1, choices=ENABLE_DISABLE_CHOICES, default='0')
@@ -53,6 +59,13 @@ class Control(models.Model):
 
 
 
+class DhanKillProcessLog(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_on = models.DateTimeField(default=timezone.now)
+    log = models.JSONField()
+    order_count = models.IntegerField()
 
+    def __str__(self):
+        return f"Log for {self.user.username} - Orders: {self.order_count}"
 
 

@@ -83,6 +83,7 @@ class UserloginView(View):
                 # secret_key = settings.FYERS_SECRET_ID
 
                 # Or redirect the user to this URL within the app
+                print("mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm")
                 return redirect('dashboard')
 
             else:
@@ -165,7 +166,7 @@ class UserDetailView(UpdateView):
             'dhan_access_token': form.cleaned_data.get('dhan_access_token'),
             'dhan_client_id': form.cleaned_data.get('dhan_client_id'),
             'status': form.cleaned_data.get('status'),
-            'email': form.cleaned_data.get('email'),
+            'is_active': form.cleaned_data.get('is_active'),
             # 'profile_image': form.cleaned_data.get('profile_image'), # Include this if needed and make sure it's handled correctly
         }
         # Update the user fields in the User model where username matches
@@ -348,7 +349,7 @@ def get_pending_order_list_and_count_dhan(orderlist):
 def dhanKillProcess(access_token):
     url = 'https://api.dhan.co/killSwitch?killSwitchStatus=ACTIVATE'
     headers = {
-        'Accept': 'app`l`ication/json',
+        'Accept': 'application/json',
         'Content-Type': 'application/json',
         'access-token': access_token
     }

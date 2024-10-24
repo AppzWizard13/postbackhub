@@ -84,6 +84,7 @@ class UserForm(forms.ModelForm):
             'dhan_client_id', 
             'status', 
             'dhan_access_token', 
+            'is_active', 
             # 'profile_image',  # Optional field
         ]
         widgets = {
