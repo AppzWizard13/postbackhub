@@ -5,4 +5,4 @@ class SchedulerConfig(AppConfig):
 
     def ready(self):
         import scheduler.scheduler
-        scheduler.scheduler.start()
+        scheduler.scheduler.start_scheduler()
