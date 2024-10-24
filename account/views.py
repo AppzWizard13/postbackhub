@@ -74,13 +74,7 @@ class UserloginView(View):
                 # Login the user via Django
                 auth.login(request, user)
 
-                # Now, initiate Fyers login flow
-                # redirect_uri = settings.FYERS_REDIRECT_URL + "/dashboard"
-                # client_id = settings.FYERS_APP_ID
-                # secret_key = settings.FYERS_SECRET_ID
-
                 # Or redirect the user to this URL within the app
-                print("mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm")
                 return redirect('dashboard')
 
             else:
@@ -246,22 +240,17 @@ class UserDetailView(UpdateView):
         }
         # Update the user fields in the User model where username matches
         User.objects.filter(username=user.username).update(**updated_data)
-
-        print("oooooooooooooooooooooooooooooooooooooo")
-
         # Add a success message and return the response
         messages.success(self.request, 'User details updated successfully.')
         return super().form_valid(form)
 
     def form_invalid(self, form):
-        print("oooooooooooooooooooooooooooooooooooooo")
         # Print form errors to console for debugging
         print(form.errors)  # This will output any validation errors in the console
         # messages.error(self.request, 'Please correct the errors below.')
         return super().form_invalid(form)
 
     def get_object(self, queryset=None):
-        print("pppppppppppppppppppppppppppppppppppppp")
         # Fetch the user object based on the URL parameter (user ID)
         return get_object_or_404(User, pk=self.kwargs['pk'])  # Assuming you're using the user ID as a URL parameter
         
@@ -304,7 +293,7 @@ class EditControlView(UpdateView):
             'max_profit_limit': form.cleaned_data.get('max_profit_limit'),
             'max_profit_mode': form.cleaned_data.get('max_profit_mode'),
             'max_order_count_mode': form.cleaned_data.get('max_order_count_mode'),
-            'is_killed_once': form.cleaned_data.get('is_killed_once'),
+            'stoploss_percentage': form.cleaned_data.get('stoploss_percentage'),
             'user': form.cleaned_data.get('user'),  # User field should be handled
         }
         

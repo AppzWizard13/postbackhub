@@ -51,7 +51,7 @@ class Control(models.Model):
     max_loss_mode = models.CharField(max_length=1, choices=ENABLE_DISABLE_CHOICES, default='0')
     max_profit_mode = models.CharField(max_length=1, choices=ENABLE_DISABLE_CHOICES, default='0')
     max_order_count_mode = models.CharField(max_length=1, choices=ENABLE_DISABLE_CHOICES, default='0')
-    is_killed_once = models.CharField(max_length=1, choices=ENABLE_DISABLE_CHOICES, default='0')
+    stoploss_percentage = models.IntegerField(default=0)
     user = models.ForeignKey(User, on_delete=models.CASCADE)  # Foreign key for user
 
     def __str__(self):

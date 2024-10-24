@@ -36,12 +36,15 @@ DHAN_ACCESS_TOKEN = os.environ.get('DHAN_ACCESS_TOKEN', default=None)
 
 ALLOWED_HOSTS = ['*']
 
+CSRF_TRUSTED_ORIGINS = ['https://https://postback-hub.onrender.com']
+
 
 # Application definition
 
 INSTALLED_APPS = [
     'account',
     'scheduler',
+    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -49,6 +52,16 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 ]
+
+# Specify ASGI application
+ASGI_APPLICATION = 'postback_hub.asgi.application'
+
+# Channels layer settings
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',  # You can use Redis for production
+    },
+}
 
 
 MIDDLEWARE = [

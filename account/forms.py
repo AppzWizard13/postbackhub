@@ -107,7 +107,7 @@ class CustomControlCreationForm(forms.ModelForm):
     class Meta:
         model = Control
         fields = ['max_order_limit', 'peak_order_limit', 'max_loss_limit', 'max_profit_limit', 
-                  'max_profit_mode', 'max_order_count_mode', 'is_killed_once', 'user']
+                  'max_profit_mode', 'max_order_count_mode', 'stoploss_percentage', 'user']
         
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -125,7 +125,7 @@ class ControlForm(forms.ModelForm):
     class Meta:
         model = Control
         fields = ['max_order_limit', 'peak_order_limit', 'max_loss_limit', 'max_profit_limit','max_loss_mode',
-                  'max_profit_mode', 'max_order_count_mode', 'is_killed_once', 'user']
+                  'max_profit_mode', 'max_order_count_mode', 'stoploss_percentage', 'user']
         
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

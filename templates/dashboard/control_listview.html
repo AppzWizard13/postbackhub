@@ -39,7 +39,7 @@
                         <h6 class="fw-semibold mb-0">Max Order Count Mode</h6>
                       </th>
                     <th class="border-bottom-0">
-                      <h6 class="fw-semibold mb-0">Is Killed Once</h6>
+                      <h6 class="fw-semibold mb-0">Stop Loss Percentage</h6>
                     </th>
                     <th class="border-bottom-0">
                       <h6 class="fw-semibold mb-0">Action</h6>
@@ -75,7 +75,7 @@
                       <p class="mb-0 fw-normal">{{ control.max_order_count_mode|yesno:"Enabled,Disabled" }}</p>
                     </td>
                     <td class="border-bottom-0">
-                      <p class="mb-0 fw-normal">{{ control.is_killed_once|yesno:"Yes,No" }}</p>
+                      <p class="mb-0 fw-normal">{{ control.stoploss_percentage }}</p>
                     </td>
                      <td class="border-bottom-0">
                       <a href="{% url 'edit-control' control.pk %}" class="btn btn-sm btn-outline-primary">
