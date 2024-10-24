@@ -3,7 +3,7 @@ from django.urls import path
 from django.contrib import admin
 from account.views import UserloginView, DashboardView, HomePageView
 from django.contrib.auth import views as auth_views
-from .views import UserListView, UserDetailView, ControlListView, UserCreateView, ControlCreateView, EditControlView
+from .views import UserListView, UserDetailView, ControlListView, UserCreateView, ControlCreateView, EditControlView, DhanKillProcessLogListView
 
 
 urlpatterns = [
@@ -27,10 +27,10 @@ urlpatterns = [
     path('controls/', ControlListView.as_view(), name='manage_controls'),  # Manage Controls URL
     path('controls/<int:pk>/', EditControlView.as_view(), name='edit-control'),  # User Detail URL (optional)
 
+    path('dhan_kill_logs/', DhanKillProcessLogListView.as_view(), name='dhan-kill-log-list'),
+
     
 
-
-    path('postback-fetch/', views.dhan_postback, name='dhan_postback'),  
 
     
 ]

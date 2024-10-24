@@ -122,9 +122,23 @@ class DashboardView(TemplateView):
     template_name = "dashboard/index.html"
 
     def dispatch(self, request, *args, **kwargs):
-
+        # Add custom logic before calling the parent class's dispatch method
+        self.users = User.objects.filter(is_active=True)  # Query the users
+        self.dashboard_view  = True
+        
         # Call the parent class's dispatch method
         return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        # Get the existing context
+        context = super().get_context_data(**kwargs)
+        
+        # Add the users to the context
+        context['users'] = self.users
+        context['dashboard_view'] = self.dashboard_view
+        
+        return context
+
 
 class LogoutView(View):
     def get(self, request):
@@ -251,216 +265,14 @@ class EditControlView(UpdateView):
         return get_object_or_404(Control, pk=self.kwargs['pk'])  # Assuming you're using the control ID as a URL parameter
 
 
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-import json
-import logging
-import json
+from django.views.generic import ListView
+from .models import DhanKillProcessLog
 
-# Disable CSRF for the postback URL, as it might be a third-party service posting to this URL.
-@csrf_exempt
-def dhan_postback(request):
-    if request.method == 'POST':
-        try:
-            # Parse the incoming JSON data
-            postback_data = json.loads(request.body)
-            
-            # Log or print the received data
-            logging.info(f"Received Dhan postback: {postback_data}")
-            print(f"Received Dhan postback: {postback_data}")
-            
-            # Do any further processing with the data here (e.g., save it to the database)
-            # Example: extract specific fields from the postback_data
-            dhan_client_id = postback_data.get("dhanClientId")
-            order_id = postback_data.get("orderId")
-            order_status = postback_data.get("orderStatus")
-            if dhan_client_id:
-                UserObj = User.objects.filter(dhan_client_id= dhan_client_id).first()
-                dhan_access_token = UserObj.dhan_access_token
-                print("dhan_access_tokendhan_access_token", dhan_access_token)
-                dhan = dhanhq(dhan_client_id,dhan_access_token)
-                orderlist = dhan.get_order_list()
-                print("orderlistorderlistorderlistorderlist", orderlist)
-                traded_order_count = get_traded_order_count_dhan(orderlist)  
-                # fetch control data 
-                control_data = Control.objects.filter(user=UserObj).first()
-                print("control_datacontrol_datacontrol_data", control_data)
-                print("traded_order_counttraded_order_count", traded_order_count)
-                if control_data.max_order_count_mode:
-                    if control_data.max_order_limit <=  traded_order_count:
-                        # close pending orders
-                        pending_order_ids, pending_order_count = get_pending_order_list_and_count_dhan(orderlist)
-                        print("pending_order_countpending_order_count", pending_order_count)
-                        if pending_order_count > 0 :
-                            close_pending_response = closeAllPendingOrders(dhan_client_id, dhan_access_token, pending_order_ids)
+class DhanKillProcessLogListView(ListView):
+    model = DhanKillProcessLog
+    template_name = 'dashboard/dhan_kill_process_log_list.html'  # Specify your template name
+    context_object_name = 'logs'
+    paginate_by = 10  # Optional: Add pagination (adjust the number as needed)
 
-                        # get open poistions 
-                        position_close_response = close_all_open_positions(dhan_client_id, dhan_access_token)
-
-                        # kill dhan
-                        response = dhanKillProcess(dhan_access_token)
-                        print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", response)
-                        response_json = response.json() 
-                        kill_switch_status = response_json.get('killSwitchStatus', 'Status not found')
-                        return JsonResponse({'status': 'success', 'message': kill_switch_status})
-                    else:
-                        pass
-            # Return a success response
-            return JsonResponse({'status': 'success', 'message': 'Data received successfully'})
-        
-        except json.JSONDecodeError:
-            # Handle JSON decoding errors
-            logging.error("Invalid JSON received in postback")
-            return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
-        
-    # If the request method is not POST, return a method not allowed error
-    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
-
-
-def get_traded_order_count_dhan(orderlist):
-    print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", orderlist)
-    # Check if the response contains 'data'
-    if 'data' not in orderlist:
-        return 0
-
-    # Filter orders with 'orderStatus' as 'TRADED'
-    traded_orders = [order for order in orderlist['data'] if order.get('orderStatus') == 'TRADED']
-
-    # Return the count of traded orders
-    return len(traded_orders)
-
-def get_pending_order_list_and_count_dhan(orderlist):
-    print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", orderlist)
-    
-    # Check if the response contains 'data'
-    if 'data' not in orderlist:
-        return [], 0
-
-    # Filter orders with 'orderStatus' as 'PENDING'
-    pending_orders = [order for order in orderlist['data'] if order.get('orderStatus') == 'PENDING']
-
-    # Extract the 'orderId' of pending orders
-    pending_order_ids = [order.get('orderId') for order in pending_orders]
-
-    # Return the list of pending order IDs and their count
-    return pending_order_ids, len(pending_order_ids)
-
-
-
-def dhanKillProcess(access_token):
-    url = 'https://api.dhan.co/killSwitch?killSwitchStatus=ACTIVATE'
-    headers = {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'access-token': access_token
-    }
-
-    response = requests.post(url, headers=headers)
-    print("Response object:", response)
-    print("Response content:", response.content)  # Print raw bytes of the response
-    print("Response text:", response.text)
-    if response.status_code == 200:
-        print("Kill switch activated successfully.")
-    else:
-        print(f"Failed to activate kill switch: {response.status_code}")
-    
-    return response
-
-
-def GetTotalOrderList(access_token):
-    """
-    Fetches the total list of orders from the Dhan API.
-
-    Parameters:
-    access_token (str): The access token for authenticating with the Dhan API.
-
-    Returns:
-    dict: Parsed JSON response from the API containing the list of orders.
-    None: If there was an error during the request.
-    """
-    try:
-        # Create a connection to the Dhan API
-        conn = http.client.HTTPSConnection("api.dhan.co")
-
-        # Set up headers including the access token
-        headers = {
-            'access-token': access_token,
-            'Accept': "application/json"
-        }
-
-        # Make the request to get the orders
-        conn.request("GET", "/v2/orders", headers=headers)
-
-        # Get the response from the API
-        res = conn.getresponse()
-        data = res.read()
-
-        # Decode the response and convert it into a Python dictionary
-        order_data = json.loads(data.decode("utf-8"))
-
-        # Return the parsed JSON data
-        return order_data
-
-    except Exception as e:
-        # Handle any exceptions that may occur
-        print(f"Error fetching order list: {e}")
-        order_data = {}
-        return order_data
-
-
-def closeAllPendingOrders(dhan_client_id, dhan_access_token, pending_order_ids):
-    # close all pending orders
-    dhan = dhanhq(dhan_client_id,dhan_access_token)
-    for order_id in pending_order_ids:
-        close_response = dhan.cancel_order(order_id)
-    return True
-    
-
-def close_all_open_positions(dhan_client_id, dhan_access_token):
-    # Initialize Dhan API client
-    dhan = dhanhq(dhan_client_id, dhan_access_token)
-    
-    # Fetch open positions from Dhan API
-    open_positions = dhan.get_positions()
-    
-    if open_positions['status'] == 'success' and open_positions['data']:
-        # Loop through each position in the response data
-        for position in open_positions['data']:
-            security_id = position['securityId']
-            exchange_segment = position['exchangeSegment']
-            net_qty = position['netQty']
-            product_type = position['productType']
-
-            # Map product type
-            product_type_map = {
-                "CNC": dhan.CNC,
-                "DAY": dhan.INTRA
-            }
-            product_type_value = product_type_map.get(product_type, dhan.CNC)
-
-            # Map exchange segment
-            exchange_segment_value = dhan.NSE_FNO if exchange_segment == "NSE_FNO" else exchange_segment
-
-            # Ensure that we are placing a sell order for positions with netQty > 0
-            if net_qty > 0:
-                # Place a sell order for each open position
-                sell_order_response = dhan.place_order(
-                    security_id=security_id,
-                    exchange_segment=exchange_segment_value,
-                    transaction_type=dhan.SELL,  # Sell order
-                    quantity=net_qty,
-                    order_type=dhan.MARKET,
-                    product_type=product_type_value,  # Product type based on position
-                    price=0  # Price set to market
-                )
-
-                # Check the response of each sell order
-                if sell_order_response['status'] != 'success':
-                    print(f"Failed to place sell order for security ID {security_id}")
-                else:
-                    print(f"Successfully placed sell order for security ID {security_id}")
-
-        return True
-    else:
-        print("No open positions found or failed to fetch open positions.")
-        return True
+    def get_queryset(self):
+        return DhanKillProcessLog.objects.all().order_by('-created_on')
