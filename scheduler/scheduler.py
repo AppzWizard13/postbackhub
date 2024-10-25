@@ -14,46 +14,46 @@ User = get_user_model()
 def auto_order_count_monitoring_process():
     now = datetime.now()
     print(f"Current date and time: {now.strftime('%Y-%m-%d %H:%M:%S')}")
-    if now.weekday() < 5 and (9 <= now.hour < 16):  # Monday to Friday, 9 AM to 4 PM
-        try:
-            print("Starting auto order count monitoring process.")
-            active_users = User.objects.filter(is_active=True)
+    # if now.weekday() < 5 and (9 <= now.hour < 16):  # Monday to Friday, 9 AM to 4 PM
+    try:
+        print("Starting auto order count monitoring process.")
+        active_users = User.objects.filter(is_active=True)
 
-            for user in active_users:
-                try:
-                    if not user.kill_switch_2:
-                        dhan_client_id = user.dhan_client_id
-                        dhan_access_token = user.dhan_access_token
-                        print(f"Processing user: {user.username}, Client ID: {dhan_client_id}")
+        for user in active_users:
+            try:
+                if not user.kill_switch_2:
+                    dhan_client_id = user.dhan_client_id
+                    dhan_access_token = user.dhan_access_token
+                    print(f"Processing user: {user.username}, Client ID: {dhan_client_id}")
 
-                        # Initialize Dhan client
-                        dhan = dhanhq(dhan_client_id, dhan_access_token)
+                    # Initialize Dhan client
+                    dhan = dhanhq(dhan_client_id, dhan_access_token)
 
-                        # Fetch order list
-                        order_list = dhan.get_order_list()
-                        traded_order_count = get_traded_order_count(order_list)
+                    # Fetch order list
+                    order_list = dhan.get_order_list()
+                    traded_order_count = get_traded_order_count(order_list)
 
-                        # Fetch control data
-                        control_data = Control.objects.filter(user=user).first()
-                        if control_data:
-                            print(f"Handling order limits for user: {user.username}")
-                            handle_order_limits(user, dhan, order_list, traded_order_count, control_data, dhan_access_token)
-                        else:
-                            print(f"WARNING: No control data found for user: {user.username}")
+                    # Fetch control data
+                    control_data = Control.objects.filter(user=user).first()
+                    if control_data:
+                        print(f"Handling order limits for user: {user.username}")
+                        handle_order_limits(user, dhan, order_list, traded_order_count, control_data, dhan_access_token)
                     else:
-                        print(f"WARNING: Kill switch already activated twice for user: {user.username}")
+                        print(f"WARNING: No control data found for user: {user.username}")
+                else:
+                    print(f"WARNING: Kill switch already activated twice for user: {user.username}")
 
-                except Exception as e:
-                    print(f"ERROR: Error processing user {user.username}: {e}")
+            except Exception as e:
+                print(f"ERROR: Error processing user {user.username}: {e}")
 
-            print("Monitoring process completed successfully.")
-            return JsonResponse({'status': 'success', 'message': 'Monitoring process completed'})
+        print("Monitoring process completed successfully.")
+        return JsonResponse({'status': 'success', 'message': 'Monitoring process completed'})
 
-        except Exception as e:
-            print(f"ERROR: Error in monitoring process: {e}")
-            return JsonResponse({'status': 'error', 'message': 'An error occurred'}, status=500)
-    else:
-        print("INFO: Current time is outside of the scheduled range.")
+    except Exception as e:
+        print(f"ERROR: Error in monitoring process: {e}")
+        return JsonResponse({'status': 'error', 'message': 'An error occurred'}, status=500)
+    # else:
+    #     print("INFO: Current time is outside of the scheduled range.")
 
 def handle_order_limits(user, dhan, order_list, traded_order_count, control_data, dhan_access_token):
     print(f"Evaluating order limits for user: {user.username}")
@@ -117,3 +117,5 @@ def start_scheduler():
 
     # Shut down the scheduler when exiting the app
     atexit.register(lambda: scheduler.shutdown())
+
+
