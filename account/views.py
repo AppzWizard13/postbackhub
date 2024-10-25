@@ -142,7 +142,7 @@ class DashboardView(TemplateView):
         orderlistdata = dhan.get_order_list()
         traded_orders = get_traded_order_filter_dhan(orderlistdata)
         order_count = get_traded_order_count(orderlistdata)
-        total_expense = order_count * 35
+        total_expense = order_count * 37.33
 
         position_data = dhan.get_positions()
         current_date = datetime.now().date()
