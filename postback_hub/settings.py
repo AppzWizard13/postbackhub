@@ -38,9 +38,9 @@ ALLOWED_HOSTS = ['*']
 
 CSRF_TRUSTED_ORIGINS = ['https://https://postback-hub.onrender.com']
 
-# TIME_ZONE = 'Asia/Kolkata'
+TIME_ZONE = 'Asia/Kolkata'
 
-# USE_TZ = True
+USE_TZ = True
 
 # Application definition
 INSTALLED_APPS = [
