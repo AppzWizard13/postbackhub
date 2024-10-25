@@ -12,6 +12,7 @@ class User(AbstractUser):
     dhan_client_id = models.CharField(max_length=250, null=True)
     dhan_access_token = models.CharField(max_length=1000, null=True)
     is_active = models.BooleanField(default=False)  # New is_active field
+    auto_stop_loss = models.BooleanField(default=False)
     kill_switch_1  = models.BooleanField(default=False)  # New is_kill_1  field
     kill_switch_2 = models.BooleanField(default=False)  # New is_kill_2  field
 

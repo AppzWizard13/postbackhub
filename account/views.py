@@ -142,16 +142,22 @@ class DashboardView(TemplateView):
         orderlistdata = dhan.get_order_list()
         traded_orders = get_traded_order_filter_dhan(orderlistdata)
         order_count = get_traded_order_count(orderlistdata)
-        total_expense = order_count * settings.BROKERAGE_PARAMETER
+        total_expense = order_count * float(settings.BROKERAGE_PARAMETER)
+        total_expense = float(total_expense)
+        print("total_expensetotal_expensetotal_expense", total_expense)
 
         position_data = dhan.get_positions()
         current_date = datetime.now().date()
         positions = position_data['data']
         total_realized_profit = sum(position['realizedProfit'] for position in positions) if positions else 0.00
+        total_realized_profit = float(total_realized_profit)
+        print("total_realized_profittotal_realized_profit", total_realized_profit)
 
         # Sample static position data (this should ideally come from the API)
         position_data_json = json.dumps(position_data['data'])
         actual_profit = total_realized_profit - total_expense
+
+        print("actual_profitactual_profitactual_profit", actual_profit)
 
         # Add data to context
         context['fund_data'] = fund_data
