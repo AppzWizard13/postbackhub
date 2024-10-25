@@ -690,7 +690,9 @@
 
     <script>
         // WebSocket setup
-        let socket = new WebSocket('ws://https://postback-hub.onrender.com/users//ws/dhan/');
+        {% comment %} let socket = new WebSocket('ws://https://postback-hub.onrender.com/users//ws/dhan/'); {% endcomment %}
+        let socket = new WebSocket('wss://postback-hub.onrender.com/users/ws/dhan/');
+
 
         // When connection is opened
         socket.onopen = function(event) {
