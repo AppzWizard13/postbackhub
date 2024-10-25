@@ -137,8 +137,7 @@ def autoStopLossProcessing():
             active_users = User.objects.filter(is_active=True,kill_switch_2=False)
             for user in active_users:
                 try:
-                    if not user.kill_switch_2:
-                        
+                    if not user.kill_switch_2 and user.auto_stop_loss:
                         dhan_client_id = user.dhan_client_id
                         dhan_access_token = user.dhan_access_token
                         print(f"Processing user: {user.username}, Client ID: {dhan_client_id}")
@@ -150,7 +149,7 @@ def autoStopLossProcessing():
                         order_list = dhan.get_order_list()
                         # Step 1: Sort filtered orders by timestamp in descending order
                         latest_entry = order_list['data'][0]
-                        if latest_entry['transactionType'] == 'SELL' and latest_entry['orderStatus'] == 'TRADED':
+                        if latest_entry['transactionType'] == 'BUY' and latest_entry['orderStatus'] == 'TRADED':
                             security_id = latest_entry['securityId']
                             client_id = latest_entry['dhanClientId']
                             exchange_segment = latest_entry['exchangeSegment']
@@ -168,7 +167,7 @@ def autoStopLossProcessing():
                             
                             # Place an order for NSE Futures & Options
                             stoploss_response = dhan.place_order(
-                                        security_id=security_id,
+                                        security_id=security_id, 
                                         exchange_segment=dhan.NSE_FNO,
                                         transaction_type=dhan.SELL,
                                         quantity=quantity,
@@ -178,6 +177,11 @@ def autoStopLossProcessing():
                                         trigger_price=sl_trigger
                                     )
                             print("Stop Loss Response :", stoploss_response)
+                            print(f"INFO: Stop Loss Added Successfully..!")
+                            
+                        else:
+                            print(f"INFO: No Open Order for User {user.username}")
+                        
                     else:
                         print(f"WARNING: Kill switch already activated twice for user: {user.username}")
 
