@@ -132,8 +132,8 @@ def autoStopLossProcessing():
     print(f"Current date and time: {now.strftime('%Y-%m-%d %H:%M:%S')}")
     if now.weekday() < 5 and (9 <= now.hour < 16):  # Monday to Friday, 9 AM to 4 PM
         try:
-            print("**********************************************")
-            print("Starting auto stoploss monitoring process.")
+            print("*********************************************")
+            print("Starting auto stoploss monitoring process...!")
             active_users = User.objects.filter(is_active=True,kill_switch_2=False)
             for user in active_users:
                 try:
@@ -164,21 +164,36 @@ def autoStopLossProcessing():
                             print(f"Client ID: {client_id}")
                             print(f"Exchange Segment: {exchange_segment}")
                             print(f"Quantity: {quantity}")
-                            
-                            # Place an order for NSE Futures & Options
-                            stoploss_response = dhan.place_order(
-                                        security_id=security_id, 
-                                        exchange_segment=dhan.NSE_FNO,
-                                        transaction_type=dhan.SELL,
-                                        quantity=quantity,
-                                        order_type=dhan.MARKET,
-                                        product_type=dhan.INTRA,
-                                        price=sl_price,
-                                        trigger_price=sl_trigger
-                                    )
-                            print("Stop Loss Response :", stoploss_response)
-                            print(f"INFO: Stop Loss Added Successfully..!")
-                            
+
+                            pending_sl_orders = get_pending_order_filter_dhan(orderlistdata)
+                            if pending_sl_orders:
+                                for order in pending_sl_orders:
+                                    exst_qty = int(order['quantity'])
+                                    addon_qty = int(quantity)
+                                    total_qty = exst_qty + addon_qty
+                                    modify_slorder_response = dhan.modify_order(
+                                                                order_id = order['orderId'], 
+                                                                quantity=total_qty
+                                                                )
+
+                                print("Stop Loss Modified Response :", modify_slorder_response)
+                                print(f"INFO: Stop Loss Order Modified Successfully..!")
+
+                            else:
+                                # Place an order for NSE Futures & Options
+                                stoploss_response = dhan.place_order(
+                                            security_id=security_id, 
+                                            exchange_segment=dhan.NSE_FNO,
+                                            transaction_type=dhan.SELL,
+                                            quantity=quantity,
+                                            order_type=dhan.STOP_LOSS,
+                                            product_type=dhan.INTRA,
+                                            price=sl_price,
+                                            trigger_price=sl_trigger
+                                        )
+                                print("Stop Loss Response :", stoploss_response)
+                                print(f"INFO: Stop Loss Order Executed Successfully..!")
+
                         else:
                             print(f"INFO: No Open Order for User {user.username}")
                         
@@ -207,6 +222,18 @@ def calculateslprice(traded_price, stoploss_percentage):
     sl_price = round(sl_price, 2)
     sl_trigger = round(sl_trigger, 2)
     return sl_price, sl_trigger
+
+def get_pending_order_filter_dhan(response): 
+    # Check if the response contains 'data'
+    if 'data' not in response:
+        return 0
+    pending_sl_orders = [
+        order for order in response['data']
+        if order.get('orderStatus') == 'PENDING' and order.get('transactionType') == 'SELL'
+    ]
+    if not pending_sl_orders:
+        return False  
+    return pending_sl_orders
 
 
 def start_scheduler():

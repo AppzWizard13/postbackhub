@@ -28,6 +28,7 @@ import json  # Import json for decoding the API response
 from dhanhq import dhanhq
 import requests
 from datetime import datetime
+from django.http import JsonResponse
 
 
 
@@ -132,9 +133,13 @@ class DashboardView(TemplateView):
             # Use request.user if no slug is provided
             user = self.request.user
 
+        print("00000000000000000000000000000000000000000000", user)
+
         # Fetch dhan_client_id and dhan_access_token from the user
         dhan_client_id = user.dhan_client_id
         dhan_access_token = user.dhan_access_token
+
+        control_data = Control.objects.filter(user=user).first()
 
         # Fetch data from DHAN API using the user's credentials
         dhan = dhanhq(dhan_client_id, dhan_access_token)
@@ -144,7 +149,7 @@ class DashboardView(TemplateView):
         order_count = get_traded_order_count(orderlistdata)
         total_expense = order_count * float(settings.BROKERAGE_PARAMETER)
         total_expense = float(total_expense)
-        print("total_expensetotal_expensetotal_expense", total_expense)
+        print("fund_datafund_datafund_datafund_data", fund_data)
 
         position_data = dhan.get_positions()
         current_date = datetime.now().date()
@@ -156,11 +161,21 @@ class DashboardView(TemplateView):
         # Sample static position data (this should ideally come from the API)
         position_data_json = json.dumps(position_data['data'])
         actual_profit = total_realized_profit - total_expense
+        opening_balance = float(fund_data['data']['sodLimit'])
+        actual_balance = opening_balance + actual_profit
+        pnl_percentage = (actual_profit / opening_balance) * 100
+        order_limit = control_data.peak_order_limit
+        day_exp_brokerge = float(control_data.peak_order_limit) * float(settings.BROKERAGE_PARAMETER)
 
-        print("actual_profitactual_profitactual_profit", actual_profit)
+
+        # pnl_percenatge = 
 
         # Add data to context
         context['fund_data'] = fund_data
+        context['pnl_percentage'] = pnl_percentage
+        context['day_exp_brokerge'] = day_exp_brokerge
+        context['order_limit'] = order_limit
+        context['user'] = user
         context['orderlistdata'] = traded_orders
         context['position_data'] = position_data
         context['current_date'] = current_date
@@ -170,6 +185,8 @@ class DashboardView(TemplateView):
         context['order_count'] = order_count
         context['orderlistdata'] = orderlistdata
         context['actual_profit'] = actual_profit
+        context['actual_balance'] = actual_balance
+
 
 
         
@@ -332,3 +349,88 @@ class DhanKillProcessLogListView(ListView):
 
     def get_queryset(self):
         return DhanKillProcessLog.objects.all().order_by('-created_on')
+
+from django.views.decorators.http import require_POST
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+
+@login_required
+@require_POST
+@csrf_exempt
+def close_all_positions(request):
+    data = json.loads(request.body)
+    username = data.get('username')
+    # Find the active user by username
+    try:
+        user = User.objects.get(is_active=True, kill_switch_2=False, username=username)
+    except User.DoesNotExist:
+        return JsonResponse({"error": "User not found or inactive."}, status=404)
+    
+    # Initialize Dhan client
+    dhan = dhanhq(user.dhan_client_id, user.dhan_access_token)
+    order_list = dhan.get_order_list()
+    print("ppppppppppppppppppp", order_list)
+
+    # Check if the latest order entry matches criteria
+    if order_list['data']:
+        pending_sl_orders = get_pending_order_filter_dhan(order_list)
+        print("pending_sl_orderspending_sl_orders", pending_sl_orders)
+        if pending_sl_orders:
+            for orders in pending_sl_orders:
+                cancel_slorder_response = dhan.cancel_order(order_id = orders['orderId'])  
+
+                print("cancel_slorder_responsecancel_slorder_responsecancel_slorder_response", cancel_slorder_response)
+
+            latest_buy_entry = get_latest_buy_order_dhan(order_list)
+        if latest_buy_entry['transactionType'] == 'BUY' and latest_buy_entry['orderStatus'] == 'TRADED':
+            # Retrieve necessary details for the order
+            sellorder_response = dhan.place_order(
+                security_id=latest_buy_entry['securityId'],
+                exchange_segment=dhan.NSE_FNO,
+                transaction_type=dhan.SELL,
+                quantity=latest_buy_entry['quantity'],
+                order_type=dhan.MARKET,
+                product_type=dhan.INTRA,
+                price=0
+            )
+            message = sellorder_response['remarks']['message'] if 'remarks' in sellorder_response and 'message' in sellorder_response['remarks'] else 'Unknown error'
+            return JsonResponse({"message": message, "response": sellorder_response})
+        else:
+            return JsonResponse({"message": "No open BUY order to close."}, status=200)
+    else:
+        return JsonResponse({"message": "No orders found for the user."}, status=200)
+
+
+
+def get_pending_order_filter_dhan(response): 
+    # Check if the response contains 'data'
+    if 'data' not in response:
+        return 0
+    pending_sl_orders = [
+        order for order in response['data']
+        if order.get('orderStatus') == 'PENDING' and order.get('transactionType') == 'SELL'
+    ]
+    if not pending_sl_orders:
+        return False  
+    return pending_sl_orders
+
+
+def get_latest_buy_order_dhan(response):
+    # Check if the response contains 'data'
+    if 'data' not in response:
+        return 0
+    
+    # Filter to get only traded buy orders
+    traded_buy_orders = [
+        order for order in response['data']
+        if order.get('orderStatus') == 'TRADED' and order.get('transactionType') == 'BUY'
+    ]
+    
+    # Check if there are no traded buy orders
+    if not traded_buy_orders:
+        return False
+    
+    # Sort the buy orders by createTime in descending order to get the latest
+    latest_buy_order = max(traded_buy_orders, key=lambda x: x['createTime'])
+    
+    return latest_buy_order

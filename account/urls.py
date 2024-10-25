@@ -30,6 +30,8 @@ urlpatterns = [
     path('dhan_kill_logs/', DhanKillProcessLogListView.as_view(), name='dhan-kill-log-list'),
     path('dashboard/<slug:slug>/', DashboardView.as_view(), name='dashboard'),
 
+    path('close-all-positions/', views.close_all_positions, name='close_all_positions'),
+
 
     
 

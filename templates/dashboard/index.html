@@ -208,7 +208,10 @@
           <div class="navbar-collapse justify-content-end px-0" id="navbarNav">
             <ul class="navbar-nav flex-row ms-auto align-items-center justify-content-end">
               <div class="mb-3 mb-sm-0 pr-5">
-                <a  class="btn btn-outline-success mx-3  d-block">{{request.user}}</a>
+                <a  class="btn btn-outline-success mx-3  d-block">Logged as : {{request.user}}</a>
+              </div>
+              <div class="mb-3 mb-sm-0 pr-5">
+                <a  class="btn btn-outline-primary mx-3  d-block">Dashboard : {{user.username}}</a>
               </div>
               {% if dashboard_view %}
               <div>
@@ -289,38 +292,35 @@
                       <h5 class="card-title mb-9 fw-semibold">Account Balance</h5>
                       <div class="row align-items-center">
                         <div class="col-8">
-                          <h4 class="fw-semibold mb-3">₹{{fund_data.data.availabelBalance}}</h4>
+                          <h4 class="fw-semibold mb-3">₹ {{fund_data.data.availabelBalance|floatformat:2}}</h4>
                           <div class="d-flex align-items-center mb-3">
                             <span
                               class="me-1 rounded-circle bg-light-success round-20 d-flex align-items-center justify-content-center">
-                              <i class="ti ti-arrow-up-left text-success"></i>
+                              <i class="ti ti-cash text-success"></i>
                             </span>
-                            <p class="text-dark me-1 fs-3 mb-0">+9%</p>
-                            <p class="fs-3 mb-0">last day</p>
+                            <p class="text-dark me-1 fs-4 fw-bolder mb-0">Opening Balance :</p>
+                            <p class="fs-4 fw-bolder mb-0">₹ {{fund_data.data.sodLimit|floatformat:2}}</p>
                           </div>
-                           {% comment %} <div class="d-flex align-items-center">
-                            <div class="me-4">
-                              <span class="round-8 bg-primary rounded-circle me-2 d-inline-block"></span>
-                              <span class="fs-2">2023</span>
-                            </div>
-                            <div>
-                              <span class="round-8 bg-light-primary rounded-circle me-2 d-inline-block"></span>
-                              <span class="fs-2">2023</span>
-                            </div>
-                          </div> {% endcomment %}
+                          <div class="d-flex align-items-center mb-3">
+                            <span
+                              class="me-1 rounded-circle bg-light-primary round-20 d-flex align-items-center justify-content-center">
+                              <i class="ti ti-cash text-primary"></i>
+                            </span>
+                            <p class="text-dark me-1 fs-4 fw-bolder mb-0">Closing Balance :</p>
+                            <p class="fs-4 fw-bolder mb-0">₹ {{actual_balance|floatformat:2}}</p>
+                          </div>
                         </div> 
                         <div class="col-4">
                           <div class="d-flex justify-content-end">
                             <div class="mb-3 mb-sm-0 pr-5">
-                              <a class="btn btn-danger mx-4 fs-4 fw-bolder d-block" 
-                                 style="border-width: 3px; border-style: solid;">
-                                Smart&nbsp;-&nbsp; Exit </br>Positions
+                              <a id="smartExitButton" data-username="{{ user.username }}" 
+                                 class="btn btn-danger mx-4 fs-4 fw-bolder d-block" 
+                                 style="border-width: 3px; border-style: solid; cursor: pointer;">
+                                Smart&nbsp;-&nbsp;Exit </br>Positions
                               </a>
                             </div>
                           </div>
                         </div>
-                        
-
                       </div>
                     </div>
                   </div>
@@ -331,17 +331,33 @@
                     <div class="card-body">
                       <div class="row alig n-items-start">
                         <div class="col-8">
-                          <h5 class="card-title mb-9 fw-semibold"> Today Earnings </h5>
-                          <h4 class="fw-semibold mb-3">₹ {{total_realized_profit|floatformat:2}}</h4>
+                          <h5 class="card-title mb-9 fw-semibold">Today Earnings</h5>
+                          <h4 class="fw-semibold mb-3">₹ {{ total_realized_profit|floatformat:2 }}</h4>
+                          
                           <div class="d-flex align-items-center pb-1">
-                            <span
-                              class="me-2 rounded-circle bg-light-danger round-20 d-flex align-items-center justify-content-center">
-                              <i class="ti ti-arrow-down-right text-danger"></i>
-                            </span>
-                            <p class="text-dark me-1 fs-3 mb-0">+9%</p>
-                            <p class="fs-3 mb-0">last day</p>
+                            {% if total_realized_profit > 0 %}
+                              <!-- Positive value: up-right arrow and light success color -->
+                              <span class="me-2 rounded-circle bg-light-success round-20 d-flex align-items-center justify-content-center">
+                                <i class="ti ti-arrow-up-right text-success"></i>
+                              </span>
+                              <p class="text-success me-1 fs-4 mb-0 fw-bolder">{{pnl_percentage|floatformat:2}}&nbsp;&nbsp;%&nbsp;Profit</p>
+                            {% elif total_realized_profit < 0 %}
+                              <!-- Negative value: down-right arrow and light danger color -->
+                              <span class="me-2 rounded-circle bg-light-danger round-20 d-flex align-items-center justify-content-center">
+                                <i class="ti ti-arrow-down-right text-danger"></i>
+                              </span>
+                              <p class="text-danger me-1 fs-4 mb-0 fw-bolder">{{pnl_percentage|floatformat:2}}&nbsp;&nbsp;%&nbsp;Loss</p>
+                            {% else %}
+                              <!-- Zero value: dot icon and light primary color -->
+                              <span class="me-2 rounded-circle bg-light-primary round-20 d-flex align-items-center justify-content-center">
+                                <i class="ti ti-dot text-primary"></i>
+                              </span>
+                              <p class="text-primary me-1 fs-3 mb-0"></p>
+                            {% endif %}
+                            {% comment %} <p class="fs-3 mb-0">Actual Balance :{{actual_balance|floatformat:2}}</p> {% endcomment %}
                           </div>
                         </div>
+                        
                         <div class="col-4">
                           <div class="d-flex justify-content-end">
                             <div class="mb-3 mb-sm-0 pr-5">
@@ -371,8 +387,8 @@
                               class="me-2 rounded-circle bg-light-danger round-20 d-flex align-items-center justify-content-center">
                               <i class="ti ti-arrow-down-right text-danger"></i>
                             </span>
-                            <p class="text-dark me-1 fs-3 mb-0">+9%</p>
-                            <p class="fs-3 mb-0">last day</p>
+                            <p class="text-dark me-1 fs-4 fw-bold mb-0">Max-Order Limit :</p>
+                            <p class="fs-4 fw-bold mb-0">{{order_limit}} - ₹ {{day_exp_brokerge}} </p>
                           </div>
                         </div>
                         <div class="col-4">
@@ -630,10 +646,30 @@
     </div>
   </div>
   <script>
-    {% comment %} document.getElementById('toggleSidebarBtn').addEventListener('click', function () {
-        const sidebar = document.getElementById('sidebar');
-        sidebar.classList.toggle('collapsed');
-    }); {% endcomment %}
+      // JavaScript for AJAX Call
+      document.getElementById("smartExitButton").addEventListener("click", function() {
+        const username = this.getAttribute("data-username"); // Get the username from the data attribute
+        console.log("usernameusernameusernameusername", username)
+        
+        // Trigger the AJAX function
+        fetch('/close-all-positions/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username: username })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message) {
+                alert(data.message);  // Show success message
+                console.log("Sell Order Response:", data.response);
+            } else {
+                alert("Error: " + data.error);  // Show error message if any
+            }
+        })
+        .catch(error => console.error("Error:", error));
+      });
   </script>
   <script src="{% static 'dashboard/assets/libs/jquery/dist/jquery.min.js' %}"></script>
   <script src="{% static 'dashboard/assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script>
@@ -736,6 +772,7 @@
         socket.onerror = function(error) {
             console.error(`WebSocket error: ${error.message}`);
         };
+
     </script>
 </body>
 </html>
