@@ -38,10 +38,6 @@ ALLOWED_HOSTS = ['*']
 
 CSRF_TRUSTED_ORIGINS = ['https://https://postback-hub.onrender.com']
 
-TIME_ZONE = 'Asia/Kolkata'
-
-USE_TZ = True
-
 # Application definition
 INSTALLED_APPS = [
     'account',
@@ -136,12 +132,13 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
-
 USE_I18N = True
+
+TIME_ZONE = 'Asia/Kolkata'
 
 USE_TZ = True
 
+BROKERAGE_PARAMETER = "37.3"
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
