@@ -1,34 +1,27 @@
-from django.contrib.auth import login, authenticate
-from django.shortcuts import render, redirect
+from django.contrib.auth import login, authenticate, logout
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import AuthenticationForm
-from django.contrib import messages
-from django.views import View 
-from django.views.generic import TemplateView
-from account.forms import UserLoginForm
-from django.contrib import auth
+from django.contrib import messages, auth
+from django.views import View
+from django.views.generic import TemplateView, ListView, DetailView, CreateView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import logout
-from django.shortcuts import render, redirect
-from django.contrib import auth, messages
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.views.generic import ListView, DetailView
 from django.urls import reverse_lazy
-from django.views.generic.edit import CreateView
-from .forms import CustomUserCreationForm, UserForm, CustomControlCreationForm
-User = get_user_model()  # Reference your custom user model
-from django.urls import reverse_lazy
-from django.views.generic.edit import UpdateView
-from django.shortcuts import get_object_or_404
-from django.contrib import messages
-import http.client  # Ensure the http.client module is imported
-import json  # Import json for decoding the API response
-from dhanhq import dhanhq
-import requests
-from datetime import datetime
 from django.http import JsonResponse
+from datetime import datetime
+import http.client
+import json
+import requests
+
+from account.forms import UserLoginForm
+from .forms import CustomUserCreationForm, UserForm, CustomControlCreationForm, ControlForm
+from .models import Control
+
+User = get_user_model()  # Reference your custom user model
+from dhanhq import dhanhq
 
 
 
@@ -44,9 +37,6 @@ class HomePageView( TemplateView):
         context = super().get_context_data(**kwargs)
         context = {}
         return context
-
-
-
 
 class UserloginView(View):
     def get(self, request):
@@ -76,6 +66,7 @@ class UserloginView(View):
                 auth.login(request, user)
 
                 # Or redirect the user to this URL within the app
+                messages.success(request, f"Welcome back, {request.user.first_name}! You have successfully logged in.")
                 return redirect('dashboard')
 
             else:
@@ -94,20 +85,35 @@ class UserCreateView(CreateView):
     success_url = reverse_lazy('login')  # Redirect to login page after successful registration
 
     def form_valid(self, form):
-        # You can add any custom logic here if needed before saving the form
-        return super().form_valid(form)
+        # Save the form and add a success message
+        response = super().form_valid(form)
+        messages.success(self.request, "Registration successful! Please log in with your credentials.")
+        return response
+
+    def form_invalid(self, form):
+        # Add an error message if the form is invalid
+        messages.error(self.request, "There was an error with your registration. Please check the form and try again.")
+        return super().form_invalid(form)
 
 
 
 class ControlCreateView(CreateView):
     model = User
     form_class = CustomControlCreationForm
-    template_name = "dashboard/create_control.html"  # Create this template for the registration page
-    success_url = reverse_lazy('login')  # Redirect to login page after successful registration
+    template_name = "dashboard/create_control.html"  # Create this template for the control creation page
+    success_url = reverse_lazy('login')  # Redirect to login page after successful control creation
 
     def form_valid(self, form):
-        # You can add any custom logic here if needed before saving the form
-        return super().form_valid(form)
+        # Save the form and add a success message
+        response = super().form_valid(form)
+        messages.success(self.request, "Control created successfully! Please log in to manage it.")
+        return response
+
+    def form_invalid(self, form):
+        # Add an error message if the form is invalid
+        messages.error(self.request, "There was an error creating the control. Please check the form and try again.")
+        return super().form_invalid(form)
+
 
 
 class DashboardView(TemplateView):
@@ -132,8 +138,6 @@ class DashboardView(TemplateView):
         else:
             # Use request.user if no slug is provided
             user = self.request.user
-
-        print("00000000000000000000000000000000000000000000", user)
 
         # Fetch dhan_client_id and dhan_access_token from the user
         dhan_client_id = user.dhan_client_id
@@ -161,14 +165,15 @@ class DashboardView(TemplateView):
         # Sample static position data (this should ideally come from the API)
         position_data_json = json.dumps(position_data['data'])
         actual_profit = total_realized_profit - total_expense
+        print("fund_datafund_datafund_datafund_data", fund_data)
         opening_balance = float(fund_data['data']['sodLimit'])
         actual_balance = opening_balance + actual_profit
         pnl_percentage = (actual_profit / opening_balance) * 100
-        order_limit = control_data.peak_order_limit
+        if control_data:
+            order_limit = control_data.peak_order_limit
+        else:
+            order_limit = 0
         day_exp_brokerge = float(control_data.peak_order_limit) * float(settings.BROKERAGE_PARAMETER)
-
-
-        # pnl_percenatge = 
 
         # Add data to context
         context['fund_data'] = fund_data
@@ -186,10 +191,6 @@ class DashboardView(TemplateView):
         context['orderlistdata'] = orderlistdata
         context['actual_profit'] = actual_profit
         context['actual_balance'] = actual_balance
-
-
-
-        
 
         # Add the slug to the context if needed
         context['slug'] = self.slug
@@ -237,7 +238,19 @@ class UserListView(ListView):
         return User.objects.all()  # Optionally filter the users as per your requirements
 
 
-# Manage Users: View details of a specific user
+def user_delete(request, pk):
+    user = get_object_or_404(User, pk=pk)
+    # Check if user has permission to delete (optional)
+    if request.user.is_superadmin and not user == request.user :
+        user.delete()
+        messages.success(request, "User deleted successfully.")
+    else:
+        messages.error(request, "You do not have permission to delete this user.")
+    return redirect('manage_user') 
+
+
+
+# Manage Users: View and edit details of a specific user
 class UserDetailView(UpdateView):
     model = User
     template_name = 'dashboard/user-detail-edit.html'  # Ensure this template exists
@@ -246,10 +259,8 @@ class UserDetailView(UpdateView):
     success_url = reverse_lazy('manage_user')  # Redirect after successful edit
 
     def form_valid(self, form):
-        # Get the user data from the form
+        # Get the user data from the form and prepare the data to update
         user = form.save(commit=False)  # Don't commit the save yet
-        
-        # Prepare the data you want to update
         updated_data = {
             'email': form.cleaned_data.get('email'),
             'phone_number': form.cleaned_data.get('phone_number'),
@@ -259,26 +270,25 @@ class UserDetailView(UpdateView):
             'dhan_client_id': form.cleaned_data.get('dhan_client_id'),
             'status': form.cleaned_data.get('status'),
             'is_active': form.cleaned_data.get('is_active'),
-            # 'profile_image': form.cleaned_data.get('profile_image'), # Include this if needed and make sure it's handled correctly
+            # Add 'profile_image' if needed
         }
         # Update the user fields in the User model where username matches
         User.objects.filter(username=user.username).update(**updated_data)
-        # Add a success message and return the response
+        # Add a success message
         messages.success(self.request, 'User details updated successfully.')
         return super().form_valid(form)
 
     def form_invalid(self, form):
-        # Print form errors to console for debugging
-        print(form.errors)  # This will output any validation errors in the console
-        # messages.error(self.request, 'Please correct the errors below.')
+        # Print form errors to console for debugging and add an error message
+        print(form.errors)  # For debugging in the console
+        messages.error(self.request, 'Please correct the errors below.')
         return super().form_invalid(form)
 
     def get_object(self, queryset=None):
         # Fetch the user object based on the URL parameter (user ID)
         return get_object_or_404(User, pk=self.kwargs['pk'])  # Assuming you're using the user ID as a URL parameter
         
-from django.views.generic import ListView
-from .models import Control
+
 
 class ControlListView(ListView):
     model = Control
@@ -369,7 +379,6 @@ def close_all_positions(request):
     # Initialize Dhan client
     dhan = dhanhq(user.dhan_client_id, user.dhan_access_token)
     order_list = dhan.get_order_list()
-    print("ppppppppppppppppppp", order_list)
 
     # Check if the latest order entry matches criteria
     if order_list['data']:

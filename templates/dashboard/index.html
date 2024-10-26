@@ -31,6 +31,20 @@
 
 <body>
 <!-- Body Wrapper -->
+
+<!-- Toast Container -->
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
+  {% for message in messages %}
+  <div class="toast align-items-center text-bg-{{ message.tags }} border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="3000">
+      <div class="d-flex">
+          <div class="toast-body">
+              {{ message }}
+          </div>
+          <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+  </div>
+  {% endfor %}
+</div>
 <div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6" data-sidebartype="full"
     data-sidebar-position="fixed" data-header-position="fixed">
     <!-- Sidebar Start -->
@@ -298,25 +312,25 @@
                               class="me-1 rounded-circle bg-light-success round-20 d-flex align-items-center justify-content-center">
                               <i class="ti ti-cash text-success"></i>
                             </span>
-                            <p class="text-dark me-1 fs-4 fw-bolder mb-0">Opening Balance :</p>
-                            <p class="fs-4 fw-bolder mb-0">₹ {{fund_data.data.sodLimit|floatformat:2}}</p>
+                            <p class="text-dark me-1 fs-3 fw-bolder mb-0">Opening Balance :</p>
+                            <p class="fs-3 fw-bolder mb-0">₹ {{fund_data.data.sodLimit|floatformat:2}}</p>
                           </div>
                           <div class="d-flex align-items-center mb-3">
                             <span
                               class="me-1 rounded-circle bg-light-primary round-20 d-flex align-items-center justify-content-center">
                               <i class="ti ti-cash text-primary"></i>
                             </span>
-                            <p class="text-dark me-1 fs-4 fw-bolder mb-0">Closing Balance :</p>
-                            <p class="fs-4 fw-bolder mb-0">₹ {{actual_balance|floatformat:2}}</p>
+                            <p class="text-dark me-1 fs-3 fw-bolder mb-0">Closing Balance :</p>
+                            <p class="fs-3 fw-bolder mb-0">₹ {{actual_balance|floatformat:2}}</p>
                           </div>
                         </div> 
                         <div class="col-4">
                           <div class="d-flex justify-content-end">
                             <div class="mb-3 mb-sm-0 pr-5">
                               <a id="smartExitButton" data-username="{{ user.username }}" 
-                                 class="btn btn-danger mx-4 fs-4 fw-bolder d-block" 
+                                 class="btn btn-danger mx-4 fs-3 fw-bolder d-block" 
                                  style="border-width: 3px; border-style: solid; cursor: pointer;">
-                                Smart&nbsp;-&nbsp;Exit </br>Positions
+                                Quick&nbsp;-&nbsp;Exit </br>
                               </a>
                             </div>
                           </div>
@@ -340,13 +354,13 @@
                               <span class="me-2 rounded-circle bg-light-success round-20 d-flex align-items-center justify-content-center">
                                 <i class="ti ti-arrow-up-right text-success"></i>
                               </span>
-                              <p class="text-success me-1 fs-4 mb-0 fw-bolder">{{pnl_percentage|floatformat:2}}&nbsp;&nbsp;%&nbsp;Profit</p>
+                              <p class="text-success me-1 fs-3 mb-0 fw-bolder">{{pnl_percentage|floatformat:2}}&nbsp;&nbsp;%&nbsp;Profit</p>
                             {% elif total_realized_profit < 0 %}
                               <!-- Negative value: down-right arrow and light danger color -->
                               <span class="me-2 rounded-circle bg-light-danger round-20 d-flex align-items-center justify-content-center">
                                 <i class="ti ti-arrow-down-right text-danger"></i>
                               </span>
-                              <p class="text-danger me-1 fs-4 mb-0 fw-bolder">{{pnl_percentage|floatformat:2}}&nbsp;&nbsp;%&nbsp;Loss</p>
+                              <p class="text-danger me-1 fs-3 mb-0 fw-bolder">{{pnl_percentage|floatformat:2}}&nbsp;&nbsp;%&nbsp;Loss</p>
                             {% else %}
                               <!-- Zero value: dot icon and light primary color -->
                               <span class="me-2 rounded-circle bg-light-primary round-20 d-flex align-items-center justify-content-center">
@@ -361,7 +375,7 @@
                         <div class="col-4">
                           <div class="d-flex justify-content-end">
                             <div class="mb-3 mb-sm-0 pr-5">
-                              <a class="btn btn-primary mx-3 fs-4 fw-bolder d-block" 
+                              <a class="btn btn-primary mx-3 fs-3 fw-bolder d-block" 
                                  style="border-width: 3px; border-style: solid;">
                                 Actual Profit </br>{{ actual_profit|floatformat:2 }}
                               </a>
@@ -387,14 +401,14 @@
                               class="me-2 rounded-circle bg-light-danger round-20 d-flex align-items-center justify-content-center">
                               <i class="ti ti-arrow-down-right text-danger"></i>
                             </span>
-                            <p class="text-dark me-1 fs-4 fw-bold mb-0">Order Limit :</p>
-                            <p class="fs-4 fw-bold mb-0">{{order_limit}} &nbsp;&nbsp; Brokerage ₹ {{day_exp_brokerge}} </p>
+                            <p class="text-dark me-1 fs-3 fw-bold mb-0">Order Limit :</p>
+                            <p class="fs-3 fw-bold mb-0">{{order_limit}} &nbsp;&nbsp; Brokerage ₹ {{day_exp_brokerge}} </p>
                           </div>
                         </div>
                         <div class="col-4">
                           <div class="d-flex justify-content-end">
                             <div class="mb-3 mb-sm-0 pr-5">
-                              <a class="btn btn-primary mx-3 fs-4 fw-bolder d-block" 
+                              <a class="btn btn-primary mx-3 fs-3 fw-bolder d-block" 
                                  style="border-width: 3px; border-style: solid;">
                                 Order Count </br>{{ order_count }}
                               </a>
@@ -646,31 +660,76 @@
     </div>
   </div>
   <script>
-      // JavaScript for AJAX Call
-      document.getElementById("smartExitButton").addEventListener("click", function() {
-        const username = this.getAttribute("data-username"); // Get the username from the data attribute
-        console.log("usernameusernameusernameusername", username)
+    // JavaScript for AJAX Call
+    document.getElementById("smartExitButton").addEventListener("click", function() {
+      const username = this.getAttribute("data-username"); // Get the username from the data attribute
+      console.log("username:", username);
+  
+      // Trigger the AJAX function
+      fetch('/close-all-positions/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ username: username })
+      })
+      .then(response => response.json())
+      .then(data => {
+        // Create a toast element
+        const toastContainer = document.querySelector('.toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast align-items-center text-bg-${data.message ? 'success' : 'danger'} border-0`;
+        toast.role = 'alert';
+        toast.ariaLive = 'assertive';
+        toast.ariaAtomic = 'true';
+        toast.dataset.bsDelay = '3000';
+        toast.innerHTML = `
+          <div class="d-flex">
+            <div class="toast-body">
+              ${data.message ? data.message : 'Error: ' + data.error}
+            </div>
+            <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+          </div>
+        `;
+  
+        // Append the toast to the toast container
+        toastContainer.appendChild(toast);
         
-        // Trigger the AJAX function
-        fetch('/close-all-positions/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ username: username })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.message) {
-                alert(data.message);  // Show success message
-                console.log("Sell Order Response:", data.response);
-            } else {
-                alert("Error: " + data.error);  // Show error message if any
-            }
-        })
-        .catch(error => console.error("Error:", error));
+        // Show the toast
+        const toastInstance = new bootstrap.Toast(toast);
+        toastInstance.show();
+  
+        console.log("Sell Order Response:", data.response);
+      })
+      .catch(error => {
+        console.error("Error:", error);
+        // Handle error toast
+        const toastContainer = document.querySelector('.toast-container');
+        const toast = document.createElement('div');
+        toast.className = 'toast align-items-center text-bg-danger border-0';
+        toast.role = 'alert';
+        toast.ariaLive = 'assertive';
+        toast.ariaAtomic = 'true';
+        toast.dataset.bsDelay = '3000';
+        toast.innerHTML = `
+          <div class="d-flex">
+            <div class="toast-body">
+              Error: ${error.message}
+            </div>
+            <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+          </div>
+        `;
+  
+        // Append the error toast to the toast container
+        toastContainer.appendChild(toast);
+        
+        // Show the error toast
+        const toastInstance = new bootstrap.Toast(toast);
+        toastInstance.show();
       });
+    });
   </script>
+  
   <script src="{% static 'dashboard/assets/libs/jquery/dist/jquery.min.js' %}"></script>
   <script src="{% static 'dashboard/assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script>
   <script src="{% static 'dashboard/assets/js/sidebarmenu.js' %}"></script>
@@ -680,6 +739,16 @@
     {% block optional_js %}
     <script type="application/json" id="positions-data">
       {{ position_data_json|safe }}
+    </script>
+    <script>
+      // Initialize all toasts
+      document.addEventListener('DOMContentLoaded', function() {
+          var toastElements = document.querySelectorAll('.toast');
+          toastElements.forEach(function(toastEl) {
+              var toast = new bootstrap.Toast(toastEl);
+              toast.show();
+            });
+        });
     </script>
     <script src="{% static 'dashboard/assets/js/dashboard.js' %}"></script>
     <script src="{% static 'dashboard/assets/libs/apexcharts/dist/apexcharts.min.js' %}"></script>

@@ -240,13 +240,13 @@ def start_scheduler():
     scheduler = BackgroundScheduler()
 
     # Self-ping every 58 seconds
-    scheduler.add_job(self_ping, IntervalTrigger(seconds=58))
-    scheduler.add_job(auto_order_count_monitoring_process, IntervalTrigger(seconds=10))
-    # Restore user kill switches every Monday to Friday at 4:00 PM
-    scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=16, minute=0))
+    # scheduler.add_job(self_ping, IntervalTrigger(seconds=58))
+    # scheduler.add_job(auto_order_count_monitoring_process, IntervalTrigger(seconds=10))
+    # # Restore user kill switches every Monday to Friday at 4:00 PM
+    # scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=16, minute=0))
 
-    # for Test 
-    scheduler.add_job(autoStopLossProcessing, IntervalTrigger(seconds=2))
+    # # for Test 
+    # scheduler.add_job(autoStopLossProcessing, IntervalTrigger(seconds=2))
     scheduler.start()
     print("INFO: Scheduler started.")
 

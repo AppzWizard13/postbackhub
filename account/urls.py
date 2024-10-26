@@ -22,6 +22,7 @@ urlpatterns = [
  
     path('users/', UserListView.as_view(), name='manage_user'),  # Manage Users URL
     path('users/<int:pk>/', UserDetailView.as_view(), name='user_detail'),  # User Detail URL (optional)
+    path('delete/<int:pk>/', views.user_delete, name='user_delete'),
 
 
     path('controls/', ControlListView.as_view(), name='manage_controls'),  # Manage Controls URL
