@@ -32,12 +32,9 @@ urlpatterns = [
     path('dashboard/<slug:slug>/', DashboardView.as_view(), name='dashboard'),
 
     path('close-all-positions/', views.close_all_positions, name='close_all_positions'),
+    path('clear-kill-log/', views.clear_kill_log, name='clear_kill_log'),
+    path('check-log-status/', views.check_log_status, name='check_log_status'),  # Add the URL for the status check
 
-
-    
-
-
-    
 ]
 
 from django.urls import path

@@ -150,6 +150,7 @@ def autoStopLossProcessing():
                         # Step 1: Sort filtered orders by timestamp in descending order
                         latest_entry = order_list['data'][0]
                         if latest_entry['transactionType'] == 'BUY' and latest_entry['orderStatus'] == 'TRADED':
+
                             security_id = latest_entry['securityId']
                             client_id = latest_entry['dhanClientId']
                             exchange_segment = latest_entry['exchangeSegment']
@@ -193,6 +194,13 @@ def autoStopLossProcessing():
                                         )
                                 print("Stop Loss Response :", stoploss_response)
                                 print(f"INFO: Stop Loss Order Executed Successfully..!")
+
+                            tempObj = TempNotifierTable.objects.filter(type="dashboard").first()
+                            if tempObj:
+                                tempObj.status = not tempObj.status
+                                tempObj.save()
+                            else:
+                                print("No TempNotifierTable record found with type='dashboard'")
 
                         else:
                             print(f"INFO: No Open Order for User {user.username}")
@@ -240,13 +248,13 @@ def start_scheduler():
     scheduler = BackgroundScheduler()
 
     # Self-ping every 58 seconds
-    # scheduler.add_job(self_ping, IntervalTrigger(seconds=58))
-    # scheduler.add_job(auto_order_count_monitoring_process, IntervalTrigger(seconds=10))
-    # # Restore user kill switches every Monday to Friday at 4:00 PM
-    # scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=16, minute=0))
+    scheduler.add_job(self_ping, IntervalTrigger(seconds=58))
+    scheduler.add_job(auto_order_count_monitoring_process, IntervalTrigger(seconds=10))
+    # Restore user kill switches every Monday to Friday at 4:00 PM
+    scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=16, minute=0))
 
-    # # for Test 
-    # scheduler.add_job(autoStopLossProcessing, IntervalTrigger(seconds=2))
+    # to test
+    scheduler.add_job(autoStopLossProcessing, IntervalTrigger(seconds=2))
     scheduler.start()
     print("INFO: Scheduler started.")
 

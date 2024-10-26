@@ -173,7 +173,7 @@ class DashboardView(TemplateView):
             order_limit = control_data.peak_order_limit
         else:
             order_limit = 0
-        day_exp_brokerge = float(control_data.peak_order_limit) * float(settings.BROKERAGE_PARAMETER)
+        day_exp_brokerge = float(order_limit) * float(settings.BROKERAGE_PARAMETER)
 
         # Add data to context
         context['fund_data'] = fund_data
@@ -247,6 +247,24 @@ def user_delete(request, pk):
     else:
         messages.error(request, "You do not have permission to delete this user.")
     return redirect('manage_user') 
+
+
+def clear_kill_log(request):
+    if request.user.is_authenticated:
+        DhanKillProcessLog.objects.filter(user=request.user).delete()
+        messages.success(request, "All log data has been cleared successfully.")
+    else:
+        messages.error(request, "You need to be logged in to perform this action.")
+    
+    return redirect('dhan-kill-log-list')  # 
+
+from .models import TempNotifierTable
+
+def check_log_status(request):
+    tempObj = TempNotifierTable.objects.filter(type="dashboard").first()
+    status = tempObj.status if tempObj else False
+    return JsonResponse({"status": status})
+
 
 
 

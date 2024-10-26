@@ -70,3 +70,9 @@ class DhanKillProcessLog(models.Model):
         return f"Log for {self.user.username} - Orders: {self.order_count}"
 
 
+class TempNotifierTable(models.Model):
+    type = models.CharField(max_length=50)  # Adjust max_length as needed
+    status = models.BooleanField(default=False)  # Default set to False
+
+    def __str__(self):
+        return f"{self.type} - {'Active' if self.status else 'Inactive'}"

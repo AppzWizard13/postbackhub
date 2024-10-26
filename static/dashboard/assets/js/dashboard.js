@@ -1,127 +1,147 @@
 $(function () {
-  // Fetch the raw JSON string from the script tag
-  var scriptTag = document.getElementById('positions-data'); 
-  var data_set = scriptTag.textContent; // Get the content of the script tag
-  console.log('Raw Data:', data_set); // Log the raw JSON string for debugging
-  
-  // Parse JSON string to JavaScript object
-  var positions = JSON.parse(data_set);
-  console.log('Parsed Positions:', positions); // Log the parsed JavaScript object
+    // Fetch the raw JSON string from the script tag
+    var scriptTag = document.getElementById('positions-data'); 
+    var data_set = scriptTag ? scriptTag.textContent : ""; // Get the content of the script tag if it exists
 
-  // Remove the script tag from the DOM if needed
-  scriptTag.remove(); // This line will remove the script tag
+    // Initialize positions array
+    var positions = [];
 
-  // Variables to hold categories (trading symbols), earnings, and expenses
-  var categories = [];
-  var earnings = [];
-  var expenses = [];
+    // Check if data_set has content
+    if (!data_set || data_set.trim() === "") {
+        console.log('No data found in Raw Data');
+    } else {
+        try {
+            // Parse JSON string to JavaScript object
+            positions = JSON.parse(data_set);
+            console.log('Parsed Positions:', positions); // Log the parsed JavaScript object
+        } catch (e) {
+            console.error('Error parsing JSON data:', e); // Log error if JSON parsing fails
+        }
+    }
 
-  // Process positions to populate categories, earnings, and expenses
-  positions.forEach(function(position) {
-      categories.push(position.tradingSymbol);  // Add trading symbol to categories
+    // Remove the script tag from the DOM if it exists
+    if (scriptTag) {
+        scriptTag.remove();
+    }
 
-      // If realizedProfit is positive, add to earnings; otherwise, add to expenses
-      if (position.realizedProfit > 0) {
-          earnings.push(position.realizedProfit);
-          expenses.push(0);  // No expense for positive profit
-      } else {
-          earnings.push(0);  // No earnings for negative profit
-          expenses.push(Math.abs(position.realizedProfit));  // Convert negative to positive for expense
-      }
-  });
+    // Variables to hold categories (trading symbols), earnings, and expenses
+    var categories = [];
+    var earnings = [];
+    var expenses = [];
 
-  // =====================================
-  // Profit Chart
-  // =====================================
-  var chart = {
-      series: [
-          { name: "Profit of Position:", data: earnings },
-          { name: "Loss of Position:", data: expenses },
-      ],
+    // Process positions to populate categories, earnings, and expenses
+    if (positions.length > 0) {
+        positions.forEach(function(position) {
+            categories.push(position.tradingSymbol);  // Add trading symbol to categories
 
-      chart: {
-          type: "bar",
-          height: 345,
-          offsetX: -15,
-          toolbar: { show: true },
-          foreColor: "#adb0bb",
-          fontFamily: 'inherit',
-          sparkline: { enabled: false },
-      },
+            // If realizedProfit is positive, add to earnings; otherwise, add to expenses
+            if (position.realizedProfit > 0) {
+                earnings.push(position.realizedProfit);
+                expenses.push(0);  // No expense for positive profit
+            } else {
+                earnings.push(0);  // No earnings for negative profit
+                expenses.push(Math.abs(position.realizedProfit));  // Convert negative to positive for expense
+            }
+        });
+    } else {
+        // Default values if no positions data is available
+        categories = ["Default Symbol"];
+        earnings = [0];
+        expenses = [0];
+    }
 
-      colors: ["#5D87FF", "#FF0000"],
+    // =====================================
+    // Profit Chart
+    // =====================================
+    var chartOptions = {
+        series: [
+            { name: "Profit of Position:", data: earnings },
+            { name: "Loss of Position:", data: expenses },
+        ],
 
-      plotOptions: {
-          bar: {
-              horizontal: false,
-              columnWidth: "35%",
-              borderRadius: [6],
-              borderRadiusApplication: 'end',
-              borderRadiusWhenStacked: 'all'
-          },
-      },
-      markers: { size: 0 },
+        chart: {
+            type: "bar",
+            height: 345,
+            offsetX: -15,
+            toolbar: { show: true },
+            foreColor: "#adb0bb",
+            fontFamily: 'inherit',
+            sparkline: { enabled: false },
+        },
 
-      dataLabels: {
-          enabled: false,
-      },
+        colors: ["#5D87FF", "#FF0000"],
 
-      legend: {
-          show: false,
-      },
+        plotOptions: {
+            bar: {
+                horizontal: false,
+                columnWidth: "35%",
+                borderRadius: [6],
+                borderRadiusApplication: 'end',
+                borderRadiusWhenStacked: 'all'
+            },
+        },
+        markers: { size: 0 },
 
-      grid: {
-          borderColor: "rgba(0,0,0,0.1)",
-          strokeDashArray: 3,
-          xaxis: {
-              lines: {
-                  show: false,
-              },
-          },
-      },
+        dataLabels: {
+            enabled: false,
+        },
 
-      xaxis: {
-          type: "category",
-          categories: categories,  // Dynamic trading symbols
-          labels: {
-              style: { cssClass: "grey--text lighten-2--text fill-color" },
-          },
-      },
+        legend: {
+            show: false,
+        },
 
-      yaxis: {
-          show: true,
-          min: 0,
-          max: Math.max(...earnings.concat(expenses)),  // Dynamically adjust the max value
-          tickAmount: 4,
-          labels: {
-              style: {
-                  cssClass: "grey--text lighten-2--text fill-color",
-              },
-          },
-      },
-      stroke: {
-          show: true,
-          width: 3,
-          lineCap: "butt",
-          colors: ["transparent"],
-      },
+        grid: {
+            borderColor: "rgba(0,0,0,0.1)",
+            strokeDashArray: 3,
+            xaxis: {
+                lines: {
+                    show: false,
+                },
+            },
+        },
 
-      tooltip: { theme: "light" },
+        xaxis: {
+            type: "category",
+            categories: categories,  // Dynamic trading symbols
+            labels: {
+                style: { cssClass: "grey--text lighten-2--text fill-color" },
+            },
+        },
 
-      responsive: [
-          {
-              breakpoint: 600,
-              options: {
-                  plotOptions: {
-                      bar: {
-                          borderRadius: 3,
-                      }
-                  },
-              }
-          }
-      ]
-  };
+        yaxis: {
+            show: true,
+            min: 0,
+            max: Math.max(...earnings.concat(expenses)) || 10,  // Dynamically adjust the max value or use default
+            tickAmount: 4,
+            labels: {
+                style: {
+                    cssClass: "grey--text lighten-2--text fill-color",
+                },
+            },
+        },
+        stroke: {
+            show: true,
+            width: 3,
+            lineCap: "butt",
+            colors: ["transparent"],
+        },
 
-  var chart = new ApexCharts(document.querySelector("#chart"), chart);
-  chart.render();
+        tooltip: { theme: "light" },
+
+        responsive: [
+            {
+                breakpoint: 600,
+                options: {
+                    plotOptions: {
+                        bar: {
+                            borderRadius: 3,
+                        }
+                    },
+                }
+            }
+        ]
+    };
+
+    var chart = new ApexCharts(document.querySelector("#chart"), chartOptions);
+    chart.render();
 });

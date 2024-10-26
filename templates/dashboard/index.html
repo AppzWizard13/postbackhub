@@ -81,7 +81,7 @@
             <li class="sidebar-item">
               <a class="sidebar-link" href="{% url 'create_user' %}" aria-expanded="false">
                 <span>
-                  <i class="ti ti-login"></i>
+                  <i class="ti ti-user-plus"></i>
                 </span>
                 <span class="hide-menu">Add Member</span>
               </a>
@@ -89,7 +89,7 @@
             <li class="sidebar-item">
               <a class="sidebar-link" href="{% url 'manage_user' %}" aria-expanded="false">
                 <span>
-                  <i class="ti ti-login"></i>
+                  <i class="ti ti-user"></i>
                 </span>
                 <span class="hide-menu">Manage Members</span>
               </a>
@@ -101,7 +101,7 @@
             <li class="sidebar-item">
               <a class="sidebar-link" href="{% url 'create_control' %}" aria-expanded="false">
                 <span>
-                  <i class="ti ti-login"></i>
+                  <i class="ti ti-plus"></i>
                 </span>
                 <span class="hide-menu">Add Control</span>
               </a>
@@ -109,24 +109,24 @@
             <li class="sidebar-item">
               <a class="sidebar-link" href="{% url 'manage_controls' %}" aria-expanded="false">
                 <span>
-                  <i class="ti ti-user-plus"></i>
+                  <i class="ti ti-settings"></i>
                 </span>
                 <span class="hide-menu">Manage Controls</span>
               </a>
             </li>
             <li class="nav-small-cap">
-              <i class="ti ti-dots nav-small-cap-icon fs-4"></i>
+              <i class="ti ti- nav-small-cap-icon fs-4"></i>
               <span class="hide-menu">LOG</span>
             </li>
             <li class="sidebar-item">
               <a class="sidebar-link" href="{% url 'dhan-kill-log-list' %}" aria-expanded="false">
                 <span>
-                  <i class="ti ti-user-plus"></i>
+                  <i class="ti ti-eye"></i>
                 </span>
                 <span class="hide-menu">View Log</span>
               </a>
             </li>
-            <li class="nav-small-cap">
+            {% comment %} <li class="nav-small-cap">
               <i class="ti ti-dots nav-small-cap-icon fs-4"></i>
               <span class="hide-menu">OPTION CHAIN</span>
             </li>
@@ -161,7 +161,7 @@
                 </span>
                 <span class="hide-menu">NIFTY</span>
               </a>
-            </li>
+            </li> {% endcomment %}
             <li class="nav-small-cap">
               <i class="ti ti-dots nav-small-cap-icon fs-4"></i>
               <span class="hide-menu">EXTRA</span>
@@ -310,27 +310,27 @@
                           <div class="d-flex align-items-center mb-3">
                             <span
                               class="me-1 rounded-circle bg-light-success round-20 d-flex align-items-center justify-content-center">
-                              <i class="ti ti-cash text-success"></i>
+                              <i class="fs-5 ti ti-cash text-success"></i>
                             </span>
-                            <p class="text-dark me-1 fs-3 fw-bolder mb-0">Opening Balance :</p>
-                            <p class="fs-3 fw-bolder mb-0">₹ {{fund_data.data.sodLimit|floatformat:2}}</p>
+                            <p class="text-dark me-1 fs-3  mb-0">Opening Balance :</p>
+                            <p class="fs-3  mb-0">₹ {{fund_data.data.sodLimit|floatformat:2}}</p>
                           </div>
                           <div class="d-flex align-items-center mb-3">
                             <span
                               class="me-1 rounded-circle bg-light-primary round-20 d-flex align-items-center justify-content-center">
-                              <i class="ti ti-cash text-primary"></i>
+                              <i class="fs-5 ti ti-cash text-primary"></i>
                             </span>
-                            <p class="text-dark me-1 fs-3 fw-bolder mb-0">Closing Balance :</p>
-                            <p class="fs-3 fw-bolder mb-0">₹ {{actual_balance|floatformat:2}}</p>
+                            <p class="text-dark me-1 fs-3  mb-0">Closing Balance :</p>
+                            <p class="fs-3  mb-0">₹ {{actual_balance|floatformat:2}}</p>
                           </div>
                         </div> 
                         <div class="col-4">
                           <div class="d-flex justify-content-end">
                             <div class="mb-3 mb-sm-0 pr-5">
                               <a id="smartExitButton" data-username="{{ user.username }}" 
-                                 class="btn btn-danger mx-4 fs-3 fw-bolder d-block" 
+                                 class="btn btn-danger mx-4 fs-3 fw-bold  d-block" 
                                  style="border-width: 3px; border-style: solid; cursor: pointer;">
-                                Quick&nbsp;-&nbsp;Exit </br>
+                                Quick&nbsp;Exit </br>
                               </a>
                             </div>
                           </div>
@@ -352,19 +352,19 @@
                             {% if total_realized_profit > 0 %}
                               <!-- Positive value: up-right arrow and light success color -->
                               <span class="me-2 rounded-circle bg-light-success round-20 d-flex align-items-center justify-content-center">
-                                <i class="ti ti-arrow-up-right text-success"></i>
+                                <i class="fs-5 ti ti-arrow-up-right text-success"></i>
                               </span>
                               <p class="text-success me-1 fs-3 mb-0 fw-bolder">{{pnl_percentage|floatformat:2}}&nbsp;&nbsp;%&nbsp;Profit</p>
                             {% elif total_realized_profit < 0 %}
                               <!-- Negative value: down-right arrow and light danger color -->
                               <span class="me-2 rounded-circle bg-light-danger round-20 d-flex align-items-center justify-content-center">
-                                <i class="ti ti-arrow-down-right text-danger"></i>
+                                <i class="fs-5 ti ti-arrow-down-right text-danger"></i>
                               </span>
                               <p class="text-danger me-1 fs-3 mb-0 fw-bolder">{{pnl_percentage|floatformat:2}}&nbsp;&nbsp;%&nbsp;Loss</p>
                             {% else %}
                               <!-- Zero value: dot icon and light primary color -->
                               <span class="me-2 rounded-circle bg-light-primary round-20 d-flex align-items-center justify-content-center">
-                                <i class="ti ti-dot text-primary"></i>
+                                <i class="fs-5 ti ti-clock text-primary"></i>
                               </span>
                               <p class="text-primary me-1 fs-3 mb-0"></p>
                             {% endif %}
@@ -375,7 +375,7 @@
                         <div class="col-4">
                           <div class="d-flex justify-content-end">
                             <div class="mb-3 mb-sm-0 pr-5">
-                              <a class="btn btn-primary mx-3 fs-3 fw-bolder d-block" 
+                              <a class="btn btn-primary mx-3 fs-3 fw-bold d-block" 
                                  style="border-width: 3px; border-style: solid;">
                                 Actual Profit </br>{{ actual_profit|floatformat:2 }}
                               </a>
@@ -399,7 +399,7 @@
                           <div class="d-flex align-items-center pb-1">
                             <span
                               class="me-2 rounded-circle bg-light-danger round-20 d-flex align-items-center justify-content-center">
-                              <i class="ti ti-arrow-down-right text-danger"></i>
+                              <i class="ti ti-skull text-danger fs-5"></i>
                             </span>
                             <p class="text-dark me-1 fs-3 fw-bold mb-0">Order Limit :</p>
                             <p class="fs-3 fw-bold mb-0">{{order_limit}} &nbsp;&nbsp; Brokerage ₹ {{day_exp_brokerge}} </p>
@@ -408,7 +408,7 @@
                         <div class="col-4">
                           <div class="d-flex justify-content-end">
                             <div class="mb-3 mb-sm-0 pr-5">
-                              <a class="btn btn-primary mx-3 fs-3 fw-bolder d-block" 
+                              <a class="btn btn-primary mx-3 fs-3 fw-bold d-block" 
                                  style="border-width: 3px; border-style: solid;">
                                 Order Count </br>{{ order_count }}
                               </a>
@@ -728,6 +728,34 @@
         toastInstance.show();
       });
     });
+
+      // Track the initial status
+      let previousStatus = null;
+  
+      function checkStatus() {
+          $.ajax({
+              url: "{% url 'check_log_status' %}",  // Replace with the URL of your Django view that returns the status
+              type: "GET",
+              success: function(response) {
+                  // Assuming response contains a JSON object with a 'status' field
+                  const currentStatus = response.status;
+  
+                  // If the status has changed, reload the page
+                  if (previousStatus !== null && previousStatus !== currentStatus) {
+                      location.reload();
+                  }
+  
+                  // Update the previous status
+                  previousStatus = currentStatus;
+              },
+              error: function(xhr, status, error) {
+                  console.error("Error checking status:", error);
+              }
+          });
+      }
+  
+      // Run checkStatus every 2 seconds
+      setInterval(checkStatus, 2000);
   </script>
   
   <script src="{% static 'dashboard/assets/libs/jquery/dist/jquery.min.js' %}"></script>
@@ -754,96 +782,4 @@
     <script src="{% static 'dashboard/assets/libs/apexcharts/dist/apexcharts.min.js' %}"></script>
     {% endblock %}
 </body>
-
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Order Updates</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
-        h1 {
-            text-align: center;
-            margin-top: 20px;
-        }
-        .order-updates {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            border: 1px solid #ddd;
-            background-color: #f9f9f9;
-        }
-        .order {
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-        }
-        .order:last-child {
-            border-bottom: none;
-        }
-    </style>
-</head>
-<body>
-    <h1>Live Order Updates</h1>
-
-    <div class="order-updates" id="orderUpdates">
-        <!-- Order updates will be displayed here -->
-    </div>
-
-    <script>
-        // WebSocket setup
-        {% comment %} let socket = new WebSocket('ws://https://postback-hub.onrender.com/users//ws/dhan/'); {% endcomment %}
-        let socket = new WebSocket('wss://postback-hub.onrender.com/users/ws/dhan/');
-
-
-        // When connection is opened
-        socket.onopen = function(event) {
-            console.log("WebSocket connection established.");
-        };
-
-        // When a message is received from the WebSocket
-        socket.onmessage = function(event) {
-            let data = JSON.parse(event.data);
-            console.log("New order update:", data);
-
-            // Display the order update on the page
-            let orderUpdatesDiv = document.getElementById("orderUpdates");
-
-            // Format the order update (you can customize this as needed)
-            let orderDiv = document.createElement("div");
-            orderDiv.classList.add("order");
-
-            orderDiv.innerHTML = `
-                <p><strong>Order Update:</strong></p>
-                <p><strong>Order ID:</strong> ${data.OrderId || 'N/A'}</p>
-                <p><strong>Status:</strong> ${data.Status || 'N/A'}</p>
-                <p><strong>Symbol:</strong> ${data.Symbol || 'N/A'}</p>
-                <p><strong>Price:</strong> ${data.Price || 'N/A'}</p>
-            `;
-
-            // Append the new order update to the div
-            orderUpdatesDiv.prepend(orderDiv);
-        };
-
-        // When the connection is closed
-        socket.onclose = function(event) {
-            if (event.wasClean) {
-                console.log(`WebSocket closed cleanly, code=${event.code}, reason=${event.reason}`);
-            } else {
-                console.log("WebSocket connection closed unexpectedly.");
-            }
-        };
-
-        // If there's an error with the WebSocket connection
-        socket.onerror = function(error) {
-            console.error(`WebSocket error: ${error.message}`);
-        };
-
-    </script>
-</body>
-</html>
-
 </html>

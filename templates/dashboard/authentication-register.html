@@ -5,8 +5,6 @@
     <div class="card w-100">
         <div class="card-body">
             <h5 class="card-title fw-semibold mb-4">Create User</h5>
-            <div class="card">
-                <div class="card-body">
                     <form method="POST" enctype="multipart/form-data">
                         {% csrf_token %}
 
@@ -57,9 +55,16 @@
                             <p class="fs-4 mb-0 fw-bold">Already have an Account?</p>
                             <a class="text-primary fw-bold ms-2" href="{% url 'login' %}">Sign In</a>
                         </div>
+                        {% if form.errors %}
+                        <div class="alert alert-danger">
+                            <ul>
+                                {% for field, errors in form.errors.items %}
+                                    <li><strong>{{ field }}:</strong> {{ errors|join:", " }}</li>
+                                {% endfor %}
+                                </ul>
+                            </div>
+                        {% endif %}
                     </form>
-                </div>
-            </div>
         </div>
     </div>
 </div>
