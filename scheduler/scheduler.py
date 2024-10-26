@@ -239,7 +239,7 @@ def get_pending_order_filter_dhan(response):
 def start_scheduler():
     scheduler = BackgroundScheduler()
 
-    Self-ping every 58 seconds
+    # Self-ping every 58 seconds
     scheduler.add_job(self_ping, IntervalTrigger(seconds=58))
     scheduler.add_job(auto_order_count_monitoring_process, IntervalTrigger(seconds=10))
     # Restore user kill switches every Monday to Friday at 4:00 PM
