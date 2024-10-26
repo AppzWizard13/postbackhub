@@ -195,12 +195,17 @@ def autoStopLossProcessing():
                                 print("Stop Loss Response :", stoploss_response)
                                 print(f"INFO: Stop Loss Order Executed Successfully..!")
 
-                            tempObj = TempNotifierTable.objects.filter(type="dashboard").first()
-                            if tempObj:
-                                tempObj.status = not tempObj.status
-                                tempObj.save()
-                            else:
-                                print("No TempNotifierTable record found with type='dashboard'")
+                                tempObj, created = TempNotifierTable.objects.get_or_create(
+                                    type="dashboard",
+                                    defaults={'status': True} 
+                                )
+
+                                if not created:
+                                    tempObj.status = not tempObj.status
+                                    tempObj.save()
+                                    print("TempNotifierTable record found. Status toggled.")
+                                else:
+                                    print("New TempNotifierTable record created with type='dashboard' and status=True.")
 
                         else:
                             print(f"INFO: No Open Order for User {user.username}")
