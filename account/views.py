@@ -241,7 +241,7 @@ class UserListView(ListView):
 def user_delete(request, pk):
     user = get_object_or_404(User, pk=pk)
     # Check if user has permission to delete (optional)
-    if request.user.is_superadmin and not user == request.user :
+    if request.user.is_superuser and not user == request.user :
         user.delete()
         messages.success(request, "User deleted successfully.")
     else:
