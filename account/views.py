@@ -115,7 +115,7 @@ class ControlCreateView(CreateView):
         return super().form_invalid(form)
 
 
-
+@method_decorator(login_required(login_url='/'), name='dispatch')
 class DashboardView(TemplateView):
     template_name = "dashboard/index.html"
 
@@ -425,7 +425,8 @@ def close_all_positions(request):
         else:
             return JsonResponse({"message": "No open BUY order to close."}, status=200)
     else:
-        return JsonResponse({"message": "No orders found for the user {{username}}"}, status=200)
+        return JsonResponse({"message": "No orders found for the user {}".format(username)}, status=200)
+
 
 
 

@@ -69,7 +69,7 @@ $(function () {
             sparkline: { enabled: false },
         },
 
-        colors: ["#5D87FF", "#FF0000"],
+        colors: ["#3569ff", "#FF0000"],
 
         plotOptions: {
             bar: {
