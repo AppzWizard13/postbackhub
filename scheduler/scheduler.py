@@ -112,7 +112,7 @@ def activate_kill_switch(user, access_token, traded_order_count):
 
 def self_ping():
     try:
-        response = requests.get('https://postback-hub.onrender.com/')
+        response = requests.get('https://tradewiz.onrender.com/')
         print(f"INFO: Health check response: {response.status_code}")
     except Exception as e:
         print(f"ERROR: Error in self_ping: {e}")
