@@ -425,7 +425,7 @@ def close_all_positions(request):
         else:
             return JsonResponse({"message": "No open BUY order to close."}, status=200)
     else:
-        return JsonResponse({"message": "No orders found for the user."}, status=200)
+        return JsonResponse({"message": "No orders found for the user {{username}}"}, status=200)
 
 
 

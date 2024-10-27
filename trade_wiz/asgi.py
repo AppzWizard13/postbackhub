@@ -1,5 +1,5 @@
 """
-ASGI config for postback_hub project.
+ASGI config for trade_wiz project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 
@@ -14,7 +14,7 @@ from channels.auth import AuthMiddlewareStack
 from django.urls import path
 from your_app.consumers import DhanWebSocketConsumer
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'postback_hub.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'trade_wiz.settings')
 
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),
