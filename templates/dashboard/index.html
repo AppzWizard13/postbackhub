@@ -109,7 +109,7 @@
             <li class="sidebar-item">
               <a class="sidebar-link" href="{% url 'manage_controls' %}" aria-expanded="false">
                 <span>
-                  <i class="ti ti-panel"></i>
+                  <i class="ti ti-settings"></i>
                 </span>
                 <span class="hide-menu">Manage Controls</span>
               </a>
@@ -413,28 +413,6 @@
                             <p class="fs-3  mb-0">₹ {{day_exp_brokerge|floatformat:2}}</p>
                           </div>
                         </div> 
-
-
-
-{% comment %}                         
-                          <div class="d-flex align-items-center pb-1">
-                            <span
-                              class="me-2 rounded-circle bg-light-danger round-20 d-flex align-items-center justify-content-center">
-                              <i class="ti ti-skull text-danger fs-5"></i>
-                            </span>
-                            <p class="text-dark me-1 fs-3 fw-bold mb-0">Order Limit :</p>
-                            <p class="fs-3 fw-bold mb-0">{{order_limit}}</p>
-                          </div>
-                        </div>
-                        <div class="d-flex align-items-center pb-1">
-                          <span
-                            class="me-2 rounded-circle bg-light-danger round-20 d-flex align-items-center justify-content-center">
-                            <i class="ti ti-cash text-danger fs-5"></i>
-                          </span>
-                          <p class="text-dark me-1 fs-3 fw-bold mb-0"> Brokerage :</p>
-                          <p class="fs-3 fw-bold mb-0">₹ {{day_exp_brokerge}} </p>
-                        </div>
-                       {% endcomment %}
                         <div class="col-4">
                           <div class="d-flex justify-content-end">
                             <div class="mb-3 mb-sm-0 pr-5">
