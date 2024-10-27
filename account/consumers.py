@@ -1,58 +1,93 @@
 import json
-from channels.generic.websocket import AsyncWebsocketConsumer
+import asyncio
 import websockets
+from channels.generic.websocket import AsyncWebsocketConsumer
+from django.conf import settings
 
-class DhanWebSocketConsumer(AsyncWebsocketConsumer):
+class OrderUpdateConsumer(AsyncWebsocketConsumer):
+    """
+    A Django Channels consumer to manage WebSocket connections for order updates from the DhanHQ API.
+    """
+
     async def connect(self):
-        # Accept the WebSocket connection
-        await self.accept()
+        """
+        Handles the initial connection to the WebSocket.
+        """
+        # Extract the username from the WebSocket URL
+        self.username = self.scope["url_route"]["kwargs"].get("username")
         
-        # Establish connection with DhanHQ WebSocket API
-        self.dhan_ws_url = 'wss://api-order-update.dhan.co'
-        self.client_id = '1102930301'  # Replace with your ClientId
-        self.token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJkaGFuIiwicGFydG5lcklkIjoiIiwiZXhwIjoxNzMyMTg3MTM1LCJ0b2tlbkNvbnN1bWVyVHlwZSI6IlNFTEYiLCJ3ZWJob29rVXJsIjoiaHR0cHM6Ly9wb3N0YmFjay1odWIub25yZW5kZXIuY29tL3Bvc3RiYWNrLWZldGNoLyIsImRoYW5DbGllbnRJZCI6IjExMDI5MzAzMDEifQ.pCRo4yTLWBD4aTM4wTZWueasQp5AdsXiPcvxkeg8jc4GeUbW0eBgwb2MXJQb-x_IER-TrmQlJF37FIk50uNLTw'  # Replace with the actual JWT token
+        # Fetch the user's Dhan credentials from the database
+        user = await self.get_user_credentials(self.username)
+        if user:
+            self.dhan_client_id = user.dhan_client_id
+            self.dhan_access_token = user.dhan_access_token
+            self.order_feed_wss = "wss://api-order-update.dhan.co"
+            
+            # Accept the WebSocket connection
+            await self.accept()
+            
+            # Start the asynchronous order update connection
+            asyncio.create_task(self.connect_order_update())
+        else:
+            # Reject connection if user not found
+            await self.close()
 
-        # Start the connection in a background task
-        await self.start_dhan_ws()
+    async def connect_order_update(self):
+        """
+        Connects to the Dhan WebSocket for order updates.
+        """
+        async with websockets.connect(self.order_feed_wss) as websocket:
+            auth_message = {
+                "LoginReq": {
+                    "MsgCode": 42,
+                    "ClientId": self.client_id,
+                    "Token": self.access_token
+                },
+                "UserType": "SELF"
+            }
+
+            # Send authentication message
+            await websocket.send(json.dumps(auth_message))
+            print(f"Sent subscribe message: {auth_message}")
+
+            # Listen for incoming messages
+            async for message in websocket:
+                data = json.loads(message)
+                await self.handle_order_update(data)
+
+    async def handle_order_update(self, order_update):
+        """
+        Processes incoming order update messages and sends them to the client.
+
+        Args:
+            order_update (dict): The order update message received from the WebSocket.
+        """
+        if order_update.get('Type') == 'order_alert':
+            data = order_update.get('Data', {})
+            if "orderNo" in data:
+                order_id = data["orderNo"]
+                status = data.get("status", "Unknown status")
+                update_message = {
+                    "status": status,
+                    "order_id": order_id,
+                    "data": data
+                }
+                await self.send(text_data=json.dumps(update_message))
+                print(f"Status: {status}, Order ID: {order_id}, Data: {data}")
+            else:
+                await self.send(text_data=json.dumps({"message": "Order Update received", "data": data}))
+        else:
+            await self.send(text_data=json.dumps({"message": "Unknown message received", "data": order_update}))
 
     async def disconnect(self, close_code):
-        # Close the connection gracefully
-        if hasattr(self, 'dhan_ws'):
-            await self.dhan_ws.close()
+        """
+        Called when the WebSocket closes. You can perform cleanup here if necessary.
+        """
+        print("WebSocket disconnected")
 
     async def receive(self, text_data):
-        # Handle messages sent from the client to WebSocket (Optional)
-        pass
-
-    async def start_dhan_ws(self):
-        try:
-            async with websockets.connect(self.dhan_ws_url) as ws:
-                self.dhan_ws = ws
-                
-                # Send the login authorization message
-                auth_message = {
-                    "LoginReq": {
-                        "MsgCode": 42,
-                        "ClientId": self.client_id,
-                        "Token": self.token
-                    },
-                    "UserType": "SELF"
-                }
-                
-                await ws.send(json.dumps(auth_message))
-                print("INFO: Sent login request to DhanHQ WebSocket API.")
-                
-                # Listen for messages from DhanHQ
-                async for message in ws:
-                    data = json.loads(message)
-                    await self.handle_order_update(data)
-                    
-        except Exception as e:
-            print(f"ERROR: Error while connecting to Dhan WebSocket: {e}")
-
-    async def handle_order_update(self, data):
-        # Handle the incoming message from DhanHQ (order updates)
-        print(f"INFO: Received message: {data}")
-        
-        # Send the message to the WebSocket client
-        await self.send(text_data=json.dumps(data))
+        """
+        Receives messages from the client (if any). This is optional and can be used if the client needs to send data.
+        """
+        data = json.loads(text_data)
+        print(f"Received data from client: {data}")

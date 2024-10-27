@@ -36,7 +36,7 @@ DHAN_ACCESS_TOKEN = os.environ.get('DHAN_ACCESS_TOKEN', default=None)
 
 ALLOWED_HOSTS = ['*']
 
-CSRF_TRUSTED_ORIGINS = ['https://https://postback-hub.onrender.com']
+CSRF_TRUSTED_ORIGINS = ['https://https://postback-hub.onrender.com', "http://localhost:8001", "http://127.0.0.1:8001",]
 
 # Application definition
 INSTALLED_APPS = [

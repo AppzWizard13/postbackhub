@@ -41,5 +41,5 @@ from django.urls import path
 from . import consumers
 
 websocket_urlpatterns = [
-    path('ws/dhan/', consumers.DhanWebSocketConsumer.as_asgi()),
+    path("ws/orders/<str:username>/", consumers.OrderUpdateConsumer.as_asgi()),
 ]

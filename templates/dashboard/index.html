@@ -368,7 +368,6 @@
                               </span>
                               <p class="text-primary me-1 fs-3 mb-0"></p>
                             {% endif %}
-                            {% comment %} <p class="fs-3 mb-0">Actual Balance :{{actual_balance|floatformat:2}}</p> {% endcomment %}
                           </div>
                         </div>
                         
@@ -377,62 +376,131 @@
                             <div class="mb-3 mb-sm-0 pr-5">
                               <a class="btn btn-primary mx-3 fs-3 fw-bold d-block" 
                                  style="border-width: 3px; border-style: solid;">
-                                Actual Profit </br>{{ actual_profit|floatformat:2 }}
+                                Actual P/L </br>{{ actual_profit|floatformat:2 }}
                               </a>
                             </div>
                           </div>
                         </div>
-                        
                       </div>
                     </div>
                     <div id="earning"></div>
                   </div>
                 </div>
-                <div class="col-lg-12">
-                  <!-- Monthly Earnings -->
-                  <div class="card">
-                    <div class="card-body">
-                      <div class="row alig n-items-start">
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-lg-4">
+              <!-- Card 2: New Card Title -->
+              <div class="card">
+                <div class="card-body">
+                    <div class="row align-items-start">
                         <div class="col-8">
-                          <h5 class="card-title mb-9 fw-semibold"> Today Expense </h5>
-                          <h4 class="fw-semibold mb-3">₹ {{total_expense|floatformat:2}}</h4>
-                          <div class="d-flex align-items-center mb-3">
-                            <span
-                              class="me-1 rounded-circle bg-light-danger round-20 d-flex align-items-center justify-content-center">
-                              <i class="fs-5 ti ti-clock  text-danger"></i>
-                            </span>
-                            <p class="text-dark me-1 fs-3  mb-0">Order Limit :</p>
-                            <p class="fs-3  mb-0">{{order_limit}}</p>
-                          </div>
-                          <div class="d-flex align-items-center mb-3">
-                            <span
-                              class="me-1 rounded-circle bg-light-primary round-20 d-flex align-items-center justify-content-center">
-                              <i class="fs-5 ti ti-cash text-primary"></i>
-                            </span>
-                            <p class="text-dark me-1 fs-3  mb-0">Brokerage :</p>
-                            <p class="fs-3  mb-0">₹ {{day_exp_brokerge|floatformat:2}}</p>
-                          </div>
-                        </div> 
-                        <div class="col-4">
-                          <div class="d-flex justify-content-end">
-                            <div class="mb-3 mb-sm-0 pr-5">
-                              <a class="btn btn-primary mx-3 fs-3 fw-bold d-block" 
-                                 style="border-width: 3px; border-style: solid;">
-                                Order Count </br>{{ order_count }}
-                              </a>
+                            <h5 class="card-title mb-9 fw-semibold">Live Order Status</h5>
+                            <h4 class="fw-semibold mb-3" id="order-status">₹ <span id="status-value">0.00</span></h4>
+                            <div class="d-flex align-items-center mb-3">
+                                <span class="me-1 rounded-circle bg-light-success round-20 d-flex align-items-center justify-content-center">
+                                    <i class="fs-5 ti ti-check text-success"></i>
+                                </span>
+                                <p class="text-dark me-1 fs-3 mb-0">Details:</p>
+                                <p class="fs-3 mb-0" id="order-details">No order details available.</p>
                             </div>
-                          </div>
+                            <div class="d-flex align-items-center mb-3">
+                                <span class="me-1 rounded-circle bg-light-info round-20 d-flex align-items-center justify-content-center">
+                                    <i class="fs-5 ti ti-info text-info"></i>
+                                </span>
+                                <p class="text-dark me-1 fs-3 mb-0">Another Detail:</p>
+                                <p class="fs-3 mb-0" id="another-detail">No additional details available.</p>
+                            </div>
                         </div>
-                        
-                        
+                        <div class="col-4">
+                            <div class="d-flex justify-content-end">
+                                <div class="mb-3 mb-sm-0 pr-5">
+                                    <a class="btn btn-success mx-3 fs-3 fw-bold d-block" style="border-width: 3px; border-style: solid;" id="action-button">
+                                        Action 1 <br><span id="action-value">N/A</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+              </div>  
+            </div>
+          
+            <div class="col-lg-4">
+              <!-- Card 3: New Card Title -->
+              <div class="card">
+                <div class="card-body">
+                  <div class="row align-items-start">
+                    <div class="col-8">
+                      <h5 class="card-title mb-9 fw-semibold">New Card 2 Title</h5>
+                      <h4 class="fw-semibold mb-3">₹ {{new_value2|floatformat:2}}</h4>
+                      <div class="d-flex align-items-center mb-3">
+                        <span class="me-1 rounded-circle bg-light-warning round-20 d-flex align-items-center justify-content-center">
+                          <i class="fs-5 ti ti-alert-circle text-warning"></i>
+                        </span>
+                        <p class="text-dark me-1 fs-3 mb-0">Details:</p>
+                        <p class="fs-3 mb-0">{{detail_value2}}</p>
+                      </div>
+                      <div class="d-flex align-items-center mb-3">
+                        <span class="me-1 rounded-circle bg-light-danger round-20 d-flex align-items-center justify-content-center">
+                          <i class="fs-5 ti ti-exclamation-circle text-danger"></i>
+                        </span>
+                        <p class="text-dark me-1 fs-3 mb-0">Another Detail:</p>
+                        <p class="fs-3 mb-0">{{another_detail2}}</p>
                       </div>
                     </div>
-                    <!-- <div id=""></div> -->
+                    <div class="col-4">
+                      <div class="d-flex justify-content-end">
+                        <div class="mb-3 mb-sm-0 pr-5">
+                          <a class="btn btn-danger mx-3 fs-3 fw-bold d-block" style="border-width: 3px; border-style: solid;">
+                            Action 2 </br>{{ action_value2 }}
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-4">
+              <!-- Card 1: Today Expense -->
+              <div class="card">
+                <div class="card-body">
+                  <div class="row align-items-start">
+                    <div class="col-8">
+                      <h5 class="card-title mb-9 fw-semibold">Today Expense</h5>
+                      <h4 class="fw-semibold mb-3">₹ {{total_expense|floatformat:2}}</h4>
+                      <div class="d-flex align-items-center mb-3">
+                        <span class="me-1 rounded-circle bg-light-danger round-20 d-flex align-items-center justify-content-center">
+                          <i class="fs-5 ti ti-clock text-danger"></i>
+                        </span>
+                        <p class="text-dark me-1 fs-3 mb-0">Order Limit:</p>
+                        <p class="fs-3 mb-0">{{order_limit}}</p>
+                      </div>
+                      <div class="d-flex align-items-center mb-3">
+                        <span class="me-1 rounded-circle bg-light-primary round-20 d-flex align-items-center justify-content-center">
+                          <i class="fs-5 ti ti-cash text-primary"></i>
+                        </span>
+                        <p class="text-dark me-1 fs-3 mb-0">Brokerage:</p>
+                        <p class="fs-3 mb-0">₹ {{day_exp_brokerge|floatformat:2}}</p>
+                      </div>
+                    </div>
+                    <div class="col-4">
+                      <div class="d-flex justify-content-end">
+                        <div class="mb-3 mb-sm-0 pr-5">
+                          <a class="btn btn-primary mx-3 fs-3 fw-bold d-block" style="border-width: 3px; border-style: solid;">
+                            Order Count </br>{{ order_count }}
+                          </a>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
+          
           <div class="row">
             <div class="col-lg-6 d-flex align-items-stretch">
               <div class="card w-100">
@@ -547,114 +615,6 @@
                                   {% endfor %}
                               </tbody>
                           </table>
-                          
-
-                          
-                          <script>
-                              // JavaScript Pagination Logic
-                              document.addEventListener('DOMContentLoaded', function() {
-                                  const rowsPerPage = 6; // Number of rows per page
-                                  const tableBody = document.getElementById('ordersTableBody');
-                                  const rows = tableBody.getElementsByTagName('tr');
-                                  const totalRows = rows.length;
-                                  let currentPage = 1;
-                                  let totalPages = Math.ceil(totalRows / rowsPerPage);
-                          
-                                  // Display page info
-                                  const pageInfo = document.getElementById('pageInfo');
-                                  pageInfo.innerText = `Page ${currentPage} of ${totalPages}`;
-                          
-                                  // Function to display a specific page
-                                  function displayPage(page) {
-                                      // Hide all rows
-                                      for (let i = 0; i < totalRows; i++) {
-                                          rows[i].style.display = 'none';
-                                      }
-                          
-                                      // Display the rows for the current page
-                                      let start = (page - 1) * rowsPerPage;
-                                      let end = Math.min(start + rowsPerPage, totalRows);
-                                      for (let i = start; i < end; i++) {
-                                          rows[i].style.display = '';
-                                      }
-                          
-                                      // Update page info
-                                      pageInfo.innerText = `Page ${page} of ${totalPages}`;
-                                  }
-                          
-                                  // Initial display
-                                  displayPage(currentPage);
-                          
-                                  // Pagination controls
-                                  document.getElementById('prevPage').addEventListener('click', function() {
-                                      if (currentPage > 1) {
-                                          currentPage--;
-                                          displayPage(currentPage);
-                                      }
-                                  });
-                          
-                                  document.getElementById('nextPage').addEventListener('click', function() {
-                                      if (currentPage < totalPages) {
-                                          currentPage++;
-                                          displayPage(currentPage);
-                                      }
-                                  });
-                              });
-
-                              const rowsPerPage = 6;
-                              let currentPage = 1;
-
-                              const tableBody = document.getElementById('positionsTableBody');
-                              const prevButton = document.getElementById('prevPagepos');
-                              const nextButton = document.getElementById('nextPagepos');
-                              const pageInfo = document.getElementById('pageInfopos');
-
-                              function displayTable() {
-                                const rows = tableBody.getElementsByTagName('tr');
-                                const totalPages = Math.ceil(rows.length / rowsPerPage);
-
-                                // Hide all rows initially
-                                for (let i = 0; i < rows.length; i++) {
-                                  rows[i].style.display = 'none';
-                                }
-
-                                // Calculate the start and end index for the current page
-                                const start = (currentPage - 1) * rowsPerPage;
-                                const end = Math.min(start + rowsPerPage, rows.length);
-
-                                // Display rows for the current page
-                                for (let i = start; i < end; i++) {
-                                  rows[i].style.display = '';
-                                }
-
-                                // Update pagination controls
-                                pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
-                                prevButton.disabled = currentPage === 1;
-                                nextButton.disabled = currentPage === totalPages || totalPages === 0;
-                              }
-
-                              // Event listeners for pagination buttons
-                              prevButton.addEventListener('click', () => {
-                                if (currentPage > 1) {
-                                  currentPage--;
-                                  displayTable();
-                                }
-                              });
-
-                              nextButton.addEventListener('click', () => {
-                                const totalRows = tableBody.getElementsByTagName('tr').length;
-                                const totalPages = Math.ceil(totalRows / rowsPerPage);
-                                if (currentPage < totalPages) {
-                                  currentPage++;
-                                  displayTable();
-                                }
-                              });
-
-                              // Initial display of the table
-                              displayTable();
-
-                          </script>
-                          
                           </table>
                       </div>
                   </div>
@@ -667,6 +627,110 @@
       </div>
     </div>
   </div>
+  <script>
+      // JavaScript Pagination Logic
+      document.addEventListener('DOMContentLoaded', function() {
+          const rowsPerPage = 6; // Number of rows per page
+          const tableBody = document.getElementById('ordersTableBody');
+          const rows = tableBody.getElementsByTagName('tr');
+          const totalRows = rows.length;
+          let currentPage = 1;
+          let totalPages = Math.ceil(totalRows / rowsPerPage);
+
+          // Display page info
+          const pageInfo = document.getElementById('pageInfo');
+          pageInfo.innerText = `Page ${currentPage} of ${totalPages}`;
+
+          // Function to display a specific page
+          function displayPage(page) {
+              // Hide all rows
+              for (let i = 0; i < totalRows; i++) {
+                  rows[i].style.display = 'none';
+              }
+
+              // Display the rows for the current page
+              let start = (page - 1) * rowsPerPage;
+              let end = Math.min(start + rowsPerPage, totalRows);
+              for (let i = start; i < end; i++) {
+                  rows[i].style.display = '';
+              }
+
+              // Update page info
+              pageInfo.innerText = `Page ${page} of ${totalPages}`;
+          }
+
+          // Initial display
+          displayPage(currentPage);
+
+          // Pagination controls
+          document.getElementById('prevPage').addEventListener('click', function() {
+              if (currentPage > 1) {
+                  currentPage--;
+                  displayPage(currentPage);
+              }
+          });
+
+          document.getElementById('nextPage').addEventListener('click', function() {
+              if (currentPage < totalPages) {
+                  currentPage++;
+                  displayPage(currentPage);
+              }
+          });
+      });
+
+      const rowsPerPage = 6;
+      let currentPage = 1;
+
+      const tableBody = document.getElementById('positionsTableBody');
+      const prevButton = document.getElementById('prevPagepos');
+      const nextButton = document.getElementById('nextPagepos');
+      const pageInfo = document.getElementById('pageInfopos');
+
+      function displayTable() {
+        const rows = tableBody.getElementsByTagName('tr');
+        const totalPages = Math.ceil(rows.length / rowsPerPage);
+
+        // Hide all rows initially
+        for (let i = 0; i < rows.length; i++) {
+          rows[i].style.display = 'none';
+        }
+
+        // Calculate the start and end index for the current page
+        const start = (currentPage - 1) * rowsPerPage;
+        const end = Math.min(start + rowsPerPage, rows.length);
+
+        // Display rows for the current page
+        for (let i = start; i < end; i++) {
+          rows[i].style.display = '';
+        }
+
+        // Update pagination controls
+        pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+        prevButton.disabled = currentPage === 1;
+        nextButton.disabled = currentPage === totalPages || totalPages === 0;
+      }
+
+      // Event listeners for pagination buttons
+      prevButton.addEventListener('click', () => {
+        if (currentPage > 1) {
+          currentPage--;
+          displayTable();
+        }
+      });
+
+      nextButton.addEventListener('click', () => {
+        const totalRows = tableBody.getElementsByTagName('tr').length;
+        const totalPages = Math.ceil(totalRows / rowsPerPage);
+        if (currentPage < totalPages) {
+          currentPage++;
+          displayTable();
+        }
+      });
+
+      // Initial display of the table
+      displayTable();
+
+  </script>
   <script>
     // JavaScript for AJAX Call
     document.getElementById("smartExitButton").addEventListener("click", function() {
@@ -765,7 +829,48 @@
       // Run checkStatus every 2 seconds
       setInterval(checkStatus, 2000);
   </script>
-  
+  <script>
+    const username = '{{ user.username }}'; 
+    const socket = new WebSocket(`wss://tradewiz.onrender.com/ws/orders/${username}/`);
+
+    socket.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        
+        if (data.Data && data.Type === "order_alert") {
+            const { Status, Price, Quantity, TradedQty, Symbol, OrderNo } = data.Data;
+
+            // Update the card elements with the received data
+            document.getElementById('status-value').innerText = Price ? `₹ ${Price.toFixed(2)}` : '0.00';
+            document.getElementById('order-details').innerText = `Order No: ${OrderNo || 'N/A'}, Symbol: ${Symbol || 'N/A'}, Quantity: ${Quantity || 'N/A'}, Traded Quantity: ${TradedQty || 'N/A'}`;
+            document.getElementById('another-detail').innerText = `Status: ${Status || 'N/A'}`;
+            document.getElementById('action-value').innerText = Status === "Cancelled" ? "Reorder" : "Update"; // Change based on status
+            
+            // Change the action button text accordingly
+            document.getElementById('action-button').style.display = 'block'; // Ensure the button is visible
+        } else {
+            // Reset to default state if no valid data is received
+            resetCardToDefault();
+        }
+    };
+
+    socket.onclose = function(event) {
+        console.log("WebSocket connection closed");
+    };
+
+    socket.onerror = function(error) {
+        console.error("WebSocket error:", error);
+    };
+
+    function resetCardToDefault() {
+        document.getElementById('status-value').innerText = '0.00';
+        document.getElementById('order-details').innerText = 'No order details available.';
+        document.getElementById('another-detail').innerText = 'No additional details available.';
+        document.getElementById('action-value').innerText = 'N/A';
+        document.getElementById('action-button').style.display = 'none'; // Hide the button if there's no data
+      }
+  </script>
+
+    
   <script src="{% static 'dashboard/assets/libs/jquery/dist/jquery.min.js' %}"></script>
   <script src="{% static 'dashboard/assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script>
   <script src="{% static 'dashboard/assets/js/sidebarmenu.js' %}"></script>
@@ -791,3 +896,5 @@
     {% endblock %}
 </body>
 </html>
+
+
