@@ -19,7 +19,7 @@ def auto_order_count_monitoring_process():
         try:
             print("**********************************************")
             print("Starting auto order count monitoring process.")
-            active_users = User.objects.filter(is_active=True,kill_switch_2=False, auto_stop_loss=True)
+            active_users = User.objects.filter(is_active=True,kill_switch_2=False)
             for user in active_users:
                 try:
                     if not user.kill_switch_2:
@@ -134,7 +134,7 @@ def autoStopLossProcessing():
         try:
             print("*********************************************")
             print("Starting auto stoploss monitoring process...!")
-            active_users = User.objects.filter(is_active=True,kill_switch_2=False)
+            active_users = User.objects.filter(is_active=True,kill_switch_2=False, auto_stop_loss=True)
             for user in active_users:
                 try:
                     if not user.kill_switch_2 and user.auto_stop_loss:
