@@ -22,6 +22,7 @@ from .models import Control
 
 User = get_user_model()  # Reference your custom user model
 from dhanhq import dhanhq
+from datetime import datetime, timedelta
 
 
 
@@ -153,7 +154,6 @@ class DashboardView(TemplateView):
         order_count = get_traded_order_count(orderlistdata)
         total_expense = order_count * float(settings.BROKERAGE_PARAMETER)
         total_expense = float(total_expense)
-        print("fund_datafund_datafund_datafund_data", fund_data)
 
         position_data = dhan.get_positions()
         current_date = datetime.now().date()
@@ -378,6 +378,26 @@ class DhanKillProcessLogListView(ListView):
     def get_queryset(self):
         return DhanKillProcessLog.objects.all().order_by('-created_on')
 
+
+from django.views.generic import ListView
+from .models import DailyAccountOverview
+
+class DailyAccountOverviewListView(ListView):
+    model = DailyAccountOverview
+    template_name = 'dashboard/dailyaccountoverview.html'  # Update template name as necessary
+    context_object_name = 'daily_account_overviews'  # Change to reflect the context in the template
+    paginate_by = 10  # Optional: Add pagination (adjust the number as needed)
+
+    def get_queryset(self):
+        # Return the queryset ordered by the updated_on field (descending)
+        return DailyAccountOverview.objects.all().order_by('-updated_on')
+
+    def get_context_data(self, **kwargs):
+        # Add any additional context variables if needed
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Daily Account Overview'  # Optional: Add a title or other context variables
+        return context
+
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
@@ -406,9 +426,9 @@ def close_all_positions(request):
             for orders in pending_sl_orders:
                 cancel_slorder_response = dhan.cancel_order(order_id = orders['orderId'])  
 
-                print("cancel_slorder_responsecancel_slorder_responsecancel_slorder_response", cancel_slorder_response)
+                print("cancel_sl_order_response:", cancel_slorder_response)
 
-            latest_buy_entry = get_latest_buy_order_dhan(order_list)
+        latest_buy_entry = get_latest_buy_order_dhan(order_list)
         if latest_buy_entry['transactionType'] == 'BUY' and latest_buy_entry['orderStatus'] == 'TRADED':
             # Retrieve necessary details for the order
             sellorder_response = dhan.place_order(
@@ -432,6 +452,9 @@ def close_all_positions(request):
 
 def get_pending_order_filter_dhan(response): 
     # Check if the response contains 'data'
+
+
+
     if 'data' not in response:
         return 0
     pending_sl_orders = [

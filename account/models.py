@@ -76,3 +76,16 @@ class TempNotifierTable(models.Model):
 
     def __str__(self):
         return f"{self.type} - {'Active' if self.status else 'Inactive'}"
+
+class DailyAccountOverview(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='daily_account_overviews')
+    opening_balance = models.FloatField()
+    updated_on = models.DateTimeField(auto_now=True)
+    pnl_status = models.FloatField()
+    expenses = models.FloatField()
+    closing_balance = models.FloatField()
+    order_count = models.IntegerField()
+    actual_profit = models.FloatField()
+
+    def __str__(self):
+        return f"Account Overview for {self.user.username} on {self.updated_on.strftime('%Y-%m-%d')}"

@@ -118,12 +118,24 @@
               <i class="ti ti- nav-small-cap-icon fs-4"></i>
               <span class="hide-menu">LOG</span>
             </li>
+
+
+
+            
+            <li class="sidebar-item">
+              <a class="sidebar-link" href="{% url 'daily_account_overview_list' %}" aria-expanded="false">
+                <span>
+                  <i class="ti ti-eye"></i>
+                </span>
+                <span class="hide-menu">Daily Overview Log</span>
+              </a>
+            </li>
             <li class="sidebar-item">
               <a class="sidebar-link" href="{% url 'dhan-kill-log-list' %}" aria-expanded="false">
                 <span>
                   <i class="ti ti-eye"></i>
                 </span>
-                <span class="hide-menu">View Log</span>
+                <span class="hide-menu">View Kill Log</span>
               </a>
             </li>
             {% comment %} <li class="nav-small-cap">
@@ -325,14 +337,8 @@
                           </div>
                         </div> 
                         <div class="col-4">
-                          <div class="d-flex justify-content-end">
-                            <div class="mb-3 mb-sm-0 pr-5">
-                              <a id="smartExitButton" data-username="{{ user.username }}" 
-                                 class="btn btn-danger mx-4 fs-3 fw-bold  d-block" 
-                                 style="border-width: 3px; border-style: solid; cursor: pointer;">
-                                Quick&nbsp;Exit </br>
-                              </a>
-                            </div>
+                          <div class="d-flex justify-content-center">
+                            <div id="breakup"></div>
                           </div>
                         </div>
                       </div>
@@ -453,8 +459,10 @@
                     <div class="col-4">
                       <div class="d-flex justify-content-end">
                         <div class="mb-3 mb-sm-0 pr-5">
-                          <a class="btn btn-danger mx-3 fs-3 fw-bold d-block" style="border-width: 3px; border-style: solid;">
-                            Action 2 </br>{{ action_value2 }}
+                          <a id="smartExitButton" data-username="{{ user.username }}" 
+                             class="btn btn-danger mx-4 fs-3 fw-bold  d-block" 
+                             style="border-width: 3px; border-style: solid; cursor: pointer;">
+                            Quick&nbsp;Exit </br>
                           </a>
                         </div>
                       </div>
@@ -829,44 +837,60 @@
       // Run checkStatus every 2 seconds
       setInterval(checkStatus, 2000);
   </script>
+
   <script>
-    const username = '{{ user.username }}'; 
-    const socket = new WebSocket(`ws://tradewiz.onrender.com/ws/orders/${username}/`);
+      var domain =  window.location.hostname;
+      var lastKeyword = '{{ user.username }}'; 
+      var socketIndex = new WebSocket("wss://" + domain + "/ws/order_updates/" + lastKeyword + "/");
 
-    socket.onmessage = function(event) {
-        const data = JSON.parse(event.data);
-        
-        if (data.Data && data.Type === "order_alert") {
-            const { Status, Price, Quantity, TradedQty, Symbol, OrderNo } = data.Data;
+      socketIndex.onopen = function() {
+          console.log("WebSocket connection established");
+          // Optionally, send a message or initialization request here if needed
+      };
 
-            // Update the card elements with the received data
-            document.getElementById('status-value').innerText = Price ? `₹ ${Price.toFixed(2)}` : '0.00';
-            document.getElementById('order-details').innerText = `Order No: ${OrderNo || 'N/A'}, Symbol: ${Symbol || 'N/A'}, Quantity: ${Quantity || 'N/A'}, Traded Quantity: ${TradedQty || 'N/A'}`;
-            document.getElementById('another-detail').innerText = `Status: ${Status || 'N/A'}`;
-            document.getElementById('action-value').innerText = Status === "Cancelled" ? "Reorder" : "Update"; // Change based on status
-            
-            // Change the action button text accordingly
-            document.getElementById('action-button').style.display = 'block'; // Ensure the button is visible
-        } else {
-            // Reset to default state if no valid data is received
-            resetCardToDefault();
-        }
-    };
+      socketIndex.onmessage = function(event) {
+          const data = JSON.parse(event.data);
+          
+          // Check if the data is valid and structured correctly
+          if (data && data.Data && data.Type === "order_alert") {
+              const { Status, Price, Quantity, TradedQty, Symbol, OrderNo } = data.Data;
 
-    socket.onclose = function(event) {
-        console.log("WebSocket connection closed");
-    };
+              // Update the card elements with the received data
+              document.getElementById('status-value').innerText = Price ? `₹ ${Price.toFixed(2)}` : '0.00';
+              document.getElementById('order-details').innerText = `Order No: ${OrderNo || 'N/A'}, Symbol: ${Symbol || 'N/A'}, Quantity: ${Quantity || 'N/A'}, Traded Quantity: ${TradedQty || 'N/A'}`;
+              document.getElementById('another-detail').innerText = `Status: ${Status || 'N/A'}`;
+              document.getElementById('action-value').innerText = Status === "Cancelled" ? "Reorder" : "Update"; // Change based on status
+              
+              // Ensure the action button is visible
+              const actionButton = document.getElementById('action-button');
+              actionButton.style.display = 'block'; // Show button
+              actionButton.innerText = Status === "Cancelled" ? "Reorder" : "Update"; // Update button text accordingly
 
-    socket.onerror = function(error) {
-        console.error("WebSocket error:", error);
-    };
+          } else {
+              // Reset to default state if no valid data is received
+              resetCardToDefault();
+          }
+      };
 
-    function resetCardToDefault() {
-        document.getElementById('status-value').innerText = '0.00';
-        document.getElementById('order-details').innerText = 'No order details available.';
-        document.getElementById('another-detail').innerText = 'No additional details available.';
-        document.getElementById('action-value').innerText = 'N/A';
-        document.getElementById('action-button').style.display = 'none'; // Hide the button if there's no data
+      socketIndex.onclose = function(event) {
+          console.log("WebSocket connection closed", event.reason);
+          // Optionally, implement reconnection logic here
+      };
+
+      socketIndex.onerror = function(error) {
+          console.error("WebSocket error:", error);
+          // Handle error appropriately, e.g., show an error message to the user
+      };
+
+      function resetCardToDefault() {
+          document.getElementById('status-value').innerText = '0.00';
+          document.getElementById('order-details').innerText = 'No order details available.';
+          document.getElementById('another-detail').innerText = 'No additional details available.';
+          document.getElementById('action-value').innerText = 'N/A';
+          
+          // Hide the button if there's no data
+          const actionButton = document.getElementById('action-button');
+          actionButton.style.display = 'none';
       }
   </script>
 

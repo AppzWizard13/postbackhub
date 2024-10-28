@@ -33,6 +33,7 @@ urlpatterns = [
 
     path('close-all-positions/', views.close_all_positions, name='close_all_positions'),
     path('clear-kill-log/', views.clear_kill_log, name='clear_kill_log'),
+    path('daily-account-overview/', views.DailyAccountOverviewListView.as_view(), name='daily_account_overview_list'),
     path('check-log-status/', views.check_log_status, name='check_log_status'),  # Add the URL for the status check
 
 ]

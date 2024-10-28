@@ -1,7 +1,19 @@
+# routing.py
 from django.urls import path
-from . import consumers
+from .consumers import  OrderConsumer
+from django.urls import path
+from channels.auth import AuthMiddlewareStack
+from channels.routing import ProtocolTypeRouter, URLRouter
 
-websocket_urlpatterns = [
-    path("ws/orders/<str:username>/", consumers.OrderUpdateConsumer.as_asgi()),
+ws_urlpatterns = [
+    path('ws/order_updates/<str:last_keyword>/', OrderUpdateConsumer.as_asgi()),
+    
 ]
 
+application = ProtocolTypeRouter(
+    {
+        "websocket": AuthMiddlewareStack(
+            URLRouter(ws_urlpatterns)
+        ),
+    }
+)

@@ -7,7 +7,7 @@ import atexit
 from django.http import JsonResponse
 from django.contrib.auth import get_user_model
 from dhanhq import dhanhq
-from account.models import Control, DhanKillProcessLog
+from account.models import Control, DhanKillProcessLog, DailyAccountOverview
 from datetime import datetime
 from django.db.models import F
 User = get_user_model()
@@ -17,7 +17,7 @@ def auto_order_count_monitoring_process():
     print(f"Current date and time: {now.strftime('%Y-%m-%d %H:%M:%S')}")
     if now.weekday() < 5 and (9 <= now.hour < 16):  # Monday to Friday, 9 AM to 4 PM
         try:
-            print("**********************************************")
+            print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
             print("Starting auto order count monitoring process.")
             active_users = User.objects.filter(is_active=True,kill_switch_2=False)
             for user in active_users:
@@ -47,7 +47,6 @@ def auto_order_count_monitoring_process():
                 except Exception as e:
                     print(f"ERROR: Error processing user {user.username}: {e}")
 
-            print("No User Found.(May be Killed Already/Not Active)")
             print("Monitoring process completed successfully.")
             return JsonResponse({'status': 'success', 'message': 'Monitoring process completed'})
 
@@ -87,6 +86,7 @@ def get_pending_order_list_and_count(order_list):
     return pending_order_ids, len(pending_order_ids)
 
 def activate_kill_switch(user, access_token, traded_order_count):
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
     url = 'https://api.dhan.co/killSwitch?killSwitchStatus=ACTIVATE'
     headers = {'Accept': 'application/json', 'Content-Type': 'application/json', 'access-token': access_token}
 
@@ -132,8 +132,8 @@ def autoStopLossProcessing():
     print(f"Current date and time: {now.strftime('%Y-%m-%d %H:%M:%S')}")
     if now.weekday() < 5 and (9 <= now.hour < 16):  # Monday to Friday, 9 AM to 4 PM
         try:
-            print("*********************************************")
-            print("Starting auto stoploss monitoring process...!")
+            print("************************************************************")
+            print("Starting Auto Stoploss monitoring process...!")
             active_users = User.objects.filter(is_active=True,kill_switch_2=False, auto_stop_loss=True)
             for user in active_users:
                 try:
@@ -249,6 +249,57 @@ def get_pending_order_filter_dhan(response):
     return pending_sl_orders
 
 
+
+def DailyAccountOverviewUpdateProcess():
+    active_users = User.objects.filter(is_active=True, kill_switch_2=False)
+    
+    for user in active_users:
+        dhan_client_id = user.dhan_client_id
+        dhan_access_token = user.dhan_access_token
+        
+        # Initialize the Dhan client
+        dhan = dhanhq(dhan_client_id, dhan_access_token)
+        
+        # Fetch order list, fund data, and position data
+        order_list = dhan.get_order_list()
+        fund_data = dhan.get_fund_limits()
+        position_data = dhan.get_positions()
+
+        # Initialize variables for calculations
+        traded_order_count = get_traded_order_count(order_list) if order_list else 0
+        total_realized_profit = 0.0
+        total_expense = traded_order_count * float(settings.BROKERAGE_PARAMETER)
+
+        # Extract position data safely
+        if position_data and 'data' in position_data:
+            positions = position_data['data']
+            total_realized_profit = sum(position.get('realizedProfit', 0) for position in positions)
+        else:
+            logger.warning(f"No position data for user {user.username}. Setting realized profit to 0.")
+
+        # Get balances safely
+        opening_balance = float(fund_data['data']['sodLimit']) if fund_data and 'data' in fund_data else 0.0
+        closing_balance = float(fund_data['data']['withdrawableBalance']) if fund_data and 'data' in fund_data else 0.0
+        
+        # Calculate actual profit
+        actual_profit = total_realized_profit - total_expense
+        
+        # Create or update DailyAccountOverview entry
+        DailyAccountOverview.objects.create(
+            user=user,
+            opening_balance=opening_balance,
+            pnl_status=total_realized_profit,
+            expenses=total_expense,
+            closing_balance=closing_balance,
+            order_count=traded_order_count
+        )
+        print("--------------------------------------------------------------------")
+        print(f"INFO: DailyAccountOverview updated successfully for {user.username}")
+
+
+
+
+
 def start_scheduler():
     scheduler = BackgroundScheduler()
 
@@ -256,8 +307,11 @@ def start_scheduler():
     scheduler.add_job(self_ping, IntervalTrigger(seconds=58))
     scheduler.add_job(auto_order_count_monitoring_process, IntervalTrigger(seconds=10))
     # Restore user kill switches every Monday to Friday at 4:00 PM
-    scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=16, minute=0))
-    scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=9, minute=15))
+    # scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=16, minute=0))
+    scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=9, minute=0))
+    scheduler.add_job(DailyAccountOverviewUpdateProcess, CronTrigger(day_of_week='mon-fri', hour=15, minute=30))
+
+    
 
     # to test
     scheduler.add_job(autoStopLossProcessing, IntervalTrigger(seconds=2))

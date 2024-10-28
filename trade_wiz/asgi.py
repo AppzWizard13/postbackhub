@@ -11,18 +11,21 @@ import os
 from django.core.asgi import get_asgi_application
 from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.auth import AuthMiddlewareStack
-from account import routing  # Change to your app name
-
-
+from account.routing import ws_urlpatterns
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'trade_wiz.settings')
-print("000000000000000000000000000000000")
 
-application = ProtocolTypeRouter({
-    "http": get_asgi_application(),
-    "websocket": AuthMiddlewareStack(
-        URLRouter(
-            routing.websocket_urlpatterns  # Import your routing
-        )
-    ),
-})
+# Regular Django ASGI application
+django_asgi_application = get_asgi_application()
+
+# Django Channels WebSocket application
+application = ProtocolTypeRouter(
+    {
+        "https": django_asgi_application,
+        "websocket": AuthMiddlewareStack(
+            URLRouter(
+                ws_urlpatterns
+            )
+        ),
+    }
+)
