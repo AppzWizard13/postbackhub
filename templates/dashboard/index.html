@@ -831,7 +831,7 @@
   </script>
   <script>
     const username = '{{ user.username }}'; 
-    const socket = new WebSocket(`wss://tradewiz.onrender.com/ws/orders/${username}/`);
+    const socket = new WebSocket(`ws://tradewiz.onrender.com/ws/orders/${username}/`);
 
     socket.onmessage = function(event) {
         const data = JSON.parse(event.data);
