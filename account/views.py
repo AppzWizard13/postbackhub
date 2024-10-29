@@ -20,7 +20,6 @@ from account.forms import UserLoginForm
 from .forms import CustomUserCreationForm, UserForm, CustomControlCreationForm, ControlForm
 from .models import Control
 
-User = get_user_model()  # Reference your custom user model
 from dhanhq import dhanhq
 from datetime import datetime, timedelta
 
@@ -410,7 +409,7 @@ def close_all_positions(request):
     username = data.get('username')
     # Find the active user by username
     try:
-        user = User.objects.get(is_active=True, kill_switch_2=False, username=username)
+        user = User.objects.get(is_active=True, username=username)
     except User.DoesNotExist:
         return JsonResponse({"error": "User not found or inactive."}, status=404)
     

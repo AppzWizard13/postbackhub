@@ -61,14 +61,14 @@ def handle_order_limits(user, dhan, order_list, traded_order_count, control_data
     pending_order_ids, pending_order_count = get_pending_order_list_and_count(order_list)
 
     if control_data.max_order_count_mode:
-        if control_data.max_order_limit <= traded_order_count and not user.kill_switch_1:
+        if traded_order_count >= control_data.max_order_limit and traded_order_count < control_data.peak_order_limit and not user.kill_switch_1 and not user.kill_switch_2:
             print(f"WARNING: Max order limit exceeded for user {user.username}: Limit = {control_data.max_order_limit}, Traded = {traded_order_count}")
-            activate_kill_switch(user, dhan_access_token, traded_order_count)
-        elif control_data.peak_order_limit <= traded_order_count and user.kill_switch_1 and not user.kill_switch_2 :
+            activate_kill_switch(user, dhan_access_token, traded_order_count, switch="kill_switch_1")
+        elif traded_order_count >= control_data.max_order_limit and user.kill_switch_1 and not user.kill_switch_2:
             print(f"WARNING: Peak order limit exceeded for user {user.username}: Limit = {control_data.peak_order_limit}, Traded = {traded_order_count}")
-            activate_kill_switch(user, dhan_access_token, traded_order_count)
-        elif user.kill_switch_2 :
-            print(f"INFO: Kill Switch Activated for {user.username}: Count = {traded_order_count}, Limit = {control_data.max_order_limit}")
+            activate_kill_switch(user, dhan_access_token, traded_order_count, switch="kill_switch_2")
+        elif user.kill_switch_2:
+            print(f"INFO: Kill Switch 2 Activated for {user.username}: Count = {traded_order_count}, Limit = {control_data.max_order_limit}")
         else:
             print(f"INFO: Order count within limits for user {user.username}: Count = {traded_order_count}, Limit = {control_data.max_order_limit}")
 
@@ -85,7 +85,8 @@ def get_pending_order_list_and_count(order_list):
     pending_order_ids = [order.get('orderId') for order in pending_orders]
     return pending_order_ids, len(pending_order_ids)
 
-def activate_kill_switch(user, access_token, traded_order_count):
+
+def activate_kill_switch(user, access_token, traded_order_count, switch):
     print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
     url = 'https://api.dhan.co/killSwitch?killSwitchStatus=ACTIVATE'
     headers = {'Accept': 'application/json', 'Content-Type': 'application/json', 'access-token': access_token}
@@ -93,22 +94,46 @@ def activate_kill_switch(user, access_token, traded_order_count):
     try:
         response = requests.post(url, headers=headers)
         if response.status_code == 200:
-            if user.kill_switch_1 == False and user.kill_switch_2 == False :
-                DhanKillProcessLog.objects.create(user=user, log=response.json(), order_count=traded_order_count)
+            DhanKillProcessLog.objects.create(user=user, log=response.json(), order_count=traded_order_count)
+            
+            if switch == "kill_switch_1":
                 user.kill_switch_1 = True
-                user.save()
                 print(f"INFO: Kill switch 1 activated for user: {user.username}")
-            elif user.kill_switch_1 == True and user.kill_switch_2 == False :
-                DhanKillProcessLog.objects.create(user=user, log=response.json(), order_count=traded_order_count)
+            elif switch == "kill_switch_2":
                 user.kill_switch_2 = True
-                user.save()
                 print(f"INFO: Kill switch 2 activated for user: {user.username}")
-            elif user.kill_switch_1 == True and user.kill_switch_2 == True :
-                print(f"INFO: Kill switch activated for user: {user.username}","Better Luck Next Day")
+            
+            user.save()
         else:
             print(f"ERROR: Failed to activate kill switch for user {user.username}: Status code {response.status_code}")
     except requests.RequestException as e:
         print(f"ERROR: Error activating kill switch for user {user.username}: {e}")
+
+        
+# def activate_kill_switch(user, access_token, traded_order_count):
+#     print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+#     url = 'https://api.dhan.co/killSwitch?killSwitchStatus=ACTIVATE'
+#     headers = {'Accept': 'application/json', 'Content-Type': 'application/json', 'access-token': access_token}
+
+#     try:
+#         response = requests.post(url, headers=headers)
+#         if response.status_code == 200:
+#             if user.kill_switch_1 == False and user.kill_switch_2 == False :
+#                 DhanKillProcessLog.objects.create(user=user, log=response.json(), order_count=traded_order_count)
+#                 user.kill_switch_1 = True
+#                 user.save()
+#                 print(f"INFO: Kill switch 1 activated for user: {user.username}")
+#             elif user.kill_switch_1 == True and user.kill_switch_2 == False :
+#                 DhanKillProcessLog.objects.create(user=user, log=response.json(), order_count=traded_order_count)
+#                 user.kill_switch_2 = True
+#                 user.save()
+#                 print(f"INFO: Kill switch 2 activated for user: {user.username}")
+#             elif user.kill_switch_1 == True and user.kill_switch_2 == True :
+#                 print(f"INFO: Kill switch activated for user: {user.username}","Better Luck Next Day")
+#         else:
+#             print(f"ERROR: Failed to activate kill switch for user {user.username}: Status code {response.status_code}")
+#     except requests.RequestException as e:
+#         print(f"ERROR: Error activating kill switch for user {user.username}: {e}")
 
 def self_ping():
     try:
