@@ -341,6 +341,7 @@ def start_scheduler():
     scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=16, minute=0))
     scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=9, minute=0))
     scheduler.add_job(DailyAccountOverviewUpdateProcess, CronTrigger(day_of_week='mon-fri', hour=15, minute=30))
+    scheduler.add_job(DailyAccountOverviewUpdateProcess, CronTrigger(day_of_week='mon-fri', hour=23, minute=50))
 
     
 
