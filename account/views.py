@@ -428,21 +428,27 @@ def close_all_positions(request):
                 print("cancel_sl_order_response:", cancel_slorder_response)
 
         latest_buy_entry = get_latest_buy_order_dhan(order_list)
-        if latest_buy_entry['transactionType'] == 'BUY' and latest_buy_entry['orderStatus'] == 'TRADED':
-            # Retrieve necessary details for the order
-            sellorder_response = dhan.place_order(
-                security_id=latest_buy_entry['securityId'],
-                exchange_segment=dhan.NSE_FNO,
-                transaction_type=dhan.SELL,
-                quantity=latest_buy_entry['quantity'],
-                order_type=dhan.MARKET,
-                product_type=dhan.INTRA,
-                price=0
-            )
-            message = sellorder_response['remarks']['message'] if 'remarks' in sellorder_response and 'message' in sellorder_response['remarks'] else 'Unknown error'
-            return JsonResponse({"message": message, "response": sellorder_response})
+        print("------------------------------------------------", latest_buy_entry)
+        if latest_buy_entry:
+            if latest_buy_entry['transactionType'] == 'BUY' and latest_buy_entry['orderStatus'] == 'TRADED':
+                # Retrieve necessary details for the order
+                sellorder_response = dhan.place_order(
+                    security_id=latest_buy_entry['securityId'],
+                    exchange_segment='NSE_FNO',
+                    transaction_type='SELL',
+                    quantity=latest_buy_entry['quantity'],
+                    order_type='MARKET',
+                    product_type='INTRADAY',
+                    price=0
+                )
+                print("sellorder_responsesellorder_response", sellorder_response)
+                message = sellorder_response['remarks']['message'] if 'remarks' in sellorder_response and 'message' in sellorder_response['remarks'] else sellorder_response['remarks']['error_message']
+                return JsonResponse({"message": message, "response": sellorder_response})
+            else:
+                return JsonResponse({"message": "No open BUY order to close."}, status=200)
         else:
-            return JsonResponse({"message": "No open BUY order to close."}, status=200)
+            return JsonResponse({"message": "No orders found for the user {}".format(username)}, status=200)
+
     else:
         return JsonResponse({"message": "No orders found for the user {}".format(username)}, status=200)
 
