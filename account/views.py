@@ -22,7 +22,8 @@ from .models import Control
 
 from dhanhq import dhanhq
 from datetime import datetime, timedelta
-
+# Get the custom user model
+User = get_user_model()
 
 
 # Create your views here.
@@ -225,8 +226,7 @@ class LogoutView(View):
         return redirect('login')  # Change 'login' to the name of your login URL
 
 
-# Get the custom user model
-User = get_user_model()
+
 
 class UserListView(ListView):
     model = User  # This will now refer to the custom user model

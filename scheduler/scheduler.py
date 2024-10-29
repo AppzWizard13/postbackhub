@@ -7,7 +7,7 @@ import atexit
 from django.http import JsonResponse
 from django.contrib.auth import get_user_model
 from dhanhq import dhanhq
-from account.models import Control, DhanKillProcessLog, DailyAccountOverview
+from account.models import Control, DhanKillProcessLog, DailyAccountOverview, TempNotifierTable
 from datetime import datetime
 from django.db.models import F
 User = get_user_model()
@@ -175,12 +175,16 @@ def autoStopLossProcessing():
                         # Step 1: Sort filtered orders by timestamp in descending order
                         latest_entry = order_list['data'][0]
                         if latest_entry['transactionType'] == 'BUY' and latest_entry['orderStatus'] == 'TRADED':
-
+                        # if latest_entry['transactionType'] == 'BUY' and latest_entry['orderStatus'] == 'REJECTED':
+                            print("***************************************************************************")
+                            print("latest_entrylatest_entrylatest_entry", latest_entry)
+                            print("***************************************************************************")
                             security_id = latest_entry['securityId']
                             client_id = latest_entry['dhanClientId']
                             exchange_segment = latest_entry['exchangeSegment']
                             quantity = latest_entry['quantity']
                             traded_price = float(latest_entry['price'])
+                            # traded_price = 100.0
                             sl_price, sl_trigger = calculateslprice(traded_price, stoploss_percentage)
 
                             print("price                                              :", sl_price)
@@ -190,8 +194,9 @@ def autoStopLossProcessing():
                             print(f"Client ID: {client_id}")
                             print(f"Exchange Segment: {exchange_segment}")
                             print(f"Quantity: {quantity}")
+                            print("***************************************************************************")
 
-                            pending_sl_orders = get_pending_order_filter_dhan(orderlistdata)
+                            pending_sl_orders = get_pending_order_filter_dhan(order_list)
                             if pending_sl_orders:
                                 for order in pending_sl_orders:
                                     exst_qty = int(order['quantity'])
@@ -209,11 +214,11 @@ def autoStopLossProcessing():
                                 # Place an order for NSE Futures & Options
                                 stoploss_response = dhan.place_order(
                                             security_id=security_id, 
-                                            exchange_segment=dhan.NSE_FNO,
-                                            transaction_type=dhan.SELL,
+                                            exchange_segment=exchange_segment,
+                                            transaction_type='SELL',
                                             quantity=quantity,
-                                            order_type=dhan.STOP_LOSS,
-                                            product_type=dhan.INTRA,
+                                            order_type='STOP_LOSS',
+                                            product_type='INTRADAY',
                                             price=sl_price,
                                             trigger_price=sl_trigger
                                         )
@@ -224,6 +229,7 @@ def autoStopLossProcessing():
                                     type="dashboard",
                                     defaults={'status': True} 
                                 )
+                                print("***************************************************************************")
 
                                 if not created:
                                     tempObj.status = not tempObj.status
@@ -256,7 +262,7 @@ def calculateslprice(traded_price, stoploss_percentage):
     sl_price = traded_price * (1 - stoploss_percentage / 100)
     slippage = float(settings.TRIGGER_SLIPPAGE)
     sl_price = round(sl_price / slippage) * slippage
-    sl_trigger = sl_price + slippage * 2
+    sl_trigger = sl_price + slippage * 20
     sl_price = round(sl_price, 2)
     sl_trigger = round(sl_trigger, 2)
     return sl_price, sl_trigger
@@ -329,12 +335,12 @@ def start_scheduler():
     scheduler = BackgroundScheduler()
 
     # Self-ping every 58 seconds
-    scheduler.add_job(self_ping, IntervalTrigger(seconds=58))
-    scheduler.add_job(auto_order_count_monitoring_process, IntervalTrigger(seconds=10))
+    # scheduler.add_job(self_ping, IntervalTrigger(seconds=58))
+    # scheduler.add_job(auto_order_count_monitoring_process, IntervalTrigger(seconds=10))
     # Restore user kill switches every Monday to Friday at 4:00 PM
     # scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=16, minute=0))
-    scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=9, minute=0))
-    scheduler.add_job(DailyAccountOverviewUpdateProcess, CronTrigger(day_of_week='mon-fri', hour=15, minute=30))
+    # scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=9, minute=0))
+    # scheduler.add_job(DailyAccountOverviewUpdateProcess, CronTrigger(day_of_week='mon-fri', hour=15, minute=30))
 
     
 
