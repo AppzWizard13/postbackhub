@@ -17,8 +17,7 @@ def auto_order_count_monitoring_process():
     print(f"Current date and time: {now.strftime('%Y-%m-%d %H:%M:%S')}")
     if now.weekday() < 5 and (9 <= now.hour < 16):  # Monday to Friday, 9 AM to 4 PM
         try:
-            print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
-            print("Starting auto order count monitoring process.")
+            print("Starting auto order count monitoring process..................")
             active_users = User.objects.filter(is_active=True,kill_switch_2=False)
             for user in active_users:
                 try:
@@ -26,23 +25,23 @@ def auto_order_count_monitoring_process():
                         dhan_client_id = user.dhan_client_id
                         dhan_access_token = user.dhan_access_token
                         print(f"Processing user: {user.username}, Client ID: {dhan_client_id}")
-
                         # Initialize Dhan client
                         dhan = dhanhq(dhan_client_id, dhan_access_token)
-
                         # Fetch order list
                         order_list = dhan.get_order_list()
                         traded_order_count = get_traded_order_count(order_list)
-
-                        # Fetch control data
-                        control_data = Control.objects.filter(user=user).first()
-                        if control_data:
-                            print(f"Handling order limits for user: {user.username}")
-                            handle_order_limits(user, dhan, order_list, traded_order_count, control_data, dhan_access_token)
+                        if traded_order_count:
+                            # Fetch control data
+                            control_data = Control.objects.filter(user=user).first()
+                            if control_data:
+                                print(f"Handling order limits for user: {user.username}")
+                                handle_order_limits(user, dhan, order_list, traded_order_count, control_data, dhan_access_token)
+                            else:
+                                print(f"INFO: No control data found for user: {user.username}")
                         else:
-                            print(f"WARNING: No control data found for user: {user.username}")
+                            print(f"INFO: No Orders Placed in  user: {user.username}")
                     else:
-                        print(f"WARNING: Kill switch already activated twice for user: {user.username}")
+                        print(f"INFO: Kill switch already activated twice for user: {user.username}")
 
                 except Exception as e:
                     print(f"ERROR: Error processing user {user.username}: {e}")
@@ -61,10 +60,11 @@ def handle_order_limits(user, dhan, order_list, traded_order_count, control_data
     pending_order_ids, pending_order_count = get_pending_order_list_and_count(order_list)
 
     if control_data.max_order_count_mode:
+        print("control_data.peak_order_limit:", control_data.peak_order_limit)
         if traded_order_count >= control_data.max_order_limit and traded_order_count < control_data.peak_order_limit and not user.kill_switch_1 and not user.kill_switch_2:
             print(f"WARNING: Max order limit exceeded for user {user.username}: Limit = {control_data.max_order_limit}, Traded = {traded_order_count}")
             activate_kill_switch(user, dhan_access_token, traded_order_count, switch="kill_switch_1")
-        elif traded_order_count >= control_data.max_order_limit and user.kill_switch_1 and not user.kill_switch_2:
+        elif traded_order_count >= control_data.peak_order_limit and user.kill_switch_1 and not user.kill_switch_2:
             print(f"WARNING: Peak order limit exceeded for user {user.username}: Limit = {control_data.peak_order_limit}, Traded = {traded_order_count}")
             activate_kill_switch(user, dhan_access_token, traded_order_count, switch="kill_switch_2")
         elif user.kill_switch_2:
@@ -74,9 +74,11 @@ def handle_order_limits(user, dhan, order_list, traded_order_count, control_data
 
 
 def get_traded_order_count(order_list):
-    if 'data' not in order_list:
-        return 0
-    return len([order for order in order_list['data'] if order.get('orderStatus') == 'TRADED'])
+    if not order_list.get('data'):
+        return False
+    # traded_count = len([order for order in order_list['data'] if order.get('orderStatus') == 'TRADED'])
+    traded_count = 10 
+    return traded_count
 
 def get_pending_order_list_and_count(order_list):
     if 'data' not in order_list:
@@ -87,7 +89,6 @@ def get_pending_order_list_and_count(order_list):
 
 
 def activate_kill_switch(user, access_token, traded_order_count, switch):
-    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
     url = 'https://api.dhan.co/killSwitch?killSwitchStatus=ACTIVATE'
     headers = {'Accept': 'application/json', 'Content-Type': 'application/json', 'access-token': access_token}
 
@@ -157,7 +158,6 @@ def autoStopLossProcessing():
     print(f"Current date and time: {now.strftime('%Y-%m-%d %H:%M:%S')}")
     if now.weekday() < 5 and (9 <= now.hour < 16):  # Monday to Friday, 9 AM to 4 PM
         try:
-            print("************************************************************")
             print("Starting Auto Stoploss monitoring process...!")
             active_users = User.objects.filter(is_active=True,kill_switch_2=False, auto_stop_loss=True)
             for user in active_users:
@@ -173,74 +173,73 @@ def autoStopLossProcessing():
                         dhan = dhanhq(dhan_client_id, dhan_access_token)
                         order_list = dhan.get_order_list()
                         # Step 1: Sort filtered orders by timestamp in descending order
-                        latest_entry = order_list['data'][0]
-                        if latest_entry['transactionType'] == 'BUY' and latest_entry['orderStatus'] == 'TRADED':
-                        # if latest_entry['transactionType'] == 'BUY' and latest_entry['orderStatus'] == 'REJECTED':
-                            print("***************************************************************************")
-                            print("latest_entrylatest_entrylatest_entry", latest_entry)
-                            print("***************************************************************************")
-                            security_id = latest_entry['securityId']
-                            client_id = latest_entry['dhanClientId']
-                            exchange_segment = latest_entry['exchangeSegment']
-                            quantity = latest_entry['quantity']
-                            traded_price = float(latest_entry['price'])
-                            # traded_price = 100.0
-                            sl_price, sl_trigger = calculateslprice(traded_price, stoploss_percentage)
-
-                            print("price                                              :", sl_price)
-                            print("trigger_price                                      :", sl_trigger)
-                            print("Matching order found with details:")
-                            print(f"Security ID: {security_id}")
-                            print(f"Client ID: {client_id}")
-                            print(f"Exchange Segment: {exchange_segment}")
-                            print(f"Quantity: {quantity}")
-                            print("***************************************************************************")
-
-                            pending_sl_orders = get_pending_order_filter_dhan(order_list)
-                            if pending_sl_orders:
-                                for order in pending_sl_orders:
-                                    exst_qty = int(order['quantity'])
-                                    addon_qty = int(quantity)
-                                    total_qty = exst_qty + addon_qty
-                                    modify_slorder_response = dhan.modify_order(
-                                                                order_id = order['orderId'], 
-                                                                quantity=total_qty
-                                                                )
-
-                                print("Stop Loss Modified Response :", modify_slorder_response)
-                                print(f"INFO: Stop Loss Order Modified Successfully..!")
-
-                            else:
-                                # Place an order for NSE Futures & Options
-                                stoploss_response = dhan.place_order(
-                                            security_id=security_id, 
-                                            exchange_segment=exchange_segment,
-                                            transaction_type='SELL',
-                                            quantity=quantity,
-                                            order_type='STOP_LOSS',
-                                            product_type='INTRADAY',
-                                            price=sl_price,
-                                            trigger_price=sl_trigger
-                                        )
-                                print("Stop Loss Response :", stoploss_response)
-                                print(f"INFO: Stop Loss Order Executed Successfully..!")
-
-                                tempObj, created = TempNotifierTable.objects.get_or_create(
-                                    type="dashboard",
-                                    defaults={'status': True} 
-                                )
+                        traded_order_count = get_traded_order_count(order_list)
+                        if traded_order_count:
+                            latest_entry = order_list['data'][0]
+                            if latest_entry['transactionType'] == 'BUY' and latest_entry['orderStatus'] == 'TRADED':
+                            # if latest_entry['transactionType'] == 'BUY' and latest_entry['orderStatus'] == 'REJECTED':
+                                security_id = latest_entry['securityId']
+                                client_id = latest_entry['dhanClientId']
+                                exchange_segment = latest_entry['exchangeSegment']
+                                quantity = latest_entry['quantity']
+                                traded_price = float(latest_entry['price'])
+                                # traded_price = 100.0
+                                sl_price, sl_trigger = calculateslprice(traded_price, stoploss_percentage)
+                                print("***************************************************************************")
+                                print("price                                              :", sl_price)
+                                print("trigger_price                                      :", sl_trigger)
+                                print("Matching order found with details:")
+                                print(f"Security ID: {security_id}")
+                                print(f"Client ID: {client_id}")
+                                print(f"Exchange Segment: {exchange_segment}")
+                                print(f"Quantity: {quantity}")
                                 print("***************************************************************************")
 
-                                if not created:
-                                    tempObj.status = not tempObj.status
-                                    tempObj.save()
-                                    print("TempNotifierTable record found. Status toggled.")
-                                else:
-                                    print("New TempNotifierTable record created with type='dashboard' and status=True.")
+                                pending_sl_orders = get_pending_order_filter_dhan(order_list)
+                                if pending_sl_orders:
+                                    for order in pending_sl_orders:
+                                        exst_qty = int(order['quantity'])
+                                        addon_qty = int(quantity)
+                                        total_qty = exst_qty + addon_qty
+                                        modify_slorder_response = dhan.modify_order(
+                                                                    order_id = order['orderId'], 
+                                                                    quantity=total_qty
+                                                                    )
 
+                                    print("Stop Loss Modified Response :", modify_slorder_response)
+                                    print(f"INFO: Stop Loss Order Modified Successfully..!")
+
+                                else:
+                                    # Place an order for NSE Futures & Options
+                                    stoploss_response = dhan.place_order(
+                                                security_id=security_id, 
+                                                exchange_segment=exchange_segment,
+                                                transaction_type='SELL',
+                                                quantity=quantity,
+                                                order_type='STOP_LOSS',
+                                                product_type='INTRADAY',
+                                                price=sl_price,
+                                                trigger_price=sl_trigger
+                                            )
+                                    print("Stop Loss Response :", stoploss_response)
+                                    print(f"INFO: Stop Loss Order Executed Successfully..!")
+
+                                    tempObj, created = TempNotifierTable.objects.get_or_create(
+                                        type="dashboard",
+                                        defaults={'status': True} 
+                                    )
+
+                                    if not created:
+                                        tempObj.status = not tempObj.status
+                                        tempObj.save()
+                                        print("TempNotifierTable record found. Status toggled.")
+                                    else:
+                                        print("New TempNotifierTable record created with type='dashboard' and status=True.")
+
+                            else:
+                                print(f"INFO: No Open Order for User {user.username}")
                         else:
                             print(f"INFO: No Open Order for User {user.username}")
-                        
                     else:
                         print(f"WARNING: Kill switch already activated twice for user: {user.username}")
 
@@ -287,10 +286,8 @@ def DailyAccountOverviewUpdateProcess():
     for user in active_users:
         dhan_client_id = user.dhan_client_id
         dhan_access_token = user.dhan_access_token
-        
         # Initialize the Dhan client
         dhan = dhanhq(dhan_client_id, dhan_access_token)
-        
         # Fetch order list, fund data, and position data
         order_list = dhan.get_order_list()
         fund_data = dhan.get_fund_limits()
@@ -324,7 +321,6 @@ def DailyAccountOverviewUpdateProcess():
             closing_balance=closing_balance,
             order_count=traded_order_count
         )
-        print("--------------------------------------------------------------------")
         print(f"INFO: DailyAccountOverview updated successfully for {user.username}")
 
 
