@@ -167,8 +167,9 @@ class DashboardView(TemplateView):
         actual_profit = total_realized_profit - total_expense
         print("fund_datafund_datafund_datafund_data", fund_data)
         opening_balance = float(fund_data['data']['sodLimit'])
+        available_balance = float(fund_data['data']['availabelBalance'])
         actual_balance = opening_balance + actual_profit
-        pnl_percentage = (actual_profit / opening_balance) * 100
+        pnl_percentage = (actual_profit / available_balance) * 100
         if control_data:
             order_limit = control_data.peak_order_limit
         else:
@@ -250,7 +251,7 @@ def user_delete(request, pk):
 
 def clear_kill_log(request):
     if request.user.is_authenticated:
-        DhanKillProcessLog.objects.filter(user=request.user).delete()
+        DhanKillProcessLog.objects.all().delete()
         messages.success(request, "All log data has been cleared successfully.")
     else:
         messages.error(request, "You need to be logged in to perform this action.")
@@ -457,9 +458,6 @@ def close_all_positions(request):
 
 def get_pending_order_filter_dhan(response): 
     # Check if the response contains 'data'
-
-
-
     if 'data' not in response:
         return 0
     pending_sl_orders = [
@@ -475,18 +473,67 @@ def get_latest_buy_order_dhan(response):
     # Check if the response contains 'data'
     if 'data' not in response:
         return 0
-    
     # Filter to get only traded buy orders
     traded_buy_orders = [
         order for order in response['data']
         if order.get('orderStatus') == 'TRADED' and order.get('transactionType') == 'BUY'
     ]
-    
     # Check if there are no traded buy orders
     if not traded_buy_orders:
         return False
-    
     # Sort the buy orders by createTime in descending order to get the latest
     latest_buy_order = max(traded_buy_orders, key=lambda x: x['createTime'])
     
     return latest_buy_order
+
+
+
+
+@login_required
+@require_POST
+@csrf_exempt
+def activate_kill_switch(request):
+    try:
+        # Parse the JSON data from the request body
+        data = json.loads(request.body)
+        username = data.get('username')
+        print("username:", username)
+        
+        # Fetch the user with the provided username
+        user = User.objects.get(is_active=True, username=username)
+        dhan_access_token = user.dhan_access_token
+
+        url = 'https://api.dhan.co/killSwitch?killSwitchStatus=ACTIVATE'
+        headers = {'Accept': 'application/json', 'Content-Type': 'application/json', 'access-token': dhan_access_token}
+
+        # Make the POST request to the external kill switch API
+        response = requests.post(url, headers=headers)
+        
+        if response.status_code == 200:
+            # traded_order_count = response.json().get("order_count", 0)  # Ensure 'traded_order_count' is defined
+            # DhanKillProcessLog.objects.create(user=user, log=response.json(), order_count=traded_order_count)
+            
+            # Update user kill switch status
+            if not user.kill_switch_1 and not user.kill_switch_2:
+                user.kill_switch_1 = True
+                message = f"Kill switch 1 activated for user: {username}"
+            elif user.kill_switch_1 and not user.kill_switch_2:
+                user.kill_switch_2 = True
+                message = f"Kill switch 2 activated for user: {username}"
+            else:
+                message = f"Kill switch already fully activated for user: {username}"
+
+            user.save()
+            result = {"status": "success", "message": message}
+        else:
+            result = {"status": "error", "message": f"Failed to activate kill switch for user {username}: Status code {response.status_code}"}
+    
+    except User.DoesNotExist:
+        result = {"status": "error", "message": f"User {username} not found or inactive."}
+    except requests.RequestException as e:
+        result = {"status": "error", "message": f"Error activating kill switch for user {username}: {e}"}
+    except Exception as e:
+        result = {"status": "error", "message": f"An unexpected error occurred: {e}"}
+    
+    return JsonResponse(result)
+

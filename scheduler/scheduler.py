@@ -110,32 +110,6 @@ def activate_kill_switch(user, access_token, traded_order_count, switch):
     except requests.RequestException as e:
         print(f"ERROR: Error activating kill switch for user {user.username}: {e}")
 
-        
-# def activate_kill_switch(user, access_token, traded_order_count):
-#     print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-#     url = 'https://api.dhan.co/killSwitch?killSwitchStatus=ACTIVATE'
-#     headers = {'Accept': 'application/json', 'Content-Type': 'application/json', 'access-token': access_token}
-
-#     try:
-#         response = requests.post(url, headers=headers)
-#         if response.status_code == 200:
-#             if user.kill_switch_1 == False and user.kill_switch_2 == False :
-#                 DhanKillProcessLog.objects.create(user=user, log=response.json(), order_count=traded_order_count)
-#                 user.kill_switch_1 = True
-#                 user.save()
-#                 print(f"INFO: Kill switch 1 activated for user: {user.username}")
-#             elif user.kill_switch_1 == True and user.kill_switch_2 == False :
-#                 DhanKillProcessLog.objects.create(user=user, log=response.json(), order_count=traded_order_count)
-#                 user.kill_switch_2 = True
-#                 user.save()
-#                 print(f"INFO: Kill switch 2 activated for user: {user.username}")
-#             elif user.kill_switch_1 == True and user.kill_switch_2 == True :
-#                 print(f"INFO: Kill switch activated for user: {user.username}","Better Luck Next Day")
-#         else:
-#             print(f"ERROR: Failed to activate kill switch for user {user.username}: Status code {response.status_code}")
-#     except requests.RequestException as e:
-#         print(f"ERROR: Error activating kill switch for user {user.username}: {e}")
-
 def self_ping():
     try:
         response = requests.get('https://tradewiz.onrender.com/')
@@ -330,19 +304,19 @@ def DailyAccountOverviewUpdateProcess():
 def start_scheduler():
     scheduler = BackgroundScheduler()
 
-    # Self-ping every 58 seconds
-    scheduler.add_job(self_ping, IntervalTrigger(seconds=58))
-    scheduler.add_job(auto_order_count_monitoring_process, IntervalTrigger(seconds=10))
-    # Restore user kill switches every Monday to Friday at 4:00 PM
-    scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=16, minute=0))
-    scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=9, minute=0))
-    scheduler.add_job(DailyAccountOverviewUpdateProcess, CronTrigger(day_of_week='mon-fri', hour=15, minute=30))
-    scheduler.add_job(DailyAccountOverviewUpdateProcess, CronTrigger(day_of_week='mon-fri', hour=23, minute=50))
+    # # Self-ping every 58 seconds
+    # scheduler.add_job(self_ping, IntervalTrigger(seconds=58))
+    # scheduler.add_job(auto_order_count_monitoring_process, IntervalTrigger(seconds=10))
+    # # Restore user kill switches every Monday to Friday at 4:00 PM
+    # scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=16, minute=0))
+    # scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=9, minute=0))
+    # scheduler.add_job(DailyAccountOverviewUpdateProcess, CronTrigger(day_of_week='mon-fri', hour=15, minute=30))
+    # scheduler.add_job(DailyAccountOverviewUpdateProcess, CronTrigger(day_of_week='mon-fri', hour=23, minute=50))
 
     
 
     # to test
-    scheduler.add_job(autoStopLossProcessing, IntervalTrigger(seconds=2))
+    # scheduler.add_job(autoStopLossProcessing, IntervalTrigger(seconds=2))
     scheduler.start()
     print("INFO: Scheduler started.")
 

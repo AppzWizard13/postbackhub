@@ -382,7 +382,7 @@
                             <div class="mb-3 mb-sm-0 pr-5">
                               <a class="btn btn-primary mx-3 fs-3 fw-bold d-block" 
                                  style="border-width: 3px; border-style: solid;">
-                                Actual P/L </br>{{ actual_profit|floatformat:2 }}
+                                P/L : &nbsp;&nbsp; {{ actual_profit|floatformat:2 }}
                               </a>
                             </div>
                           </div>
@@ -422,9 +422,12 @@
                         <div class="col-4">
                             <div class="d-flex justify-content-end">
                                 <div class="mb-3 mb-sm-0 pr-5">
-                                    <a class="btn btn-success mx-3 fs-3 fw-bold d-block" style="border-width: 3px; border-style: solid;" id="action-button">
-                                        Activate Kill<br><span id="action-value"></span>
-                                    </a>
+                                  <button class="btn btn-success mx-3 fs-3 fw-bold d-block" 
+                                  style="border-width: 3px; border-style: solid;" 
+                                  value="{{user.username}}" id="action-button" 
+                                        onclick="activateKillSwitch()">
+                                    Activate Kill<br><span id="action-value"></span>
+                                </button>
                                 </div>
                             </div>
                         </div>
@@ -441,25 +444,25 @@
                     <div class="col-8">
                       <h5 class="card-title fw-semibold" style="margin-bottom: 14px !important;">Risk Overview</h5>
 
-                      <div class="d-flex align-items-center mb-3">
+                      <div class="d-flex align-items-center mt-5">
                         <span class="me-1 rounded-circle bg-light-danger round-20 d-flex align-items-center justify-content-center">
-                            <i class="fs-5 ti ti-alert-circle text-danger"></i>
+                            <i class="fs-5 ti ti-power text-danger"></i>
                         </span>
                         <p class="text-dark me-1 fs-3 mb-0 fw-bold flex-shrink-0" style="width: 150px;">Kill Status:</p>
                         <div class="ms-auto">
                             {% if user.kill_switch_1 and not user.kill_switch_2 %}
-                                <span class="badge bg-warning text-dark fs-3">Once Killed</span>
+                                <span class="badge bg-warning text-dark fs-3">Kill-1</span>
                             {% elif not user.kill_switch_1 and not user.kill_switch_2 %}
                                 <span class="badge bg-success fs-3">No Kill</span>
                             {% elif user.kill_switch_1 and user.kill_switch_2 %}
-                                <span class="badge bg-danger fs-3">Complete Kill</span>
+                                <span class="badge bg-danger fs-3">Kill-2</span>
                             {% endif %}
                         </div>
                     </div>
                     
-                    <div class="d-flex align-items-center mb-3">
+                    <div class="d-flex align-items-center mt-2">
                         <span class="me-1 rounded-circle bg-light-warning round-20 d-flex align-items-center justify-content-center">
-                            <i class="fs-5 ti ti-alert-circle text-warning"></i>
+                            <i class="fs-5 ti ti-power text-warning"></i>
                         </span>
                         <p class="text-dark me-1 fs-3 mb-0 fw-bold flex-shrink-0" style="width: 150px;">Auto Kill:</p>
                         <div class="ms-auto">
@@ -471,11 +474,11 @@
                         </div>
                     </div>
                     
-                    <div class="d-flex align-items-center mb-3">
+                    <div class="d-flex align-items-center mt-2">
                         <span class="me-1 rounded-circle bg-light-danger round-20 d-flex align-items-center justify-content-center">
-                            <i class="fs-5 ti ti-alert-circle text-danger"></i>
+                            <i class="fs-5 ti ti-stairs-down text-danger"></i>
                         </span>
-                        <p class="text-dark me-1 fs-3 mb-0 fw-bold flex-shrink-0" style="width: 150px;">Auto Stop Loss:</p>
+                        <p class="text-dark me-1 fs-3 mb-0 fw-bold flex-shrink-0" style="width: 150px;">Auto SL:</p>
                         <div class="ms-auto">
                             {% if user.auto_stop_loss %}
                                 <span class="badge bg-success fs-3">Enabled</span>
@@ -490,8 +493,8 @@
                       <div class="d-flex justify-content-end">
                         <div class="mb-3 mb-sm-0 pr-5">
                           <a id="smartExitButton" data-username="{{ user.username }}" 
-                             class="btn btn-danger mx-4 fs-3 fw-bold  d-block" 
-                             style="border-width: 3px; border-style: solid; cursor: pointer;">
+                             class="btn btn-danger mx-2 fs-3 fw-bold  d-block" 
+                             style="border-width: 1px; border-style: solid; cursor: pointer;">
                             Quick&nbsp;Exit </br>
                           </a>
                         </div>
@@ -923,6 +926,75 @@
           actionButton.style.display = 'none';
       }
   </script> {% endcomment %}
+
+  <script>
+    function activateKillSwitch() {
+          // Get the username from the button's value attribute
+          const username = document.getElementById('action-button').value;
+
+          fetch('/activate_kill_switch/', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ username: username })
+          })
+          .then(response => response.json())
+          .then(data => {
+              // Create a toast element
+              const toastContainer = document.querySelector('.toast-container');
+              const toast = document.createElement('div');
+              toast.className = `toast align-items-center text-bg-${data.message ? 'success' : 'danger'} border-0`;
+              toast.role = 'alert';
+              toast.ariaLive = 'assertive';
+              toast.ariaAtomic = 'true';
+              toast.dataset.bsDelay = '3000';
+              toast.innerHTML = `
+                  <div class="d-flex">
+                      <div class="toast-body">
+                          ${data.message ? data.message : 'Error: ' + data.error}
+                      </div>
+                      <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                  </div>
+              `;
+
+              // Append the toast to the toast container
+              toastContainer.appendChild(toast);
+
+              // Show the toast
+              const toastInstance = new bootstrap.Toast(toast);
+              toastInstance.show();
+          })
+          .catch(error => {
+              console.error('Error:', error);
+
+              // Handle error toast
+              const toastContainer = document.querySelector('.toast-container');
+              const toast = document.createElement('div');
+              toast.className = 'toast align-items-center text-bg-danger border-0';
+              toast.role = 'alert';
+              toast.ariaLive = 'assertive';
+              toast.ariaAtomic = 'true';
+              toast.dataset.bsDelay = '3000';
+              toast.innerHTML = `
+                  <div class="d-flex">
+                      <div class="toast-body">
+                          Error: ${error.message}
+                      </div>
+                      <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                  </div>
+              `;
+
+              // Append the error toast to the toast container
+              toastContainer.appendChild(toast);
+
+              // Show the error toast
+              const toastInstance = new bootstrap.Toast(toast);
+              toastInstance.show();
+          });
+      }
+  </script>
+
 
     
   <script src="{% static 'dashboard/assets/libs/jquery/dist/jquery.min.js' %}"></script>

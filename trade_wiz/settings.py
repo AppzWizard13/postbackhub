@@ -36,7 +36,7 @@ DHAN_ACCESS_TOKEN = os.environ.get('DHAN_ACCESS_TOKEN', default=None)
 
 ALLOWED_HOSTS = ['*']
 
-CSRF_TRUSTED_ORIGINS = ['https://https://postback-hub.onrender.com', "http://localhost:8001", "http://127.0.0.1:8001",]
+CSRF_TRUSTED_ORIGINS = ['https://https://postback-hub.onrender.com', "http://localhost:8001", "http://127.0.0.1:8001","https://fe6e-2401-4900-667d-5c74-8060-e727-ea6c-483b.ngrok-free.app"]
 
 # Application definition
 INSTALLED_APPS = [
@@ -60,6 +60,8 @@ CHANNEL_LAYERS = {
         'BACKEND': 'channels.layers.InMemoryChannelLayer',  # You can use Redis for production
     },
 }
+
+APPEND_SLASH=False
 
 
 MIDDLEWARE = [
