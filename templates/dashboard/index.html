@@ -868,7 +868,7 @@
       setInterval(checkStatus, 2000);
   </script>
 
-  <script>
+  {% comment %} <script>
       var domain =  window.location.hostname;
       var lastKeyword = '{{ user.username }}'; 
       var socketIndex = new WebSocket("wss://" + domain + "/ws/order_updates/" + lastKeyword + "/");
@@ -922,7 +922,7 @@
           const actionButton = document.getElementById('action-button');
           actionButton.style.display = 'none';
       }
-  </script>
+  </script> {% endcomment %}
 
     
   <script src="{% static 'dashboard/assets/libs/jquery/dist/jquery.min.js' %}"></script>
