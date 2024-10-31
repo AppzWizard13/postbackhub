@@ -422,14 +422,12 @@ def close_all_positions(request):
     if order_list['data']:
         pending_sl_orders = get_pending_order_filter_dhan(order_list)
         print("pending_sl_orderspending_sl_orders", pending_sl_orders)
-        if pending_sl_orders:
+        if not pending_sl_orders == False :
             for orders in pending_sl_orders:
                 cancel_slorder_response = dhan.cancel_order(order_id = orders['orderId'])  
-
                 print("cancel_sl_order_response:", cancel_slorder_response)
-
         latest_buy_entry = get_latest_buy_order_dhan(order_list)
-        print("------------------------------------------------", latest_buy_entry)
+        print("------------------------------------------------latest buy entry:", latest_buy_entry)
         if latest_buy_entry:
             if latest_buy_entry['transactionType'] == 'BUY' and latest_buy_entry['orderStatus'] == 'TRADED':
                 # Retrieve necessary details for the order
@@ -442,14 +440,13 @@ def close_all_positions(request):
                     product_type='INTRADAY',
                     price=0
                 )
-                print("sellorder_responsesellorder_response", sellorder_response)
+                print("------------------------------------------------sellorder response:", sellorder_response)
                 message = sellorder_response['remarks']['message'] if 'remarks' in sellorder_response and 'message' in sellorder_response['remarks'] else sellorder_response['remarks']['error_message']
                 return JsonResponse({"message": message, "response": sellorder_response})
             else:
                 return JsonResponse({"message": "No open BUY order to close."}, status=200)
         else:
             return JsonResponse({"message": "No orders found for the user {}".format(username)}, status=200)
-
     else:
         return JsonResponse({"message": "No orders found for the user {}".format(username)}, status=200)
 
@@ -459,7 +456,7 @@ def close_all_positions(request):
 def get_pending_order_filter_dhan(response): 
     # Check if the response contains 'data'
     if 'data' not in response:
-        return 0
+        return False
     pending_sl_orders = [
         order for order in response['data']
         if order.get('orderStatus') == 'PENDING' and order.get('transactionType') == 'SELL'
@@ -483,11 +480,8 @@ def get_latest_buy_order_dhan(response):
         return False
     # Sort the buy orders by createTime in descending order to get the latest
     latest_buy_order = max(traded_buy_orders, key=lambda x: x['createTime'])
-    
+        
     return latest_buy_order
-
-
-
 
 @login_required
 @require_POST

@@ -18,10 +18,10 @@ def auto_order_count_monitoring_process():
     if now.weekday() < 5 and (9 <= now.hour < 16):  # Monday to Friday, 9 AM to 4 PM
         try:
             print("Starting auto order count monitoring process..................")
-            active_users = User.objects.filter(is_active=True,kill_switch_2=False)
+            active_users = User.objects.filter(is_active=True, kill_switch_2=False)
             for user in active_users:
                 try:
-                    if not user.kill_switch_2:
+                    if user:
                         dhan_client_id = user.dhan_client_id
                         dhan_access_token = user.dhan_access_token
                         print(f"Processing user: {user.username}, Client ID: {dhan_client_id}")
@@ -30,7 +30,8 @@ def auto_order_count_monitoring_process():
                         # Fetch order list
                         order_list = dhan.get_order_list()
                         traded_order_count = get_traded_order_count(order_list)
-                        if traded_order_count:
+                        print("traded_order_counttraded_order_count", traded_order_count)
+                        if traded_order_count > 0:
                             # Fetch control data
                             control_data = Control.objects.filter(user=user).first()
                             if control_data:
@@ -73,11 +74,13 @@ def handle_order_limits(user, dhan, order_list, traded_order_count, control_data
             print(f"INFO: Order count within limits for user {user.username}: Count = {traded_order_count}, Limit = {control_data.max_order_limit}")
 
 
-def get_traded_order_count(order_list):
-    if not order_list.get('data'):
-        return False
-    # traded_count = len([order for order in order_list['data'] if order.get('orderStatus') == 'TRADED'])
-    traded_count = 10 
+def get_traded_order_count(order_list): 
+    if 'data' not in order_list or order_list['data'] == '':
+        return 0
+    else:
+        traded_count = len([order for order in order_list['data'] if order.get('orderStatus') == 'TRADED'])
+    if not traded_count:
+        return 0  
     return traded_count
 
 def get_pending_order_list_and_count(order_list):
@@ -121,10 +124,6 @@ def restore_user_kill_switches():
     active_users = User.objects.filter(is_active=True, kill_switch_1=True, kill_switch_2=True)
     active_users.update(kill_switch_1=False, kill_switch_2=False)
     print(f"INFO: Reset kill switches for {active_users.count()} users.")
-
-
-
-
 
 def autoStopLossProcessing():
     print("Auto Stop Loss Process Running")
