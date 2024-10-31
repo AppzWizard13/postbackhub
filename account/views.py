@@ -172,7 +172,10 @@ class DashboardView(TemplateView):
         else:
             actual_bal = available_balance
 
-        pnl_percentage = (actual_profit / actual_bal) * 100
+        if actual_profit and actual_bal:
+            pnl_percentage = (actual_profit / actual_bal) * 100
+        else:
+            pnl_percentage = 0
         if control_data:
             order_limit = control_data.peak_order_limit
             stoploss_percentage = control_data.stoploss_percentage
