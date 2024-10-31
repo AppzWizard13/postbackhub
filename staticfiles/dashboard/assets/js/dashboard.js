@@ -2,6 +2,47 @@ $(function () {
     // Fetch the raw JSON string from the script tag
     var scriptTag = document.getElementById('positions-data'); 
     var data_set = scriptTag ? scriptTag.textContent : ""; // Get the content of the script tag if it exists
+    // Retrieve series data from the DOM element and parse it as JSON
+    // Retrieve series data from the DOM element and parse it as JSON
+    var breakup_seriesTag = document.getElementById('breakup_series');
+    var breakup_seriesdata = breakup_seriesTag ? breakup_seriesTag.textContent : "";
+    try {
+      // Parse the JSON data and round each number
+      var parsedSeriesData = JSON.parse(breakup_seriesdata);
+      var breakup_series = parsedSeriesData.map(num => Math.round(num));
+    
+      // Check if the second value is negative and make it positive if so
+      if (breakup_series[1] < 0) {
+        breakup_series[1] = Math.abs(breakup_series[1]);
+      }
+      
+      // Set colors based on the second value's positivity/negativity
+      var colors = [
+        "#3267ff", // First color - Blue (default)
+        breakup_series[1] > 0 ? "#fa2d2d" : "#00FF00", // Red if positive, Green if originally negative
+        "#fff47d" // Third color - Orange (default)
+      ];
+    
+    } catch (e) {
+      console.error("Failed to parse breakup_seriesdata as JSON:", e);
+      var breakup_series = [0, 0, 0]; // Default values if parsing fails
+      var colors = ["#3267ff", "#fa2d2d", "#fff47d"]; // Default color scheme
+    }
+    
+
+    // Retrieve labels data from the DOM element and parse it as JSON
+    var breakup_labelsTag = document.getElementById('breakup_labels');
+    var breakup_labelsdata = breakup_labelsTag ? breakup_labelsTag.textContent : "";
+
+    // Convert single quotes to double quotes if necessary
+    breakup_labelsdata = breakup_labelsdata.replace(/'/g, '"');
+
+    try {
+      var breakup_labels = JSON.parse(breakup_labelsdata);
+    } catch (e) {
+      console.error("Failed to parse breakup_labelsdata as JSON:", e);
+      var breakup_labels = ["Label1", "Label2", "Label3"]; // Default labels if parsing fails
+    }
 
     // Initialize positions array
     var positions = [];
@@ -28,12 +69,14 @@ $(function () {
     var categories = [];
     var earnings = [];
     var expenses = [];
+    var chart_earning = [];
 
     // Process positions to populate categories, earnings, and expenses
     if (positions.length > 0) {
         positions.forEach(function(position) {
             categories.push(position.tradingSymbol);  // Add trading symbol to categories
-
+              chart_earning.push(position.realizedProfit);
+              chart_earning.push(0);
             // If realizedProfit is positive, add to earnings; otherwise, add to expenses
             if (position.realizedProfit > 0) {
                 earnings.push(position.realizedProfit);
@@ -166,7 +209,7 @@ $(function () {
       {
         name: "Earnings",
         color: "#49BEFF",
-        data: [25, 66, 20, 40, 12, 58, 20],
+        data:chart_earning,
       },
     ],
     stroke: {
@@ -194,5 +237,61 @@ $(function () {
     },
   };
   new ApexCharts(document.querySelector("#earning"), earning).render();
+
+
+
+    // =====================================
+  // Breakup
+  // =====================================
+  var breakup = {
+    color: "#adb5bd",
+    series: breakup_series, // Use the parsed series data
+    labels: breakup_labels, // Use the parsed labels data
+    chart: {
+      width: 180,
+      type: "donut",
+      fontFamily: "Plus Jakarta Sans', sans-serif",
+      foreColor: "#adb0bb",
+    },
+    plotOptions: {
+      pie: {
+        startAngle: 0,
+        endAngle: 360,
+        donut: {
+          size: '75%',
+        },
+      },
+    },
+    stroke: {
+      show: false,
+    },
+
+    dataLabels: {
+      enabled: false,
+    },
+
+    legend: {
+      show: false,
+    },
+    colors: colors,
+
+    responsive: [
+      {
+        breakpoint: 991,
+        options: {
+          chart: {
+            width: 150,
+          },
+        },
+      },
+    ],
+    tooltip: {
+      theme: "dark",
+      fillSeriesColor: false,
+    },
+  };
+
+  var chart = new ApexCharts(document.querySelector("#breakup"), breakup);
+  chart.render();
 })
 

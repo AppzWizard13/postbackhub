@@ -402,35 +402,74 @@
                 <div class="card-body">
                     <div class="row align-items-start">
                         <div class="col-8">
-                            <h5 class="card-title mb-9 fw-semibold">Emergency Account Management</h5>
-                            <h4 class="fw-semibold mb-3" id="order-status">₹ <span id="status-value">0.00</span></h4>
+                            <h5 class="card-title fw-semibold" style="margin-bottom: 5px !important;">Perfomance Overview</h5>                            
+                            <div class="d-flex align-items-center mb-1">
+                              {% if total_realized_profit > 0 %}
+                                <!-- Positive value: up-right arrow and light success color -->
+                                <span class="me-1 rounded-circle bg-light-success round-20 d-flex align-items-center justify-content-center">
+                                  <i class="fs-4 ti ti-arrow-up-right text-success"></i>
+                                </span>
+                                <p class="text-success me-1 fs-4 mb-3 fw-bolder" style="margin-top: 13px;">{{pnl_percentage|floatformat:2}}&nbsp;&nbsp;%&nbsp;Profit</p>
+                              {% elif total_realized_profit < 0 %}
+                                <!-- Negative value: down-right arrow and light danger color -->
+                                <span class="me-1 rounded-circle bg-light-danger round-20 d-flex align-items-center justify-content-center">
+                                  <i class="fs-5 ti ti-arrow-down-right text-danger"></i>
+                                </span>
+                                <p class="text-danger me-1 fs-4 mb-3 fw-bolder" style="margin-top: 13px;">{{pnl_percentage|floatformat:2}}&nbsp;&nbsp;%&nbsp;Loss</p>
+                              {% else %}
+                                <!-- Zero value: dot icon and light primary color -->
+                                <span class="me-1 rounded-circle bg-light-primary round-20 d-flex align-items-center justify-content-center">
+                                  <i class="fs-4 ti ti-clock text-primary"></i>
+                                </span>
+                                <p class="text-primary me-1 fs-4 mb-3"></p>
+                              {% endif %}
+                            </div>
                             <div class="d-flex align-items-center mb-3">
                                 <span class="me-1 rounded-circle bg-light-success round-20 d-flex align-items-center justify-content-center">
-                                    <i class="fs-5 ti ti-check text-success"></i>
+                                    <i class="fs-5 ti ti-coin-rupee text-success"></i>
                                 </span>
-                                <p class="text-dark me-1 fs-3 mb-0">Details:</p>
-                                <p class="fs-3 mb-0" id="order-details">No order details available.</p>
+                                <p class="text-dark me-1 fs-3 mb-0">Max Expct Loss:</p>
+                                <p class="fs-3 mb-0" id="order-details">{{max_expected_loss|floatformat:2}}</p>
                             </div>
                             <div class="d-flex align-items-center mb-3">
                                 <span class="me-1 rounded-circle bg-light-info round-20 d-flex align-items-center justify-content-center">
-                                    <i class="fs-5 ti ti-info text-info"></i>
+                                    <i class="fs-5 ti ti-coin-rupee text-info"></i>
                                 </span>
-                                <p class="text-dark me-1 fs-3 mb-0">Another Detail:</p>
-                                <p class="fs-3 mb-0" id="another-detail">No additional details available.</p>
+                                <p class="text-dark me-1 fs-3 mb-0">Max Expct Expense:</p>
+                                <p class="fs-3 mb-0" id="another-detail">{{max_expected_expense|floatformat:2}}</p>
                             </div>
                         </div>
+                        <!-- Activate Kill Button -->
                         <div class="col-4">
-                            <div class="d-flex justify-content-end">
-                                <div class="mb-3 mb-sm-0 pr-5">
+                          <div class="d-flex justify-content-end">
+                              <div class="mb-3 mb-sm-0 pr-5">
                                   <button class="btn btn-success mx-3 fs-3 fw-bold d-block" 
-                                  style="border-width: 3px; border-style: solid;" 
-                                  value="{{user.username}}" id="action-button" 
-                                        onclick="activateKillSwitch()">
-                                    Activate Kill<br><span id="action-value"></span>
-                                </button>
-                                </div>
-                            </div>
+                                          style="border-width: 3px; border-style: solid;" 
+                                          id="activateKillButton"  value="{{user.username}}">
+                                      Activate Kill<br><span id="action-button" value="{{user.username}}"></span>
+                                  </button>
+                              </div>
+                          </div>
                         </div>
+
+                        <!-- Confirmation Modal -->
+                        <div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                          <div class="modal-content">
+                            <div class="modal-header">
+                              <h5 class="modal-title" id="confirmationModalLabel">Confirm Action</h5>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                              Are you sure you want to activate the kill switch?
+                            </div>
+                            <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                              <button type="button" class="btn btn-danger" id="confirmAction">Activate Kill</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                 </div>
               </div>  
@@ -517,7 +556,7 @@
                           <i class="fs-5 ti ti-clock text-danger"></i>
                         </span>
                         <p class="text-dark me-1 fs-3 mb-0">Order Limit:</p>
-                        <p class="fs-3 mb-0">{{order_limit}}</p>
+                        <p class="fs-3 mb-0">{{exp_entry_count}}</p>
                       </div>
                       <div class="d-flex align-items-center mb-3">
                         <span class="me-1 rounded-circle bg-light-primary round-20 d-flex align-items-center justify-content-center">
@@ -531,7 +570,7 @@
                       <div class="d-flex justify-content-end">
                         <div class="mb-3 mb-sm-0 pr-5">
                           <a class="btn btn-primary mx-3 fs-3 fw-bold d-block" style="border-width: 3px; border-style: solid;">
-                            Order Count </br>{{ order_count }}
+                            Order Count </br>{{ actual_entry_count }}
                           </a>
                         </div>
                       </div>
@@ -555,13 +594,13 @@
                             <button id="nextPagepos" class="btn btn-primary rounded-circle">›</button>
                         </div>
                     </div>
-                  <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                  <div class="table-responsive" style="overflow-y: auto;">
                     <table class="table text-nowrap mb-0 align-middle" id="positionsTable">
                       <thead class="text-dark fs-4">
                         <tr>
                           <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Trading Symbol</h6></th>
                           <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Position Type</h6></th>
-                          <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Buy Quantity</h6></th>
+                          {% comment %} <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Buy Quantity</h6></th> {% endcomment %}
                           <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Buy Average Price</h6></th>
                           <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Realized Profit</h6></th>
                           <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Unrealized Profit</h6></th>
@@ -576,9 +615,9 @@
                           <td class="border-bottom-0">
                             <span class="fw-normal">{{ position.positionType }}</span>
                           </td>
-                          <td class="border-bottom-0">
+                          {% comment %} <td class="border-bottom-0">
                             <h6 class="fw-semibold mb-0">{{ position.buyQty }}</h6>
-                          </td>
+                          </td> {% endcomment %}
                           <td class="border-bottom-0">
                             <h6 class="fw-semibold mb-0">₹{{ position.buyAvg|floatformat:2 }}</h6>
                           </td>
@@ -638,16 +677,23 @@
                                   <tr>
                                       <td class="border-bottom-0"><h6 class="fw-semibold mb-0">{{ order.orderId }}</h6></td>
                                       <td class="border-bottom-0">
-                                          {% if order.orderStatus == 'PENDING' %}
-                                          <span class="badge bg-warning rounded-3 fw-semibold">Pending</span>
-                                          {% elif order.orderStatus == 'COMPLETED' %}
-                                          <span class="badge bg-success rounded-3 fw-semibold">Completed</span>
+                                          {% if order.orderStatus == 'TRADED' %}
+                                          <span class="badge bg-success rounded-3 fw-semibold">TRADED</span>
+                                          {% elif order.orderStatus == 'CANCELLED' %}
+                                          <span class="badge bg-danger rounded-3 fw-semibold">CANCELLED</span>
+                                          {% elif order.orderStatus == 'REJECTED' %}
+                                          <span class="badge bg-danger rounded-3 fw-semibold">REJECTED</span>
                                           {% else %}
-                                          <span class="badge bg-secondary rounded-3 fw-semibold">{{ order.orderStatus }}</span>
+                                          <span class="badge bg-info rounded-3 fw-semibold">{{ order.orderStatus }}</span>
                                           {% endif %}
                                       </td>
+                                      
                                       <td class="border-bottom-0">
+                                        {% if order.transactionType == 'BUY' %}
                                           <p class="badge bg-success rounded-3 fw-semibold">{{ order.transactionType }}</p>
+                                          {% else %}
+                                          <p class="badge bg-danger rounded-3 fw-semibold">{{ order.transactionType }}</p>
+                                        {% endif %}
                                       </td>
                                       <td class="border-bottom-0"><h6 class="fw-semibold mb-0">{{ order.quantity }}</h6></td>
                                       <td class="border-bottom-0"><h6 class="fw-semibold mb-0 fs-4">₹{{ order.price|floatformat:2 }}</h6></td>
@@ -719,7 +765,7 @@
           });
       });
 
-      const rowsPerPage = 6;
+      const rowsPerPage = 7;
       let currentPage = 1;
 
       const tableBody = document.getElementById('positionsTableBody');
@@ -773,6 +819,35 @@
 
   </script>
   <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Select the "Activate Kill" button and modal confirm button
+      const activateKillButton = document.getElementById('activateKillButton');
+      const confirmActionButton = document.getElementById('confirmAction');
+      
+      // Show the confirmation modal when "Activate Kill" button is clicked
+      activateKillButton.addEventListener('click', function() {
+        const confirmationModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+        confirmationModal.show();
+      });
+  
+      // Perform the "Activate Kill" action on confirmation
+      confirmActionButton.addEventListener('click', function() {
+        // Custom action for the "Activate Kill" button
+        console.log("Kill switch activated.");
+        activateKillSwitch(); //
+        
+        // Add further actions here, such as making an AJAX request or redirecting
+  
+        // Hide the modal after confirming
+        const confirmationModal = bootstrap.Modal.getInstance(document.getElementById('confirmationModal'));
+        confirmationModal.hide();
+      });
+    });
+  </script>
+  <script>
+
+
+
     // JavaScript for AJAX Call
     document.getElementById("smartExitButton").addEventListener("click", function() {
       const username = this.getAttribute("data-username"); // Get the username from the data attribute
@@ -846,26 +921,24 @@
       let previousStatus = null;
   
       function checkStatus() {
-          $.ajax({
-              url: "{% url 'check_log_status' %}",  // Replace with the URL of your Django view that returns the status
-              type: "GET",
-              success: function(response) {
-                  // Assuming response contains a JSON object with a 'status' field
-                  const currentStatus = response.status;
-  
-                  // If the status has changed, reload the page
-                  if (previousStatus !== null && previousStatus !== currentStatus) {
-                      location.reload();
-                  }
-  
-                  // Update the previous status
-                  previousStatus = currentStatus;
-              },
-              error: function(xhr, status, error) {
-                  console.error("Error checking status:", error);
-              }
-          });
-      }
+        const username = "{{ user.username }}";  // Get the username from Django template context
+        
+        $.ajax({
+            url: "{% url 'check_log_status' %}?username=" + encodeURIComponent(username),  // Append username as a query parameter
+            type: "GET",
+            success: function(response) {
+                // Check the response status
+                if (response.status === 'reload') {
+                    location.reload();  // Reload the page if there was a change in the order count
+                } else {
+                    console.log("No change in order count, no reload needed.");
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("Error checking status:", error);
+            }
+        });
+    }
   
       // Run checkStatus every 2 seconds
       setInterval(checkStatus, 2000);
@@ -930,7 +1003,7 @@
   <script>
     function activateKillSwitch() {
           // Get the username from the button's value attribute
-          const username = document.getElementById('action-button').value;
+          const username = document.getElementById('activateKillButton').value;
 
           fetch('/activate_kill_switch/', {
               method: 'POST',
@@ -1006,6 +1079,12 @@
     {% block optional_js %}
     <script type="application/json" id="positions-data">
       {{ position_data_json|safe }}
+    </script>
+    <script type="application/json" id="breakup_series">
+      {{ breakup_series|safe }}
+    </script>
+    <script type="application/json" id="breakup_labels">
+      {{ breakup_labels|safe }}
     </script>
     <script>
       // Initialize all toasts

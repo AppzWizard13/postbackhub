@@ -160,23 +160,41 @@ class DashboardView(TemplateView):
         positions = position_data['data']
         total_realized_profit = sum(position['realizedProfit'] for position in positions) if positions else 0.00
         total_realized_profit = float(total_realized_profit)
-        print("total_realized_profittotal_realized_profit", total_realized_profit)
 
         # Sample static position data (this should ideally come from the API)
         position_data_json = json.dumps(position_data['data'])
         actual_profit = total_realized_profit - total_expense
-        print("fund_datafund_datafund_datafund_data", fund_data)
         opening_balance = float(fund_data['data']['sodLimit'])
         available_balance = float(fund_data['data']['availabelBalance'])
         actual_balance = opening_balance + actual_profit
-        pnl_percentage = (actual_profit / available_balance) * 100
+        if opening_balance >= available_balance:
+            actual_bal = opening_balance
+        else:
+            actual_bal = available_balance
+
+        pnl_percentage = (actual_profit / actual_bal) * 100
         if control_data:
             order_limit = control_data.peak_order_limit
+            stoploss_percentage = control_data.stoploss_percentage
         else:
             order_limit = 0
         day_exp_brokerge = float(order_limit) * float(settings.BROKERAGE_PARAMETER)
+        exp_entry_count = order_limit // 2 
+        actual_entry_count = order_count // 2 
 
+        # data for chart - break up 
+        breakup_series = [actual_balance, actual_profit, total_expense ]
+        breakup_labels = ['A/C Balance', 'Profit/Loss', 'Charges']
+
+        max_expected_loss = (actual_bal * exp_entry_count ) * (stoploss_percentage/100)
+        max_expected_expense = float(max_expected_loss) + day_exp_brokerge
         # Add data to context
+        context['breakup_series'] = breakup_series
+        context['actual_entry_count'] = actual_entry_count
+        context['exp_entry_count'] = exp_entry_count
+        context['breakup_labels'] = breakup_labels
+        context['max_expected_loss'] = max_expected_loss
+        context['max_expected_expense'] = max_expected_expense
         context['fund_data'] = fund_data
         context['pnl_percentage'] = pnl_percentage
         context['day_exp_brokerge'] = day_exp_brokerge
@@ -258,15 +276,33 @@ def clear_kill_log(request):
     
     return redirect('dhan-kill-log-list')  # 
 
-from .models import TempNotifierTable
-
 def check_log_status(request):
-    tempObj = TempNotifierTable.objects.filter(type="dashboard").first()
-    status = tempObj.status if tempObj else False
-    return JsonResponse({"status": status})
-
-
-
+    # Get the username from the request
+    username = request.GET.get('username')
+    
+    # Fetch the user and their DHAN credentials
+    user = get_object_or_404(User, username=username)
+    dhan_client_id = user.dhan_client_id
+    dhan_access_token = user.dhan_access_token
+    
+    # Retrieve order count stored in session
+    session_key = f"{username}_order_count"
+    session_order_count = request.session.get(session_key, 0)
+    
+    # Fetch order count from DHAN API
+    dhan = dhanhq(dhan_client_id, dhan_access_token)
+    orderlistdata = dhan.get_order_list()
+    actual_order_count = get_traded_order_count(orderlistdata)
+    
+    # Check if the order count has changed
+    if session_order_count != actual_order_count:
+        # Update session with new order count
+        request.session[session_key] = actual_order_count
+        # Respond with an indication to reload the page
+        return JsonResponse({'status': 'reload'})
+    
+    # If no change, respond with a status indicating no reload is needed
+    return JsonResponse({'status': 'no_change'})
 
 # Manage Users: View and edit details of a specific user
 class UserDetailView(UpdateView):
@@ -480,7 +516,7 @@ def get_latest_buy_order_dhan(response):
         return False
     # Sort the buy orders by createTime in descending order to get the latest
     latest_buy_order = max(traded_buy_orders, key=lambda x: x['createTime'])
-        
+
     return latest_buy_order
 
 @login_required
