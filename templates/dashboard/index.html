@@ -324,7 +324,7 @@
                               class="me-1 rounded-circle bg-light-success round-20 d-flex align-items-center justify-content-center">
                               <i class="fs-5 ti ti-cash text-success"></i>
                             </span>
-                            <p class="text-dark me-1 fs-3  mb-0">Opening Balance :</p>
+                            <p class="text-dark me-1 fs-3  mb-0">Open Balance :</p>
                             <p class="fs-3  mb-0">₹ {{fund_data.data.sodLimit|floatformat:2}}</p>
                           </div>
                           <div class="d-flex align-items-center mb-3">
@@ -332,7 +332,7 @@
                               class="me-1 rounded-circle bg-light-primary round-20 d-flex align-items-center justify-content-center">
                               <i class="fs-5 ti ti-cash text-primary"></i>
                             </span>
-                            <p class="text-dark me-1 fs-3  mb-0">Closing Balance :</p>
+                            <p class="text-dark me-1 fs-3  mb-0">Close Balance :</p>
                             <p class="fs-3  mb-0">₹ {{actual_balance|floatformat:2}}</p>
                           </div>
                         </div> 
@@ -372,7 +372,7 @@
                               <span class="me-2 rounded-circle bg-light-primary round-20 d-flex align-items-center justify-content-center">
                                 <i class="fs-5 ti ti-clock text-primary"></i>
                               </span>
-                              <p class="text-danger me-1 fs-4 mb-3 fw-bolder" style="margin-top: 13px;">{{pnl_percentage|floatformat:2}}&nbsp;&nbsp;%&nbsp;NO Trades</p>                            {% endif %}
+                              <p class="text-primary me-1 fs-3 mb-3 fw-bolder" style="margin-top: 13px;">{{pnl_percentage|floatformat:2}}&nbsp;&nbsp;%&nbsp;NO Trades</p>                            {% endif %}
                           </div>
                         </div>
                         
@@ -401,7 +401,7 @@
                 <div class="card-body">
                     <div class="row align-items-start">
                         <div class="col-8">
-                            <h5 class="card-title fw-semibold" style="margin-bottom: 5px !important;">Perfomance Overview</h5>                            
+                            <h5 class="card-title fw-semibold" style="margin-bottom: 5px !important;">Risk Overview</h5>                            
                             <div class="d-flex align-items-center mb-1">
                               {% if total_realized_profit > 0 %}
                                 <!-- Positive value: up-right arrow and light success color -->
@@ -420,22 +420,22 @@
                                 <span class="me-1 rounded-circle bg-light-primary round-20 d-flex align-items-center justify-content-center">
                                   <i class="fs-4 ti ti-clock text-primary"></i>
                                 </span>
-                                <p class="text-danger me-1 fs-4 mb-3 fw-bolder" style="margin-top: 13px;">{{pnl_percentage|floatformat:2}}&nbsp;&nbsp;%&nbsp;NO Trades</p>
+                                <p class="text-primary me-1 fs-3 mb-3 fw-bolder" style="margin-top: 13px;">{{pnl_percentage|floatformat:2}}&nbsp;&nbsp;%&nbsp;NO Trades</p>
                               {% endif %}
                             </div>
                             <div class="d-flex align-items-center mb-3">
                                 <span class="me-1 rounded-circle bg-light-success round-20 d-flex align-items-center justify-content-center">
                                     <i class="fs-5 ti ti-coin-rupee text-success"></i>
                                 </span>
-                                <p class="text-dark me-1 fs-3 mb-0">Max Expct Loss:</p>
-                                <p class="fs-3 mb-0" id="order-details">{{max_expected_loss|floatformat:2}}</p>
+                                <p class="text-dark me-1 fs-3 mb-0">Max Loss:</p>
+                                <p class="fs-2 mb-0" id="order-details">{{max_expected_loss|floatformat:2}}</p>
                             </div>
                             <div class="d-flex align-items-center mb-3">
                                 <span class="me-1 rounded-circle bg-light-info round-20 d-flex align-items-center justify-content-center">
                                     <i class="fs-5 ti ti-coin-rupee text-info"></i>
                                 </span>
-                                <p class="text-dark me-1 fs-3 mb-0">Max Expct Expense:</p>
-                                <p class="fs-3 mb-0" id="another-detail">{{max_expected_expense|floatformat:2}}</p>
+                                <p class="text-dark me-1 fs-3 mb-0">Max Expense:</p>
+                                <p class="fs-2 mb-0" id="another-detail">{{max_expected_expense|floatformat:2}}</p>
                             </div>
                         </div>
                         <!-- Activate Kill Button -->
@@ -443,7 +443,7 @@
                           <div class="d-flex justify-content-end">
                               <div class="mb-3 mb-sm-0 pr-5">
                                   <button class="btn btn-success mx-3 fs-3 fw-bold d-block" 
-                                          style="border-width: 3px; border-style: solid;" 
+                                          style="border-width: 1px; border-style: solid;" 
                                           id="activateKillButton"  value="{{user.username}}">
                                       Activate Kill<br><span id="action-button" value="{{user.username}}"></span>
                                   </button>
@@ -480,13 +480,13 @@
                 <div class="card-body">
                   <div class="row align-items-start">
                     <div class="col-8">
-                      <h5 class="card-title fw-semibold" style="margin-bottom: 14px !important;">Risk Overview</h5>
+                      <h5 class="card-title fw-semibold" style="margin-bottom: 30px !important;">Service Status</h5>
 
-                      <div class="d-flex align-items-center mt-5">
-                        <span class="me-1 rounded-circle bg-light-danger round-20 d-flex align-items-center justify-content-center">
+                      <div class="d-flex align-items-center mt-4">
+                        <span class="mx-1 rounded-circle bg-light-danger round-20 d-flex align-items-center justify-content-center">
                             <i class="fs-5 ti ti-power text-danger"></i>
                         </span>
-                        <p class="text-dark me-1 fs-3 mb-0 fw-bold flex-shrink-0" style="width: 150px;">Kill Status:</p>
+                        <p class="text-dark mx-1 fs-3 mb-0 fw-bold flex-shrink-0" style="width: 150px;">Kill Status:</p>
                         <div class="ms-auto">
                             {% if user.kill_switch_1 and not user.kill_switch_2 %}
                                 <span class="badge bg-warning text-dark fs-3">Kill-1</span>
@@ -498,11 +498,11 @@
                         </div>
                     </div>
                     
-                    <div class="d-flex align-items-center mt-2">
-                        <span class="me-1 rounded-circle bg-light-warning round-20 d-flex align-items-center justify-content-center">
+                    <div class="d-flex align-items-center mt-3">
+                        <span class="mx-1 rounded-circle bg-light-warning round-20 d-flex align-items-center justify-content-center">
                             <i class="fs-5 ti ti-power text-warning"></i>
                         </span>
-                        <p class="text-dark me-1 fs-3 mb-0 fw-bold flex-shrink-0" style="width: 150px;">Auto Kill:</p>
+                        <p class="text-dark mx-1 fs-3 mb-0 fw-bold flex-shrink-0" style="width: 150px;">Auto Kill:</p>
                         <div class="ms-auto">
                             {% if user.is_active %}
                                 <span class="badge bg-success fs-3">Active</span>
@@ -512,11 +512,11 @@
                         </div>
                     </div>
                     
-                    <div class="d-flex align-items-center mt-2">
-                        <span class="me-1 rounded-circle bg-light-danger round-20 d-flex align-items-center justify-content-center">
+                    <div class="d-flex align-items-center mt-3">
+                        <span class="mx-1 rounded-circle bg-light-danger round-20 d-flex align-items-center justify-content-center">
                             <i class="fs-5 ti ti-stairs-down text-danger"></i>
                         </span>
-                        <p class="text-dark me-1 fs-3 mb-0 fw-bold flex-shrink-0" style="width: 150px;">Auto SL:</p>
+                        <p class="text-dark mx-1 fs-3 mb-0 fw-bold flex-shrink-0" style="width: 150px;">Auto SL:</p>
                         <div class="ms-auto">
                             {% if user.auto_stop_loss %}
                                 <span class="badge bg-success fs-3">Enabled</span>

@@ -146,6 +146,8 @@ class DashboardView(TemplateView):
 
         control_data = Control.objects.filter(user=user).first()
 
+        total_realized_profit = 0.0
+
         # Fetch data from DHAN API using the user's credentials
         dhan = dhanhq(dhan_client_id, dhan_access_token)
         fund_data = dhan.get_fund_limits()
@@ -157,9 +159,14 @@ class DashboardView(TemplateView):
 
         position_data = dhan.get_positions()
         current_date = datetime.now().date()
-        positions = position_data['data']
-        total_realized_profit = sum(position['realizedProfit'] for position in positions) if positions else 0.00
-        total_realized_profit = float(total_realized_profit)
+        position = []
+        if 'data' not in position_data or not isinstance(position_data['data'], list) or not position_data['data']:
+            positions = False
+        else:
+            positions = position_data['data']
+        if positions:
+            total_realized_profit = sum(position['realizedProfit'] for position in positions) if positions else 0.00
+            total_realized_profit = float(total_realized_profit)
 
         # Sample static position data (this should ideally come from the API)
         position_data_json = json.dumps(position_data['data'])
@@ -191,6 +198,19 @@ class DashboardView(TemplateView):
 
         max_expected_loss = (actual_bal * exp_entry_count ) * (stoploss_percentage/100)
         max_expected_expense = float(max_expected_loss) + day_exp_brokerge
+
+
+
+        # Market Quote Data                    
+        index_data = dhan.ohlc_data(
+            securities = {"NSE_EQ":[13]}
+        )
+
+        print("index_dataindex_data", index_data)
+
+
+
+
         # Add data to context
         context['breakup_series'] = breakup_series
         context['actual_entry_count'] = actual_entry_count
@@ -225,13 +245,18 @@ class DashboardView(TemplateView):
 
 
 def get_traded_order_count(order_list):
-    if 'data' not in order_list:
+    
+    # Check if 'data' key is in order_list and that 'data' is a list
+    if 'data' not in order_list or not isinstance(order_list['data'], list) or not order_list['data']:
         return 0
-    return len([order for order in order_list['data'] if order.get('orderStatus') == 'TRADED'])
+    
+    # Calculate traded_count if data list is not empty
+    traded_count = len([order for order in order_list['data'] if order.get('orderStatus') == 'TRADED'])
+    return traded_count if traded_count else 0
 
 def get_traded_order_filter_dhan(response):
-    # Check if the response contains 'data'
-    if 'data' not in response:
+    # Check if 'data' key is in order_list and that 'data' is a list
+    if 'data' not in response or not isinstance(response['data'], list) or not response['data']:
         return 0
 
     # Filter orders with 'orderStatus' as 'TRADED'
@@ -327,6 +352,9 @@ class UserDetailView(UpdateView):
             'dhan_client_id': form.cleaned_data.get('dhan_client_id'),
             'status': form.cleaned_data.get('status'),
             'is_active': form.cleaned_data.get('is_active'),
+            'kill_switch_1': form.cleaned_data.get('kill_switch_1'),
+            'kill_switch_2': form.cleaned_data.get('kill_switch_2'),
+            
             # Add 'profile_image' if needed
         }
         # Update the user fields in the User model where username matches

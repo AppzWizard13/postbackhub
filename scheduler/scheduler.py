@@ -74,14 +74,15 @@ def handle_order_limits(user, dhan, order_list, traded_order_count, control_data
             print(f"INFO: Order count within limits for user {user.username}: Count = {traded_order_count}, Limit = {control_data.max_order_limit}")
 
 
-def get_traded_order_count(order_list): 
-    if 'data' not in order_list or order_list['data'] == '':
+def get_traded_order_count(order_list):
+    
+    # Check if 'data' key is in order_list and that 'data' is a list
+    if 'data' not in order_list or not isinstance(order_list['data'], list) or not order_list['data']:
         return 0
-    else:
-        traded_count = len([order for order in order_list['data'] if order.get('orderStatus') == 'TRADED'])
-    if not traded_count:
-        return 0  
-    return traded_count
+    
+    # Calculate traded_count if data list is not empty
+    traded_count = len([order for order in order_list['data'] if order.get('orderStatus') == 'TRADED'])
+    return traded_count if traded_count else 0
 
 def get_pending_order_list_and_count(order_list):
     if 'data' not in order_list:
@@ -304,19 +305,19 @@ def start_scheduler():
     scheduler = BackgroundScheduler()
 
     # Self-ping every 58 seconds
-    scheduler.add_job(self_ping, IntervalTrigger(seconds=58))
-    scheduler.add_job(auto_order_count_monitoring_process, IntervalTrigger(seconds=10))
-    # Restore user kill switches every Monday to Friday at 4:00 PM
-    scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=16, minute=0))
-    scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=9, minute=0))
-    scheduler.add_job(DailyAccountOverviewUpdateProcess, CronTrigger(day_of_week='mon-fri', hour=15, minute=30))
-    scheduler.add_job(DailyAccountOverviewUpdateProcess, CronTrigger(day_of_week='mon-fri', hour=23, minute=50))
+    # scheduler.add_job(self_ping, IntervalTrigger(seconds=58))
+    # scheduler.add_job(auto_order_count_monitoring_process, IntervalTrigger(seconds=10))
+    # # Restore user kill switches every Monday to Friday at 4:00 PM
+    # scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=16, minute=0))
+    # scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=9, minute=0))
+    # scheduler.add_job(DailyAccountOverviewUpdateProcess, CronTrigger(day_of_week='mon-fri', hour=15, minute=30))
+    # scheduler.add_job(DailyAccountOverviewUpdateProcess, CronTrigger(day_of_week='mon-fri', hour=23, minute=50))
 
     
 
-    # to test
-    scheduler.add_job(autoStopLossProcessing, IntervalTrigger(seconds=2))
-    scheduler.start()
+    # # to test
+    # scheduler.add_job(autoStopLossProcessing, IntervalTrigger(seconds=2))
+    # scheduler.start()
     print("INFO: Scheduler started.")
 
     # Shut down the scheduler when exiting the app

@@ -86,6 +86,8 @@ class UserForm(forms.ModelForm):
             'dhan_access_token', 
             'is_active', 
             'auto_stop_loss', 
+            'kill_switch_1',
+            'kill_switch_2',
             # 'profile_image',  # Optional field
         ]
         widgets = {

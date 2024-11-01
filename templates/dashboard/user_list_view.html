@@ -14,6 +14,9 @@
                                     <h6 class="fw-semibold mb-0">ID</h6>
                                 </th>
                                 <th class="border-bottom-0">
+                                    <h6 class="fw-semibold mb-0">Modify </h6>
+                                </th>
+                                <th class="border-bottom-0">
                                     <h6 class="fw-semibold mb-0">Username</h6>
                                 </th>
                                 <th class="border-bottom-0">
@@ -31,7 +34,7 @@
                                     <h6 class="fw-semibold mb-0">Access Token</h6>
                                 </th>
                                 <th class="border-bottom-0">
-                                    <h6 class="fw-semibold mb-0">Action</h6>
+                                    <h6 class="fw-semibold mb-0">Delete</h6>
                                 </th>
                             </tr>
                         </thead>
@@ -40,6 +43,11 @@
                             <tr>
                                 <td class="border-bottom-0">
                                     <h6 class="fw-semibold mb-0">{{ user.id }}</h6>
+                                </td>
+                                <td class="border-bottom-0">
+                                    <a href="{% url 'user_detail' user.pk %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="ti ti-pencil"></i>
+                                    </a>
                                 </td>
                                 <td class="border-bottom-0">
                                     <h6 class="fw-semibold mb-1">{{ user.username }}</h6>
@@ -57,13 +65,13 @@
                                     <p class="mb-0 fw-normal">{{ user.dhan_client_id }}</p>
                                 </td>
                                 <td class="border-bottom-0">
-                                    <p class="mb-0 fw-normal">{{ user.dhan_access_token }}</p>
+                                    <p class="mb-0 fw-normal">{{ user.dhan_access_token|slice:":10" }}</p>
                                 </td>
-                                <td class="border-bottom-0">
+                                {% comment %} <td class="border-bottom-0">
                                     <a href="{% url 'user_detail' user.pk %}" class="btn btn-sm btn-outline-primary">
                                         <i class="ti ti-pencil"></i>
                                     </a>
-                                </td>
+                                </td> {% endcomment %}
                                 <td class="border-bottom-0">
                                     <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ user.pk }}">
                                         <i class="ti ti-trash"></i>
