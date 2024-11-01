@@ -88,6 +88,7 @@ class UserForm(forms.ModelForm):
             'auto_stop_loss', 
             'kill_switch_1',
             'kill_switch_2',
+            'quick_exit'
             # 'profile_image',  # Optional field
         ]
         widgets = {

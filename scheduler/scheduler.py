@@ -126,7 +126,7 @@ def restore_user_kill_switches():
     active_users.update(kill_switch_1=False, kill_switch_2=False)
     print(f"INFO: Reset kill switches for {active_users.count()} users.")
 
-def autoStopLossProcessing():
+def autoStopLossProcess():
     print("Auto Stop Loss Process Running")
     now = datetime.now()
     print(f"Current date and time: {now.strftime('%Y-%m-%d %H:%M:%S')}")
@@ -298,6 +298,78 @@ def DailyAccountOverviewUpdateProcess():
         print(f"INFO: DailyAccountOverview updated successfully for {user.username}")
 
 
+def autoclosePositionProcess():
+    print("Auto Stop Loss Process Running")
+    now = datetime.now()
+    print(f"Current date and time: {now.strftime('%Y-%m-%d %H:%M:%S')}")
+    if now.weekday() < 5 and (9 <= now.hour < 16):  # Monday to Friday, 9 AM to 4 PM
+        try:
+            print("Starting Auto Stoploss monitoring process...!")
+            active_users = User.objects.filter(is_active=True,kill_switch_2=False, quick_exit=True)
+            for user in active_users:
+                try:
+                    if not user.kill_switch_2 and user.auto_stop_loss:
+                        dhan_client_id = user.dhan_client_id
+                        dhan_access_token = user.dhan_access_token
+                        print(f"Processing user: {user.username}, Client ID: {dhan_client_id}")
+                        # Fetch control data
+                        control_data = Control.objects.filter(user=user).first()
+                        stoploss_percentage = float(control_data.stoploss_percentage)
+                        # Initialize Dhan client
+                        dhan = dhanhq(dhan_client_id, dhan_access_token)
+                        order_list = dhan.get_order_list()
+                        # Step 1: Sort filtered orders by timestamp in descending order
+                        traded_order_count = get_traded_order_count(order_list)
+                        if traded_order_count:
+                            latest_entry = order_list['data'][0]
+                            if latest_entry['transactionType'] == 'SELL' and latest_entry['orderStatus'] == 'CANCELLED':
+                            # if latest_entry['transactionType'] == 'BUY' and latest_entry['orderStatus'] == 'REJECTED':
+                                security_id = latest_entry['securityId']
+                                client_id = latest_entry['dhanClientId']
+                                exchange_segment = latest_entry['exchangeSegment']
+                                quantity = latest_entry['quantity']
+                                traded_price = float(latest_entry['price'])
+                                print("***************************************************************************")
+                                print("SELL ORDER PAYLOAD DATA:")
+                                print(f"Security ID: {security_id}")
+                                print(f"Client ID: {client_id}")
+                                print(f"Exchange Segment: {exchange_segment}")
+                                print(f"Quantity: {quantity}")
+                                print("***************************************************************************")
+                                # Place an order for NSE Futures & Options
+                                stoploss_response = dhan.place_order(
+                                            security_id=security_id, 
+                                            exchange_segment=exchange_segment,
+                                            transaction_type='SELL',
+                                            quantity=quantity,
+                                            order_type='MARKET',
+                                            product_type='INTRADAY',
+                                            price=0
+                                        )
+                                print("SELL ORDER Response :", stoploss_response)
+                                print(f"INFO: SELL ORDER Order Executed Successfully..!")
+
+                            else:
+                                print(f"INFO: No Open Order for User {user.username}")
+                        else:
+                            print(f"INFO: No Open Order for User {user.username}")
+                    else:
+                        print(f"WARNING: Kill switch already activated twice for user: {user.username}")
+
+                except Exception as e:
+                    print(f"ERROR: Error processing user {user.username}: {e}")
+
+            print("No User Found.(May be Killed Already/Not Active)")
+            print("Auto Stoplos sMonitoring process completed successfully.")
+            return JsonResponse({'status': 'success', 'message': 'Monitoring process completed'})
+
+        except Exception as e:
+            print(f"ERROR: Error in  stoploss monitoring process: {e}")
+            return JsonResponse({'status': 'error', 'message': 'An error occurred'}, status=500)
+    else:
+        print("INFO: Current time is outside of the scheduled range.")
+
+
 
 
 
@@ -305,19 +377,21 @@ def start_scheduler():
     scheduler = BackgroundScheduler()
 
     # Self-ping every 58 seconds
-    # scheduler.add_job(self_ping, IntervalTrigger(seconds=58))
-    # scheduler.add_job(auto_order_count_monitoring_process, IntervalTrigger(seconds=10))
-    # # Restore user kill switches every Monday to Friday at 4:00 PM
-    # scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=16, minute=0))
-    # scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=9, minute=0))
-    # scheduler.add_job(DailyAccountOverviewUpdateProcess, CronTrigger(day_of_week='mon-fri', hour=15, minute=30))
-    # scheduler.add_job(DailyAccountOverviewUpdateProcess, CronTrigger(day_of_week='mon-fri', hour=23, minute=50))
+    scheduler.add_job(self_ping, IntervalTrigger(seconds=180))
+    scheduler.add_job(auto_order_count_monitoring_process, IntervalTrigger(seconds=10))
+    # Restore user kill switches every Monday to Friday at 4:00 PM
+    scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=16, minute=0))
+    scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=9, minute=0))
+    scheduler.add_job(DailyAccountOverviewUpdateProcess, CronTrigger(day_of_week='mon-fri', hour=15, minute=30))
+    scheduler.add_job(DailyAccountOverviewUpdateProcess, CronTrigger(day_of_week='mon-fri', hour=23, minute=50))
 
     
 
-    # # to test
-    # scheduler.add_job(autoStopLossProcessing, IntervalTrigger(seconds=2))
-    # scheduler.start()
+    # to test
+    scheduler.add_job(autoStopLossProcess, IntervalTrigger(seconds=2))
+    scheduler.add_job(autoclosePositionProcess, IntervalTrigger(seconds=2))
+    
+    scheduler.start()
     print("INFO: Scheduler started.")
 
     # Shut down the scheduler when exiting the app

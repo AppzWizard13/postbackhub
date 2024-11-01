@@ -15,6 +15,7 @@ class User(AbstractUser):
     auto_stop_loss = models.BooleanField(default=False)
     kill_switch_1  = models.BooleanField(default=False)  # New is_kill_1  field
     kill_switch_2 = models.BooleanField(default=False)  # New is_kill_2  field
+    quick_exit = models.BooleanField(default=False)
 
     # Adding related_name to prevent reverse accessor clashes
     groups = models.ManyToManyField(

@@ -354,6 +354,7 @@ class UserDetailView(UpdateView):
             'is_active': form.cleaned_data.get('is_active'),
             'kill_switch_1': form.cleaned_data.get('kill_switch_1'),
             'kill_switch_2': form.cleaned_data.get('kill_switch_2'),
+            'quick_exit': form.cleaned_data.get('quick_exit'),
             
             # Add 'profile_image' if needed
         }
