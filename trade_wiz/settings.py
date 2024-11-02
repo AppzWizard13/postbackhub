@@ -141,6 +141,10 @@ BROKERAGE_PARAMETER = "33"
 
 TRIGGER_SLIPPAGE = "0.05"
 
+DEV_ADMIN = 'tradingwitch'
+ACTIVE_TRADER = ['juztin', 'tradingwitch']
+ACTING_ADMIN = 'vicky'
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 

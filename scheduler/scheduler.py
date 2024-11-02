@@ -358,6 +358,7 @@ def autoclosePositionProcess():
                         traded_order_count = get_traded_order_count(order_list)
                         if traded_order_count:
                             latest_entry = order_list['data'][0]
+                            sl_order_id = latest_entry['orderId']
                             if latest_entry['transactionType'] == 'SELL' and latest_entry['orderStatus'] == 'CANCELLED':
                             # if latest_entry['transactionType'] == 'BUY' and latest_entry['orderStatus'] == 'REJECTED':
                                 security_id = latest_entry['securityId']
@@ -383,7 +384,9 @@ def autoclosePositionProcess():
                                             price=0
                                         )
                                 print("SELL ORDER Response :", stoploss_response)
-                                print(f"INFO: SELL ORDER Order Executed Successfully..!")
+                                slOrderslog.objects.filter(order_id=sl_order_id).delete()
+                                print(f"INFO: Position Closing Executed Successfully..!")
+
 
                             else:
                                 print(f"INFO: No Open Order for User {user.username}")
@@ -407,6 +410,50 @@ def autoclosePositionProcess():
 
 
 
+def autoAdminSwitchingProcess():
+    try:
+        # Get the current day and time
+        current_day = datetime.now().strftime('%A')
+        current_hour = datetime.now().hour
+        print("?????????????????????????????????????????????????????????")
+        if current_day == 'Monday' and current_hour == 3:
+            # Set vicky as superuser and remove superuser status from juztin and tradingwitch
+            acting_admin = settings.ACTING_ADMIN
+            acting_traders_list = settings.ACTING_TRADERS
+            dev_admin = settings.DEV_ADMIN
+            vicky = User.objects.get(username=acting_admin)
+            vicky.is_superuser = True
+            vicky.save()
+            print(f"INFO: Set ", acting_admin ,"as superuser on Monday at 3 AM")
+
+            for username in acting_traders_list:
+                user = User.objects.get(username=username)
+                user.is_superuser = False
+                user.save()
+                print(f"INFO: Removed superuser status from '{username}'")
+                
+        elif current_day == 'Friday' and current_hour == 16:
+            # Set tradingwitch as superuser and remove superuser status from vicky
+            tradingwitch = User.objects.get(username=dev_admin)
+            tradingwitch.is_superuser = True
+            tradingwitch.save()
+            print("INFO: Set" ,dev_admin ,"as superuser on Saturday at 4 PM")
+            
+            vicky = User.objects.get(username='vicky')
+            vicky.is_superuser = False
+            vicky.save()
+            print("INFO: Removed superuser status from 'vicky'")
+
+        else:
+            print("Admin Switching Process not in time range")
+
+    except User.DoesNotExist as e:
+        print(f"ERROR: User not found: {e}")
+    except Exception as e:
+        print(f"ERROR: An error occurred in update_superuser_status: {e}")
+
+
+
 
 
 def start_scheduler():
@@ -426,6 +473,11 @@ def start_scheduler():
     # to test
     scheduler.add_job(autoStopLossProcess, IntervalTrigger(seconds=2))
     scheduler.add_job(autoclosePositionProcess, IntervalTrigger(seconds=2))
+
+    scheduler.add_job(autoAdminSwitchingProcess, IntervalTrigger(hours=1))
+
+
+
 
 
 
