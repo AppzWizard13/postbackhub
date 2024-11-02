@@ -7,7 +7,7 @@ import atexit
 from django.http import JsonResponse
 from django.contrib.auth import get_user_model
 from dhanhq import dhanhq
-from account.models import Control, DhanKillProcessLog, DailyAccountOverview, TempNotifierTable
+from account.models import Control, DhanKillProcessLog, DailyAccountOverview, TempNotifierTable, slOrderslog
 from datetime import datetime
 from django.db.models import F
 User = get_user_model()
@@ -176,9 +176,11 @@ def autoStopLossProcess():
                                         addon_qty = int(quantity)
                                         total_qty = exst_qty + addon_qty
                                         modify_slorder_response = dhan.modify_order(
-                                                                    order_id = order['orderId'], 
-                                                                    quantity=total_qty
-                                                                    )
+                                                                order_id = order['orderId'], 
+                                                                order_type = order['orderType'],
+                                                                quantity=total_qty,
+                                                                validity=order["validity"]
+                                                                )
 
                                     print("Stop Loss Modified Response :", modify_slorder_response)
                                     print(f"INFO: Stop Loss Order Modified Successfully..!")
@@ -186,29 +188,63 @@ def autoStopLossProcess():
                                 else:
                                     # Place an order for NSE Futures & Options
                                     stoploss_response = dhan.place_order(
-                                                security_id=security_id, 
-                                                exchange_segment=exchange_segment,
-                                                transaction_type='SELL',
-                                                quantity=quantity,
-                                                order_type='STOP_LOSS',
-                                                product_type='INTRADAY',
-                                                price=sl_price,
-                                                trigger_price=sl_trigger
-                                            )
-                                    print("Stop Loss Response :", stoploss_response)
-                                    print(f"INFO: Stop Loss Order Executed Successfully..!")
-
-                                    tempObj, created = TempNotifierTable.objects.get_or_create(
-                                        type="dashboard",
-                                        defaults={'status': True} 
+                                        security_id=security_id,
+                                        exchange_segment=exchange_segment,
+                                        transaction_type='SELL',
+                                        quantity=quantity,
+                                        order_type='STOP_LOSS',
+                                        product_type='INTRADAY',
+                                        price=sl_price,
+                                        trigger_price=sl_trigger
                                     )
 
-                                    if not created:
-                                        tempObj.status = not tempObj.status
-                                        tempObj.save()
-                                        print("TempNotifierTable record found. Status toggled.")
+                                    print("Stop Loss Response:", stoploss_response)
+                                    print("INFO: Stop Loss Order Executed Successfully..!")
+
+                                    # Check if the response was successful and contains an order ID
+                                    if stoploss_response.get("status") == "success" and "data" in stoploss_response and user.sl_control_mode:
+                                        order_id = stoploss_response["data"].get("orderId")
+                                        print(f"INFO: Stop Loss Order Executed Successfully..! Order ID: {order_id}")
+                                        
+                                        # Save the order details in slOrderslog model
+                                        sl_order = slOrderslog(
+                                            order_id=order_id,
+                                            security_id=security_id,
+                                            exchange_segment=exchange_segment,
+                                            transaction_type='SELL',
+                                            quantity=quantity,
+                                            order_type='STOP_LOSS',
+                                            product_type='INTRADAY',
+                                            price=sl_price,
+                                            trigger_price=sl_trigger
+                                        )
+                                        sl_order.save()
+                                        print("INFO: Order details saved to slOrderslog successfully.")
+
                                     else:
-                                        print("New TempNotifierTable record created with type='dashboard' and status=True.")
+                                        print("ERROR: Failed to place stop loss order. Response:", stoploss_response)
+                                    
+                            elif latest_entry['transactionType'] == 'SELL' and latest_entry['orderStatus'] == 'PENDING' and user.sl_control_mode:
+                                latest_order_order_id = latest_entry['orderId']
+                                latest_order_price = latest_entry['price']
+                                latest_order_type = latest_entry['orderType']
+                                latest_order_validity = latest_entry['validity']
+
+
+                                slModifyCheckData = slOrderslog.Objects.filter(order_id=latest_order_order_id).get()
+                                if slModifyCheckData.price <= latest_order_price :
+                                    print(f"INFO: Everyhting is good in Stop Loss Monitoring: {user.username}")
+                                else:
+                                    modify_slorder_response = dhan.modify_order(
+                                                        order_id = latest_order_order_id, 
+                                                        price = slModifyCheckData.price,
+                                                        trigger_price = slModifyCheckData.trigger_price,
+                                                        order_type = latest_order_type,
+                                                        validity=latest_order_validity
+                                                        )      
+                                    print(f"INFO: Stop Loss Control Processed: {modify_slorder_response}")
+
+                                print(f"INFO: No Open Order for User {user.username}")
 
                             else:
                                 print(f"INFO: No Open Order for User {user.username}")
@@ -299,12 +335,12 @@ def DailyAccountOverviewUpdateProcess():
 
 
 def autoclosePositionProcess():
-    print("Auto Stop Loss Process Running")
+    print("Auto Close Positions Process Running")
     now = datetime.now()
     print(f"Current date and time: {now.strftime('%Y-%m-%d %H:%M:%S')}")
     if now.weekday() < 5 and (9 <= now.hour < 16):  # Monday to Friday, 9 AM to 4 PM
         try:
-            print("Starting Auto Stoploss monitoring process...!")
+            print("Starting Auto close position  monitoring process...!")
             active_users = User.objects.filter(is_active=True,kill_switch_2=False, quick_exit=True)
             for user in active_users:
                 try:
@@ -390,6 +426,10 @@ def start_scheduler():
     # to test
     scheduler.add_job(autoStopLossProcess, IntervalTrigger(seconds=2))
     scheduler.add_job(autoclosePositionProcess, IntervalTrigger(seconds=2))
+
+
+
+
     
     scheduler.start()
     print("INFO: Scheduler started.")

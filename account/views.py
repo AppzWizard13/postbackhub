@@ -184,12 +184,13 @@ class DashboardView(TemplateView):
         else:
             pnl_percentage = 0
         if control_data:
-            order_limit = control_data.peak_order_limit
+            order_limit = control_data.max_order_limit
+            peak_order_limit = control_data.peak_order_limit
             stoploss_percentage = control_data.stoploss_percentage
         else:
-            order_limit = 0
-        day_exp_brokerge = float(order_limit) * float(settings.BROKERAGE_PARAMETER)
-        exp_entry_count = order_limit // 2 
+            peak_order_limit = 0
+        day_exp_brokerge = float(peak_order_limit) * float(settings.BROKERAGE_PARAMETER)
+        exp_entry_count = peak_order_limit // 2 
         actual_entry_count = order_count // 2 
 
         # data for chart - break up 
@@ -222,6 +223,7 @@ class DashboardView(TemplateView):
         context['pnl_percentage'] = pnl_percentage
         context['day_exp_brokerge'] = day_exp_brokerge
         context['order_limit'] = order_limit
+        context['peak_order_limit'] = peak_order_limit
         context['user'] = user
         context['orderlistdata'] = traded_orders
         context['position_data'] = position_data
@@ -355,7 +357,7 @@ class UserDetailView(UpdateView):
             'kill_switch_1': form.cleaned_data.get('kill_switch_1'),
             'kill_switch_2': form.cleaned_data.get('kill_switch_2'),
             'quick_exit': form.cleaned_data.get('quick_exit'),
-            
+            'sl_control_mode': form.cleaned_data.get('sl_control_mode')
             # Add 'profile_image' if needed
         }
         # Update the user fields in the User model where username matches

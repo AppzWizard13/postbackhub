@@ -105,23 +105,23 @@
                 </span>
                 <span class="hide-menu">Add Control</span>
               </a>
-            </li>          
+            </li> 
+            <li class="nav-small-cap">
+              <i class="ti ti-dots nav-small-cap-icon fs-4"></i>
+              <span class="hide-menu">RISK MANAGEMENT</span>
+            </li>   
             <li class="sidebar-item">
-              <a class="sidebar-link" href="{% url 'manage_controls' %}" aria-expanded="false">
+              <a class="sidebar-link" href="{% url 'create_control' %}" aria-expanded="false">
                 <span>
-                  <i class="ti ti-settings"></i>
+                  <i class="ti ti-plus"></i>
                 </span>
-                <span class="hide-menu">Manage Controls</span>
+                <span class="hide-menu">Risk Calculator</span>
               </a>
-            </li>
+            </li>           
             <li class="nav-small-cap">
               <i class="ti ti- nav-small-cap-icon fs-4"></i>
               <span class="hide-menu">LOG</span>
             </li>
-
-
-
-            
             <li class="sidebar-item">
               <a class="sidebar-link" href="{% url 'daily_account_overview_list' %}" aria-expanded="false">
                 <span>
@@ -277,7 +277,7 @@
                     </a>
                     <a href="javascript:void(0)" class="d-flex align-items-center gap-2 dropdown-item">
                       <i class="ti ti-list-check fs-6"></i>
-                      <p class="mb-0 fs-3">My Task</p>
+                      <p class="mb-0 fs-3">Settings </p>
                     </a>
                     <a href="{% url 'logout'%}" class="btn btn-outline-primary mx-3 mt-2 d-block">Logout</a>
                   </div>
@@ -352,7 +352,7 @@
                       <div class="row alig n-items-start">
                         <div class="col-8">
                           <h5 class="card-title mb-9 fw-semibold">Today Earnings</h5>
-                          <h4 class="fw-semibold mb-3">₹ {{ total_realized_profit|floatformat:2 }}</h4>
+                          <h4 class="fw-semibold mb-1">₹ {{ total_realized_profit|floatformat:2 }}</h4>
                           
                           <div class="d-flex align-items-center pb-1">
                             {% if total_realized_profit > 0 %}
@@ -555,7 +555,7 @@
                           <i class="fs-5 ti ti-clock text-danger"></i>
                         </span>
                         <p class="text-dark me-1 fs-3 mb-0">Order Limit:</p>
-                        <p class="fs-3 mb-0">{{exp_entry_count}}</p>
+                        <p class="fs-3 mb-0">{{order_limit}} to {{peak_order_limit}}</p>
                       </div>
                       <div class="d-flex align-items-center mb-3">
                         <span class="me-1 rounded-circle bg-light-primary round-20 d-flex align-items-center justify-content-center">
