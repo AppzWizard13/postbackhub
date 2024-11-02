@@ -99,7 +99,7 @@
               <span class="hide-menu">CONTROL MANAGEMENT</span>
             </li>   
             <li class="sidebar-item">
-              <a class="sidebar-link" href="{% url 'manage_controls' %}" aria-expanded="false">
+              <a class="sidebar-link" href="{% url 'create_control' %}" aria-expanded="false">
                 <span>
                   <i class="ti ti-plus"></i>
                 </span>
@@ -107,7 +107,7 @@
               </a>
             </li> 
             <li class="sidebar-item">
-              <a class="sidebar-link" href="{% url 'create_control' %}" aria-expanded="false">
+              <a class="sidebar-link" href="{% url 'manage_controls' %}" aria-expanded="false">
                 <span>
                   <i class="ti ti-settings"></i>
                 </span>
@@ -121,7 +121,7 @@
             <li class="sidebar-item">
               <a class="sidebar-link" href="{% url 'create_control' %}" aria-expanded="false">
                 <span>
-                  <i class="ti ti-plus"></i>
+                  <i class="ti ti-calculator"></i>
                 </span>
                 <span class="hide-menu">Risk Calculator</span>
               </a>
@@ -497,11 +497,11 @@
                         <p class="text-dark mx-1 fs-3 mb-0 fw-bold flex-shrink-0" style="width: 150px;">Kill Status:</p>
                         <div class="ms-auto">
                             {% if user.kill_switch_1 and not user.kill_switch_2 %}
-                                <span class="badge bg-warning text-dark fs-3">Kill-1</span>
+                                <span class="badge bg-warning text-dark fs-3">Kill 1</span>
                             {% elif not user.kill_switch_1 and not user.kill_switch_2 %}
-                                <span class="badge bg-success fs-3">No Kill</span>
+                                <span class="badge bg-success fs-3">Active</span>
                             {% elif user.kill_switch_1 and user.kill_switch_2 %}
-                                <span class="badge bg-danger fs-3">Kill-2</span>
+                                <span class="badge bg-danger fs-3">Kill 2</span>
                             {% endif %}
                         </div>
                     </div>

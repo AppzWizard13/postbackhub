@@ -86,6 +86,10 @@ class UserCreateView(CreateView):
     success_url = reverse_lazy('login')  # Redirect to login page after successful registration
 
     def form_valid(self, form):
+        if not self.request.user.is_superuser:
+            messages.error(self.request, "You Have No Previllage to Add Membres. Please Contact Admin.")
+            return super().form_invalid(form)
+            
         # Save the form and add a success message
         response = super().form_valid(form)
         messages.success(self.request, "Registration successful! Please log in with your credentials.")
@@ -344,26 +348,31 @@ class UserDetailView(UpdateView):
 
     def form_valid(self, form):
         # Get the user data from the form and prepare the data to update
-        user = form.save(commit=False)  # Don't commit the save yet
-        updated_data = {
-            'email': form.cleaned_data.get('email'),
-            'phone_number': form.cleaned_data.get('phone_number'),
-            'role': form.cleaned_data.get('role'),
-            'country': form.cleaned_data.get('country'),
-            'dhan_access_token': form.cleaned_data.get('dhan_access_token'),
-            'dhan_client_id': form.cleaned_data.get('dhan_client_id'),
-            'status': form.cleaned_data.get('status'),
-            'is_active': form.cleaned_data.get('is_active'),
-            'kill_switch_1': form.cleaned_data.get('kill_switch_1'),
-            'kill_switch_2': form.cleaned_data.get('kill_switch_2'),
-            'quick_exit': form.cleaned_data.get('quick_exit'),
-            'sl_control_mode': form.cleaned_data.get('sl_control_mode')
-            # Add 'profile_image' if needed
-        }
-        # Update the user fields in the User model where username matches
-        User.objects.filter(username=user.username).update(**updated_data)
-        # Add a success message
-        messages.success(self.request, 'User details updated successfully.')
+        if self.request.user.is_superuser:
+            user = form.save(commit=False)  # Don't commit the save yet
+            updated_data = {
+                'email': form.cleaned_data.get('email'),
+                'phone_number': form.cleaned_data.get('phone_number'),
+                'role': form.cleaned_data.get('role'),
+                'country': form.cleaned_data.get('country'),
+                'dhan_access_token': form.cleaned_data.get('dhan_access_token'),
+                'dhan_client_id': form.cleaned_data.get('dhan_client_id'),
+                'status': form.cleaned_data.get('status'),
+                'is_active': form.cleaned_data.get('is_active'),
+                'kill_switch_1': form.cleaned_data.get('kill_switch_1'),
+                'kill_switch_2': form.cleaned_data.get('kill_switch_2'),
+                'quick_exit': form.cleaned_data.get('quick_exit'),
+                'sl_control_mode': form.cleaned_data.get('sl_control_mode')
+                # Add 'profile_image' if needed
+            }
+            # Update the user fields in the User model where username matches
+            User.objects.filter(username=user.username).update(**updated_data)
+            # Add a success message
+            messages.success(self.request, 'User details updated successfully.')
+        else:
+            messages.error(self.request, 'You have No previllage to Edit User Settings.')
+            return super().form_invalid(form)
+
         return super().form_valid(form)
 
     def form_invalid(self, form):
@@ -404,25 +413,29 @@ class EditControlView(UpdateView):
 
     def form_valid(self, form):
         # Get the control data from the form
-        control = form.save(commit=False)  # Don't commit the save yet
-        
-        # Prepare the data you want to update
-        updated_data = {
-            'max_order_limit': form.cleaned_data.get('max_order_limit'),
-            'peak_order_limit': form.cleaned_data.get('peak_order_limit'),
-            'max_loss_limit': form.cleaned_data.get('max_loss_limit'),
-            'max_profit_limit': form.cleaned_data.get('max_profit_limit'),
-            'max_profit_mode': form.cleaned_data.get('max_profit_mode'),
-            'max_order_count_mode': form.cleaned_data.get('max_order_count_mode'),
-            'stoploss_percentage': form.cleaned_data.get('stoploss_percentage'),
-            'user': form.cleaned_data.get('user'),  # User field should be handled
-        }
-        
-        # Update the fields in the Control model
-        Control.objects.filter(pk=control.pk).update(**updated_data)
+        if self.request.user.is_superuser:
+            control = form.save(commit=False)  # Don't commit the save yet
+            
+            # Prepare the data you want to update
+            updated_data = {
+                'max_order_limit': form.cleaned_data.get('max_order_limit'),
+                'peak_order_limit': form.cleaned_data.get('peak_order_limit'),
+                'max_loss_limit': form.cleaned_data.get('max_loss_limit'),
+                'max_profit_limit': form.cleaned_data.get('max_profit_limit'),
+                'max_profit_mode': form.cleaned_data.get('max_profit_mode'),
+                'max_order_count_mode': form.cleaned_data.get('max_order_count_mode'),
+                'stoploss_percentage': form.cleaned_data.get('stoploss_percentage'),
+                'user': form.cleaned_data.get('user'),  # User field should be handled
+            }
+            
+            # Update the fields in the Control model
+            Control.objects.filter(pk=control.pk).update(**updated_data)
 
-        # Add a success message and return the response
-        messages.success(self.request, 'Control settings updated successfully.')
+            # Add a success message and return the response
+            messages.success(self.request, 'Control settings updated successfully.')
+        else:
+            messages.error(self.request, 'You have No previllage to Edit Controls.')
+            return super().form_invalid(form)
         return super().form_valid(form)
 
     def form_invalid(self, form):
