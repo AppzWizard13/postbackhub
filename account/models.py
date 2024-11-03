@@ -7,7 +7,7 @@ class User(AbstractUser):
     phone_number = models.CharField(max_length=12, null=True)
     profile_image = models.ImageField(upload_to='uploads/', null=True)
     country = models.CharField(max_length=250, null=True)
-    status = models.IntegerField(default=0, verbose_name='status', null=True)
+    status = models.BooleanField(default=False)  # New is_active field
     role = models.CharField(max_length=250, null=True)
     dhan_client_id = models.CharField(max_length=250, null=True)
     dhan_access_token = models.CharField(max_length=1000, null=True)

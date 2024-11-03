@@ -52,10 +52,6 @@
                             {{ form.country }}
                         </div>
 
-                        <div class="mb-3">
-                            <label for="id_status" class="form-label">Status</label>
-                            {{ form.status }}
-                        </div>
 
                         <div class="mb-3">
                             <label for="id_dhan_client_id" class="form-label">Dhan Client ID</label>
@@ -67,6 +63,17 @@
                             {{ form.dhan_access_token }}
                         </div>
 
+                        <div class="row"  style="margin-left: 20px;">
+                            <!-- Toggle Button for is_active field -->
+                            <div class="col-md-6 d-flex justify-content-start">
+                                <div class="mb-3 mt-4 fs-3 fw-bolder form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="id_status" name="status" 
+                                            {% if form.status.value %}checked{% endif %} style="width: 2em; height: 1.2em;">
+                                    <label class="form-check-label ms-3" for="id_status" style="font-size: 1.1em;">Status</label>
+                                </div>
+                            </div>
+                            
+                        </div>
                         <div class="row"  style="margin-left: 20px;">
                             <!-- Toggle Button for is_active field -->
                             <div class="col-md-6 d-flex justify-content-start">

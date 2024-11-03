@@ -296,6 +296,69 @@
         </nav>
       </header>
       <!--  Header End -->
+        <style>
+          .clock {
+            font-size: 1em;
+            border: 2px solid #c6c6c8;
+            padding: 6px 20px;
+            border-radius: 5px;
+            font-weight: 900;
+        }
+        #time, #remainingTime {
+          display: inline-block;
+          margin-inline:20px;
+        }
+      </style>
+      <script>
+        function updateClock() {
+          let currentTime = new Date();
+          let hours = currentTime.getHours();
+          let minutes = currentTime.getMinutes();
+          let seconds = currentTime.getSeconds();
+          let day = currentTime.getDay();
+          let meridiem = hours < 12 ? "AM" : "PM";
+      
+          // Convert to 12-hour format
+          hours = hours % 12;
+          hours = hours ? hours : 12;
+      
+          // Add leading zeros to minutes and seconds if less than 10
+          minutes = minutes < 10 ? "0" + minutes : minutes;
+          seconds = seconds < 10 ? "0" + seconds : seconds;
+      
+          let timeString = `${hours}:${minutes}:${seconds} ${meridiem}`;
+          document.getElementById("time").innerHTML = `<span class="time-label">TIME:</span> <span class="time-value">${timeString}</span>`;
+
+      
+          // Check if it's Monday to Friday and before 3:00 PM
+          if (day >= 1 && day <= 5 && currentTime.getHours() < 15) {
+              // Calculate time remaining until 3:00 PM
+              let endTime = new Date(currentTime);
+              endTime.setHours(15, 0, 0, 0); // Set end time to 3:00 PM
+      
+              let remainingTime = endTime - currentTime; // Calculate the difference in milliseconds
+              let remainingHours = Math.floor((remainingTime % 86400000) / 3600000); // Hours left
+              let remainingMinutes = Math.floor((remainingTime % 3600000) / 60000); // Minutes left
+              let remainingSeconds = Math.floor((remainingTime % 60000) / 1000); // Seconds left
+      
+              // Format remaining time with leading zeros
+              remainingHours = remainingHours < 10 ? "0" + remainingHours : remainingHours;
+              remainingMinutes = remainingMinutes < 10 ? "0" + remainingMinutes : remainingMinutes;
+              remainingSeconds = remainingSeconds < 10 ? "0" + remainingSeconds : remainingSeconds;
+      
+              document.getElementById("remainingTime").innerHTML =
+                  "Remaining Time: " + remainingHours + ":" + remainingMinutes + ":" + remainingSeconds;
+          } else {
+              // Market is closed
+              document.getElementById("remainingTime").innerHTML = "STATUS : Market Closed";
+          }
+      }        
+      // Update the clock every second
+      setInterval(updateClock, 1000);
+      
+      // Initial call to display the clock immediately
+      updateClock();
+      </script>
       {% block content %}
         <div class="container-fluid" style="max-width: none;">
           <!--  Row 1 -->
@@ -307,6 +370,11 @@
                     <div class="mb-3 mb-sm-0">
                       <h5 class="card-title fw-semibold">Trade Overview</h5>
                     </div>
+                    <div class="clock">
+                      <div id="time"> - </div>
+                      <div class="vr mx-3"></div>
+                      <div id="remainingTime"> - </div>
+                    </div>
                     <div>
                       <select class="form-select">
                         <option value="1">{{current_date}}</option>
@@ -314,7 +382,38 @@
                     </div>
                   </div>
                   <div id="chart"></div>
+                  <div class="d-flex justify-content-between">
+                    <div class="mb-3 mb-sm-0">
+                      {% if open_position %}
+                        <!-- Button with trading symbol, enabled and green if position data exists -->
+                        <a href="https://web.dhan.co/Charts?exch=NSE&seg=D&secid={{ open_position.0.securityId }}"
+                           class="btn btn-success d-block" target="_blank">
+                          Open Position  : {{ open_position.0.tradingSymbol }}
+                        </a>
+                      {% else %}
+                        <!-- Button text "No Positions," blue, and disabled if no position data exists -->
+                        <a class="btn btn-primary d-block disabled" tabindex="-1" aria-disabled="true">
+                          Open Position  :  No Positions
+                        </a>
+                      {% endif %}
+                    </div>
+                    <div class="mb-3 mb-sm-0">
+                      {% if pending_sl_order %}
+                        <!-- Button with trading symbol, enabled and green if position data exists -->
+                        <a href="https://web.dhan.co/Charts?exch=NSE&seg=D&secid={{ pending_sl_order.0.securityId }}"
+                           class="btn btn-success d-block" target="_blank">
+                          Active Stop loss in INR : {{ pending_sl_order.0.price }}
+                        </a>
+                      {% else %}
+                        <!-- Button text "No Positions," blue, and disabled if no position data exists -->
+                        <a class="btn btn-primary d-block disabled" tabindex="-1" aria-disabled="true">
+                          Active Stop loss  :  No Active Stoploss 
+                        </a>
+                      {% endif %}
+                    </div>
+                  </div>
                 </div>
+                
               </div>
             </div>
             <div class="col-lg-4">
@@ -322,7 +421,7 @@
                 <div class="col-lg-12">
                   <!-- Yearly Breakup -->
                   <div class="card overflow-hidden">
-                    <div class="card-body p-4">
+                    <div class="card-body" style="padding-block: 3.5rem !important;">
                       <h5 class="card-title mb-9 fw-semibold">Account Balance</h5>
                       <div class="row align-items-center">
                         <div class="col-8">

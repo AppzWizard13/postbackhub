@@ -127,7 +127,7 @@ class DashboardView(TemplateView):
     def dispatch(self, request, *args, **kwargs):
         # Fetch slug from the URL if present, or default to using request.user
         self.slug = kwargs.get('slug')
-        self.users = User.objects.filter(is_active=True)  # Query the active users
+        self.users = User.objects.filter(is_active=True, status=True)  # Query the active users
         self.dashboard_view = True
 
         # Call the parent class's dispatch method
@@ -155,8 +155,10 @@ class DashboardView(TemplateView):
         # Fetch data from DHAN API using the user's credentials
         dhan = dhanhq(dhan_client_id, dhan_access_token)
         fund_data = dhan.get_fund_limits()
+        holdings = dhan.get_holdings()
         orderlistdata = dhan.get_order_list()
         traded_orders = get_traded_order_filter_dhan(orderlistdata)
+        pending_sl_order = get_pending_order_filter_dhan(orderlistdata)
         order_count = get_traded_order_count(orderlistdata)
         total_expense = order_count * float(settings.BROKERAGE_PARAMETER)
         total_expense = float(total_expense)
@@ -174,6 +176,13 @@ class DashboardView(TemplateView):
 
         # Sample static position data (this should ideally come from the API)
         position_data_json = json.dumps(position_data['data'])
+        all_positions = position_data['data']
+        open_position = [
+                {'tradingSymbol': position['tradingSymbol'], 'securityId': position['securityId']}
+                for position in all_positions
+                if position['positionType'] != 'CLOSED'
+            ]
+
         actual_profit = total_realized_profit - total_expense
         opening_balance = float(fund_data['data']['sodLimit'])
         available_balance = float(fund_data['data']['availabelBalance'])
@@ -206,17 +215,9 @@ class DashboardView(TemplateView):
 
 
 
-        # Market Quote Data                    
-        index_data = dhan.ohlc_data(
-            securities = {"NSE_EQ":[13]}
-        )
-
-        print("index_dataindex_data", index_data)
-
-
-
-
         # Add data to context
+        context['open_position'] = open_position
+        context['pending_sl_order'] = pending_sl_order
         context['breakup_series'] = breakup_series
         context['actual_entry_count'] = actual_entry_count
         context['exp_entry_count'] = exp_entry_count
