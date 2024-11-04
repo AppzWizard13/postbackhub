@@ -207,7 +207,7 @@ class DashboardView(TemplateView):
         actual_entry_count = order_count // 2 
 
         # data for chart - break up 
-        breakup_series = [actual_balance, actual_profit, total_expense ]
+        breakup_series = [available_balance, total_realized_profit, total_expense ]
         breakup_labels = ['A/C Balance', 'Profit/Loss', 'Charges']
 
         max_expected_loss = (actual_bal * exp_entry_count ) * (stoploss_percentage/100)
