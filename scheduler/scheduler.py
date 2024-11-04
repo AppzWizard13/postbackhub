@@ -360,7 +360,6 @@ def autoclosePositionProcess():
                             latest_entry = order_list['data'][0]
                             sl_order_id = latest_entry['orderId']
                             if latest_entry['transactionType'] == 'SELL' and latest_entry['orderStatus'] == 'CANCELLED':
-                            # if latest_entry['transactionType'] == 'BUY' and latest_entry['orderStatus'] == 'REJECTED':
                                 security_id = latest_entry['securityId']
                                 client_id = latest_entry['dhanClientId']
                                 exchange_segment = latest_entry['exchangeSegment']
@@ -374,7 +373,7 @@ def autoclosePositionProcess():
                                 print(f"Quantity: {quantity}")
                                 print("***************************************************************************")
                                 # Place an order for NSE Futures & Options
-                                stoploss_response = dhan.place_order(
+                                sellOrderResponse = dhan.place_order(
                                             security_id=security_id, 
                                             exchange_segment=exchange_segment,
                                             transaction_type='SELL',
@@ -383,7 +382,7 @@ def autoclosePositionProcess():
                                             product_type='INTRADAY',
                                             price=0
                                         )
-                                print("SELL ORDER Response :", stoploss_response)
+                                print("SELL ORDER Response :", sellOrderResponse)
                                 slOrderslog.objects.filter(order_id=sl_order_id).delete()
                                 print(f"INFO: Position Closing Executed Successfully..!")
 
