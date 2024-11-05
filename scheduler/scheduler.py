@@ -152,12 +152,30 @@ def autoStopLossProcess():
                             latest_entry = order_list['data'][0]
                             if latest_entry['transactionType'] == 'BUY' and latest_entry['orderStatus'] == 'TRADED':
                             # if latest_entry['transactionType'] == 'BUY' and latest_entry['orderStatus'] == 'REJECTED':
+                                # ---------------------------------------------------------------------------------------
+                                trading_symbol = latest_entry['tradingSymbol']
                                 security_id = latest_entry['securityId']
                                 client_id = latest_entry['dhanClientId']
                                 exchange_segment = latest_entry['exchangeSegment']
                                 quantity = latest_entry['quantity']
                                 traded_price = float(latest_entry['price'])
-                                # traded_price = 100.0
+                                # ---------------------------------------------------------------------------------------
+                                if control_data.max_lot_size_mode:
+                                    get_actual_count = actuallotsizeCalc(trading_symbol,quantity)
+                                    if control_data.max_lot_size_limit > get_actual_count:
+                                        quantity = get_actual_count - control_data.max_lot_size_limit
+                                        quantity = actuallotsizeCalc(trading_symbol,control_data.max_lot_size_limit )
+                                        # Place an order for NSE Futures & Options
+                                        sellOrderResponse = dhan.place_order(
+                                                    security_id=security_id, 
+                                                    exchange_segment=exchange_segment,
+                                                    transaction_type='SELL',
+                                                    quantity=auto_sell_qty,
+                                                    order_type='MARKET',
+                                                    product_type='INTRADAY',
+                                                    price=0
+                                                )
+                                        print("LOT SIZE controller Executed: for user : ", user , sellOrderResponse)
                                 sl_price, sl_trigger = calculateslprice(traded_price, stoploss_percentage)
                                 print("***************************************************************************")
                                 print("price                                              :", sl_price)
@@ -266,6 +284,18 @@ def autoStopLossProcess():
     else:
         print("INFO: Current time is outside of the scheduled range.")
 
+def actuallotsizeCalc(tradingSymbol, Qty):
+    if tradingSymbol.startswith("NIFTY"):
+        actual_qty = Qty / 25
+    elif tradingSymbol.startswith("MIDCPNIFTY"):
+        actual_qty = Qty / 50
+    elif tradingSymbol.startswith("FINNIFTY"):
+        actual_qty = Qty / 50
+    elif tradingSymbol.startswith("BANKNIFTY"):
+        actual_qty = Qty / 15
+    else:
+        actual_qty = Qty
+    return actual_qty
 
 def calculateslprice(traded_price, stoploss_percentage):
     sl_price = traded_price * (1 - stoploss_percentage / 100)
@@ -341,7 +371,7 @@ def autoclosePositionProcess():
     if now.weekday() < 5 and (9 <= now.hour < 16):  # Monday to Friday, 9 AM to 4 PM
         try:
             print("Starting Auto close position  monitoring process...!")
-            active_users = User.objects.filter(is_active=True,kill_switch_2=False, quick_exit=True)
+            active_users = User.objects.filter(is_active=True, kill_switch_2=False, quick_exit=True)
             for user in active_users:
                 try:
                     if not user.kill_switch_2 and user.auto_stop_loss:
@@ -459,19 +489,22 @@ def start_scheduler():
     scheduler = BackgroundScheduler()
 
     # Self-ping every 58 seconds
-    scheduler.add_job(self_ping, IntervalTrigger(seconds=180))
-    scheduler.add_job(auto_order_count_monitoring_process, IntervalTrigger(seconds=10))
+    # scheduler.add_job(self_ping, IntervalTrigger(seconds=180))
+    # scheduler.add_job(auto_order_count_monitoring_process, IntervalTrigger(seconds=10))
+
+
+
     # Restore user kill switches every Monday to Friday at 4:00 PM
-    scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=16, minute=0))
-    scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=9, minute=0))
-    scheduler.add_job(DailyAccountOverviewUpdateProcess, CronTrigger(day_of_week='mon-fri', hour=15, minute=30))
-    scheduler.add_job(DailyAccountOverviewUpdateProcess, CronTrigger(day_of_week='mon-fri', hour=23, minute=50))
+    # scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=16, minute=0))
+    # scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=9, minute=0))
+    # scheduler.add_job(DailyAccountOverviewUpdateProcess, CronTrigger(day_of_week='mon-fri', hour=15, minute=30))
+    # scheduler.add_job(DailyAccountOverviewUpdateProcess, CronTrigger(day_of_week='mon-fri', hour=23, minute=50))
 
     
 
     # to test
-    scheduler.add_job(autoStopLossProcess, IntervalTrigger(seconds=2))
-    scheduler.add_job(autoclosePositionProcess, IntervalTrigger(seconds=2))
+    # scheduler.add_job(autoStopLossProcess, IntervalTrigger(seconds=2))
+    # scheduler.add_job(autoclosePositionProcess, IntervalTrigger(seconds=2))
 
     scheduler.add_job(autoAdminSwitchingProcess, IntervalTrigger(hours=1))
 

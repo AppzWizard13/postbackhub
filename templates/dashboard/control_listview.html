@@ -27,10 +27,19 @@
                       <h6 class="fw-semibold mb-0">Peak Order Limit</h6>
                     </th>
                     <th class="border-bottom-0">
-                      <h6 class="fw-semibold mb-0">Max Loss Limit</h6>
+                      <h6 class="fw-semibold mb-0">SL Percenatge</h6>
                     </th>
                     <th class="border-bottom-0">
-                      <h6 class="fw-semibold mb-0">SL Percenatge</h6>
+                      <h6 class="fw-semibold mb-0">Max Lot Size Limit</h6>
+                    </th>
+                    <th class="border-bottom-0">
+                        <h6 class="fw-semibold mb-0">Max Order Count Mode</h6>
+                    </th>
+                    <th class="border-bottom-0">
+                      <h6 class="fw-semibold mb-0">Max Lot Size Mode</h6>
+                  </th>
+                    <th class="border-bottom-0">
+                      <h6 class="fw-semibold mb-0">Max Loss Limit</h6>
                     </th>
                     <th class="border-bottom-0">
                       <h6 class="fw-semibold mb-0">Max Profit Limit</h6>
@@ -40,9 +49,6 @@
                     </th>
                     <th class="border-bottom-0">
                       <h6 class="fw-semibold mb-0">Max Profit Mode</h6>
-                    </th>
-                    <th class="border-bottom-0">
-                        <h6 class="fw-semibold mb-0">Max Order Count Mode</h6>
                     </th>
                   </tr>
                 </thead>
@@ -65,10 +71,19 @@
                       <p class="mb-0 fw-normal">{{ control.peak_order_limit }}</p>
                     </td>
                     <td class="border-bottom-0">
-                      <p class="mb-0 fw-normal">{{ control.max_loss_limit }}</p>
+                      <p class="mb-0 fw-normal">{{ control.stoploss_percentage }}</p>
                     </td>
                     <td class="border-bottom-0">
-                      <p class="mb-0 fw-normal">{{ control.stoploss_percentage }}</p>
+                      <p class="mb-0 fw-normal">{{ control.max_lot_size_limit }}</p>
+                    </td>
+                    <td class="border-bottom-0">
+                      <p class="mb-0 fw-normal">{{ control.max_order_count_mode|yesno:"Enabled,Disabled" }}</p>
+                    </td>
+                    <td class="border-bottom-0">
+                      <p class="mb-0 fw-normal">{{ control.max_lot_size_mode|yesno:"Enabled,Disabled" }}</p>
+                    </td>
+                    <td class="border-bottom-0">
+                      <p class="mb-0 fw-normal">{{ control.max_loss_limit }}</p>
                     </td>
                     <td class="border-bottom-0">
                       <p class="mb-0 fw-normal">{{ control.max_profit_limit }}</p>
@@ -79,9 +94,7 @@
                     <td class="border-bottom-0">
                       <p class="mb-0 fw-normal">{{ control.max_profit_mode|yesno:"Enabled,Disabled" }}</p>
                     </td>
-                    <td class="border-bottom-0">
-                      <p class="mb-0 fw-normal">{{ control.max_order_count_mode|yesno:"Enabled,Disabled" }}</p>
-                    </td>
+
                   </tr> 
                   {% empty %}
                   <tr>
