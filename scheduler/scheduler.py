@@ -441,33 +441,33 @@ def autoclosePositionProcess():
 
 def autoAdminSwitchingProcess():
     try:
-        # Get the current day and time
-        current_day = datetime.now().strftime('%A')
+        # Get the current time
         current_hour = datetime.now().hour
         print("?????????????????????????????????????????????????????????")
-        if current_day == 'Monday' and current_hour == 3:
-            # Set vicky as superuser and remove superuser status from juztin and tradingwitch
+
+        if current_hour == 9:
+            # Set vicky as superuser and remove superuser status from juztin and tradingwitch every day at 9 AM
             acting_admin = settings.ACTING_ADMIN
             acting_traders_list = settings.ACTING_TRADERS
-            dev_admin = settings.DEV_ADMIN
             vicky = User.objects.get(username=acting_admin)
             vicky.is_superuser = True
             vicky.save()
-            print(f"INFO: Set ", acting_admin ,"as superuser on Monday at 3 AM")
+            print(f"INFO: Set", acting_admin, "as superuser at 9 AM")
 
             for username in acting_traders_list:
                 user = User.objects.get(username=username)
                 user.is_superuser = False
                 user.save()
                 print(f"INFO: Removed superuser status from '{username}'")
-                
-        elif current_day == 'Friday' and current_hour == 16:
-            # Set tradingwitch as superuser and remove superuser status from vicky
+
+        elif current_hour == 16:
+            # Set tradingwitch as superuser and remove superuser status from vicky every day at 4 PM
+            dev_admin = settings.DEV_ADMIN
             tradingwitch = User.objects.get(username=dev_admin)
             tradingwitch.is_superuser = True
             tradingwitch.save()
-            print("INFO: Set" ,dev_admin ,"as superuser on Saturday at 4 PM")
-            
+            print("INFO: Set", dev_admin, "as superuser at 4 PM")
+
             vicky = User.objects.get(username='vicky')
             vicky.is_superuser = False
             vicky.save()
@@ -482,29 +482,26 @@ def autoAdminSwitchingProcess():
         print(f"ERROR: An error occurred in update_superuser_status: {e}")
 
 
-
-
-
 def start_scheduler():
     scheduler = BackgroundScheduler()
 
     # Self-ping every 58 seconds
-    # scheduler.add_job(self_ping, IntervalTrigger(seconds=180))
-    # scheduler.add_job(auto_order_count_monitoring_process, IntervalTrigger(seconds=10))
+    scheduler.add_job(self_ping, IntervalTrigger(seconds=180))
+    scheduler.add_job(auto_order_count_monitoring_process, IntervalTrigger(seconds=10))
 
 
 
     # Restore user kill switches every Monday to Friday at 4:00 PM
-    # scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=16, minute=0))
-    # scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=9, minute=0))
-    # scheduler.add_job(DailyAccountOverviewUpdateProcess, CronTrigger(day_of_week='mon-fri', hour=15, minute=30))
-    # scheduler.add_job(DailyAccountOverviewUpdateProcess, CronTrigger(day_of_week='mon-fri', hour=23, minute=50))
+    scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=16, minute=0))
+    scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=9, minute=0))
+    scheduler.add_job(DailyAccountOverviewUpdateProcess, CronTrigger(day_of_week='mon-fri', hour=15, minute=30))
+    scheduler.add_job(DailyAccountOverviewUpdateProcess, CronTrigger(day_of_week='mon-fri', hour=23, minute=50))
 
     
 
     # to test
-    # scheduler.add_job(autoStopLossProcess, IntervalTrigger(seconds=2))
-    # scheduler.add_job(autoclosePositionProcess, IntervalTrigger(seconds=2))
+    scheduler.add_job(autoStopLossProcess, IntervalTrigger(seconds=2))
+    scheduler.add_job(autoclosePositionProcess, IntervalTrigger(seconds=2))
 
     scheduler.add_job(autoAdminSwitchingProcess, IntervalTrigger(hours=1))
 
