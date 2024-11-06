@@ -382,38 +382,48 @@
                     </div>
                   </div>
                   <div id="chart"></div>
-                  <div class="d-flex justify-content-between">
-                    <div class="mb-3 mb-sm-0">
-                      {% if open_position %}
-                        <!-- Button with trading symbol, enabled and green if position data exists -->
-                        <a href="https://web.dhan.co/Charts?exch=NSE&seg=D&secid={{ open_position.0.securityId }}"
-                           class="btn btn-success d-block" target="_blank">
-                          Open Position  : {{ open_position.0.tradingSymbol }}
-                        </a>
-                      {% else %}
-                        <!-- Button text "No Positions," blue, and disabled if no position data exists -->
-                        <a class="btn btn-primary d-block disabled" tabindex="-1" aria-disabled="true">
-                          Open Position  :  No Positions
-                        </a>
-                      {% endif %}
+                    <div class="d-flex justify-content-between">
+                      <div class="mb-3 mb-sm-0">
+                        {% if open_position %}
+                          <!-- Button with trading symbol, enabled and green if position data exists -->
+                          <button class="btn btn-success d-block" onclick="openPositionPopup('{{ open_position.0.securityId }}')">
+                            Open Position  : {{ open_position.0.tradingSymbol }}
+                          </button>
+                        {% else %}
+                          <!-- Button text "No Positions," blue, and disabled if no position data exists -->
+                          <button class="btn btn-primary d-block disabled" tabindex="-1" aria-disabled="true">
+                            Open Position  :  No Positions
+                          </button>
+                        {% endif %}
+                      </div>
+                      
+                      <div class="mb-3 mb-sm-0">
+                        {% if pending_sl_order %}
+                          <!-- Button with trading symbol, enabled and green if position data exists -->
+                          <button class="btn btn-success d-block" onclick="openStopLossPopup('{{ pending_sl_order.securityId }}')">
+                            Active Stop loss in INR : {{ pending_sl_order.price }}
+                          </button>
+                        {% else %}
+                          <!-- Button text "No Positions," blue, and disabled if no position data exists -->
+                          <button class="btn btn-primary d-block disabled" tabindex="-1" aria-disabled="true">
+                            Active Stop loss  :  No Active Stoploss 
+                          </button>
+                        {% endif %}
+                      </div>
                     </div>
-                    <div class="mb-3 mb-sm-0">
-                      {% if pending_sl_order %}
-                        <!-- Button with trading symbol, enabled and green if position data exists -->
-                        <a href="https://web.dhan.co/Charts?exch=NSE&seg=D&secid={{ pending_sl_order.0.securityId }}"
-                           class="btn btn-success d-block" target="_blank">
-                          Active Stop loss in INR : {{ pending_sl_order.0.price }}
-                        </a>
-                      {% else %}
-                        <!-- Button text "No Positions," blue, and disabled if no position data exists -->
-                        <a class="btn btn-primary d-block disabled" tabindex="-1" aria-disabled="true">
-                          Active Stop loss  :  No Active Stoploss 
-                        </a>
-                      {% endif %}
-                    </div>
-                  </div>
+
+                    <script>
+                      function openPositionPopup(securityId) {
+                        const url = `https://web.dhan.co/Charts?exch=NSE&seg=D&secid=${securityId}`;
+                        window.open(url, 'PositionChartWindow', 'width=800,height=600');
+                      }
+
+                      function openStopLossPopup(securityId) {
+                        const url = `https://web.dhan.co/Charts?exch=NSE&seg=D&secid=${securityId}`;
+                        window.open(url, 'StopLossChartWindow', 'width=800,height=600');
+                      }
+                    </script>
                 </div>
-                
               </div>
             </div>
             <div class="col-lg-4">
@@ -479,7 +489,7 @@
                               <span class="me-2 rounded-circle bg-light-primary round-20 d-flex align-items-center justify-content-center">
                                 <i class="fs-5 ti ti-clock text-primary"></i>
                               </span>
-                              <p class="text-primary me-1 fs-3 mb-3 fw-bolder" style="margin-top: 13px;">{{pnl_percentage|floatformat:2}}&nbsp;&nbsp;%&nbsp;NO Trades</p>                            {% endif %}
+                              <p class="text-primary me-1 fs-3 mb-3 fw-bolder" style="margin-top: 13px;">{{pnl_percentage|floatformat:2}}&nbsp;&nbsp;%&nbsp;NO Trades</p>{% endif %}
                           </div>
                         </div>
                         
@@ -704,6 +714,7 @@
                     <table class="table text-nowrap mb-0 align-middle" id="positionsTable">
                       <thead class="text-dark fs-4">
                         <tr>
+                          <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Chart</h6></th>
                           <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Trading Symbol</h6></th>
                           <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Position Type</h6></th>
                           {% comment %} <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Buy Quantity</h6></th> {% endcomment %}
@@ -715,6 +726,17 @@
                       <tbody id="positionsTableBody">
                         {% for position in position_data.data %}
                         <tr>
+                          <td class="border-bottom-0">
+                            <button class="btn btn-success d-block" onclick="openPopup('{{ position.securityId }}')">View</button>
+                        </td>
+                        
+                        <script>
+                            function openPopup(securityId) {
+                                const url = `https://web.dhan.co/Charts?exch=NSE&seg=D&secid=${securityId}`;
+                                window.open(url, 'ChartWindow', 'width=800,height=600');
+                            }
+                        </script>
+
                           <td class="border-bottom-0">
                             <h6 class="fw-semibold mb-0">{{ position.tradingSymbol }}</h6>
                           </td>
