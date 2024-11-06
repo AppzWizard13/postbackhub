@@ -114,7 +114,7 @@
                 <span class="hide-menu">Manage Control</span>
               </a>
             </li> 
-            <li class="nav-small-cap">
+            {% comment %} <li class="nav-small-cap">
               <i class="ti ti-dots nav-small-cap-icon fs-4"></i>
               <span class="hide-menu">RISK MANAGEMENT</span>
             </li>   
@@ -125,7 +125,7 @@
                 </span>
                 <span class="hide-menu">Risk Calculator</span>
               </a>
-            </li>           
+            </li>            {% endcomment %}
             <li class="nav-small-cap">
               <i class="ti ti- nav-small-cap-icon fs-4"></i>
               <span class="hide-menu">LOG</span>
@@ -300,9 +300,9 @@
           .clock {
             font-size: .7rem;
             border: 2px solid #c6c6c8;
-            padding: 6px 20px;
+            padding: 6px 15px;
             border-radius: 5px;
-            font-weight: 900;
+            font-weight: 500;
         }
         #time, #remainingTime {
           display: inline-block;
@@ -718,9 +718,9 @@
                           <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Trading Symbol</h6></th>
                           <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Position Type</h6></th>
                           {% comment %} <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Buy Quantity</h6></th> {% endcomment %}
-                          <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Buy Average Price</h6></th>
+                          <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Average Price</h6></th>
                           <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Realized Profit</h6></th>
-                          <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Unrealized Profit</h6></th>
+                          {% comment %} <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Unrealized Profit</h6></th> {% endcomment %}
                         </tr>
                       </thead>
                       <tbody id="positionsTableBody">
@@ -758,9 +758,9 @@
                             <span class="badge bg-danger rounded-3 fw-semibold">₹{{ position.realizedProfit|floatformat:2 }}</span>
                             {% endif %}
                           </td>
-                          <td class="border-bottom-0">
+                          {% comment %} <td class="border-bottom-0">
                             <h6 class="fw-semibold mb-0">₹{{ position.unrealizedProfit|floatformat:2 }}</h6>
-                          </td>
+                          </td> {% endcomment %}
                         </tr>
                         {% empty %}
                         <tr>

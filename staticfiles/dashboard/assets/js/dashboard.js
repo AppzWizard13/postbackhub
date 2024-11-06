@@ -19,7 +19,7 @@ $(function () {
     // Set colors based on the second value's positivity/negativity
     var colors = [
       "#3267ff", // First color - Blue (default)
-      breakup_series[1] > 0 ? "#00FF00" : "#fa2d2d", // Green if positive, Red if negative
+      breakup_series[1] > 0 ? "#4cb849" : "#fa2d2d", // Green if positive, Red if negative
       "#fff47d" // Third color - Orange (default)
     ];
     

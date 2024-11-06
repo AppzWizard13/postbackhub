@@ -321,47 +321,54 @@ def get_pending_order_filter_dhan(response):
 
 
 def DailyAccountOverviewUpdateProcess():
-    active_users = User.objects.filter(is_active=True, kill_switch_2=False)
+    active_users = User.objects.filter(is_active=True)
     
     for user in active_users:
-        dhan_client_id = user.dhan_client_id
-        dhan_access_token = user.dhan_access_token
-        # Initialize the Dhan client
-        dhan = dhanhq(dhan_client_id, dhan_access_token)
-        # Fetch order list, fund data, and position data
-        order_list = dhan.get_order_list()
-        fund_data = dhan.get_fund_limits()
-        position_data = dhan.get_positions()
+        try:
+            dhan_client_id = user.dhan_client_id
+            dhan_access_token = user.dhan_access_token
 
-        # Initialize variables for calculations
-        traded_order_count = get_traded_order_count(order_list) if order_list else 0
-        total_realized_profit = 0.0
-        total_expense = traded_order_count * float(settings.BROKERAGE_PARAMETER)
+            # Initialize the Dhan client
+            dhan = dhanhq(dhan_client_id, dhan_access_token)
+            
+            # Fetch order list, fund data, and position data safely
+            order_list = dhan.get_order_list() or []
+            fund_data = dhan.get_fund_limits()
+            position_data = dhan.get_positions()
+            
+            # Initialize variables for calculations
+            traded_order_count = get_traded_order_count(order_list)
+            total_realized_profit = 0.0
+            total_expense = traded_order_count * float(settings.BROKERAGE_PARAMETER)
 
-        # Extract position data safely
-        if position_data and 'data' in position_data:
-            positions = position_data['data']
-            total_realized_profit = sum(position.get('realizedProfit', 0) for position in positions)
-        else:
-            logger.warning(f"No position data for user {user.username}. Setting realized profit to 0.")
+            # Extract position data safely
+            if position_data and 'data' in position_data:
+                positions = position_data['data']
+                total_realized_profit = sum(position.get('realizedProfit', 0) for position in positions)
+            else:
+                logger.warning(f"No position data for user {user.username}. Setting realized profit to 0.")
 
-        # Get balances safely
-        opening_balance = float(fund_data['data']['sodLimit']) if fund_data and 'data' in fund_data else 0.0
-        closing_balance = float(fund_data['data']['withdrawableBalance']) if fund_data and 'data' in fund_data else 0.0
+            # Get balances safely
+            opening_balance = float(fund_data['data'].get('sodLimit', 0.0)) if fund_data and 'data' in fund_data else 0.0
+            closing_balance = float(fund_data['data'].get('withdrawableBalance', 0.0)) if fund_data and 'data' in fund_data else 0.0
+            
+            # Calculate actual profit
+            actual_profit = total_realized_profit - total_expense
+            
+            # Create or update DailyAccountOverview entry
+            DailyAccountOverview.objects.create(
+                user=user,
+                opening_balance=opening_balance,
+                pnl_status=total_realized_profit,
+                expenses=total_expense,
+                closing_balance=closing_balance,
+                order_count=traded_order_count
+            )
+            print(f"INFO: DailyAccountOverview updated successfully for {user.username}")
         
-        # Calculate actual profit
-        actual_profit = total_realized_profit - total_expense
-        
-        # Create or update DailyAccountOverview entry
-        DailyAccountOverview.objects.create(
-            user=user,
-            opening_balance=opening_balance,
-            pnl_status=total_realized_profit,
-            expenses=total_expense,
-            closing_balance=closing_balance,
-            order_count=traded_order_count
-        )
-        print(f"INFO: DailyAccountOverview updated successfully for {user.username}")
+        except Exception as e:
+            logger.error(f"Error processing user {user.username}: {e}")
+            continue  # Skip to the next user
 
 
 def autoclosePositionProcess():
