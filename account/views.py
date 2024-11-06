@@ -76,9 +76,6 @@ class UserloginView(View):
 
         return render(request, template, context)
 
-
-
-
 class UserCreateView(CreateView):
     model = User
     form_class = CustomUserCreationForm
@@ -427,6 +424,7 @@ class EditControlView(UpdateView):
                 'max_order_limit': form.cleaned_data.get('max_order_limit'),
                 'peak_order_limit': form.cleaned_data.get('peak_order_limit'),
                 'max_loss_limit': form.cleaned_data.get('max_loss_limit'),
+                'peak_loss_limit': form.cleaned_data.get('peak_loss_limit'),
                 'max_profit_limit': form.cleaned_data.get('max_profit_limit'),
                 'max_profit_mode': form.cleaned_data.get('max_profit_mode'),
                 'max_order_count_mode': form.cleaned_data.get('max_order_count_mode'),

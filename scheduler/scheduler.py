@@ -489,6 +489,117 @@ def autoAdminSwitchingProcess():
         print(f"ERROR: An error occurred in update_superuser_status: {e}")
 
 
+
+def autoMaxlossKillProcess():
+    print("Auto Max loss kill Process Running")
+    now = datetime.now()
+    print(f"Current date and time: {now.strftime('%Y-%m-%d %H:%M:%S')}")
+    
+    # Ensure it's within the defined weekday and time range (Monday to Friday, 9 AM to 4 PM)
+    if now.weekday() < 5 and (9 <= now.hour < 16):
+        try:
+            print("Starting Auto Max loss kill monitoring process...!")
+            # Fetch active users with certain conditions
+            active_users = User.objects.filter(is_active=True, kill_switch_2=False, quick_exit=True)
+            
+            # Iterate over each user and process them
+            for user in active_users:
+                try:
+                    if not user.kill_switch_2 and user.auto_stop_loss:
+                        dhan_client_id = user.dhan_client_id
+                        dhan_access_token = user.dhan_access_token
+                        print(f"Processing user: {user.username}, Client ID: {dhan_client_id}")
+                        
+                        # Fetch control data for the user
+                        control_data = Control.objects.filter(user=user).first()
+                        if control_data and control_data.max_loss_mode:
+                            # Fetch position data using Dhan API
+                            position_data = dhan.get_positions()
+                            
+                            if 'data' not in position_data or not isinstance(position_data['data'], list) or not position_data['data']:
+                                positions = False
+                            else:
+                                positions = position_data['data']
+                            
+                            if positions:
+                                # Calculate total realized profit/loss
+                                total_realized_profit = sum(position['realizedProfit'] for position in positions)
+                                total_realized_profit = float(total_realized_profit)
+                                
+                                # If realized profit is negative, convert it to positive
+                                if total_realized_profit < 0:
+                                    total_realized_profit = abs(total_realized_profit)
+                                    
+                                    # Check if the realized loss exceeds max loss limit and act accordingly
+                                    if total_realized_profit > control_data.max_loss_limit and total_realized_profit < control_data.peak_loss_limit:
+                                        print(f"INFO: Max loss exceeded for User {user.username}. Activating kill switch.")
+                                        activate_kill_switch_process(user, dhan_access_token)
+                                    elif total_realized_profit > control_data.max_loss_limit and total_realized_profit > control_data.peak_loss_limit:
+                                        print(f"INFO: Peak loss exceeded for User {user.username}. Activating kill switch.")
+                                        activate_kill_switch_process(user, dhan_access_token)
+                                    else:
+                                        print(f"INFO: Positive/Good Earning status for User {user.username}")
+                                else:
+                                    print(f"INFO: Positive/Good Earning status for User {user.username}")
+                            else:
+                                print(f"INFO: No positions found for User {user.username}")
+                        else:
+                            print(f"INFO: Control data not found or max loss mode disabled for User {user.username}")
+                except Exception as e:
+                    print(f"ERROR processing user {user.username}: {e}")
+        except Exception as e:
+            print(f"ERROR in autoMaxlossKillProcess: {e}")
+    else:
+        print("INFO: Process is only running Monday to Friday, from 9 AM to 4 PM.")
+
+
+
+def activate_kill_switch_process(user, access_token):
+    url = 'https://api.dhan.co/killSwitch?killSwitchStatus=ACTIVATE'
+    headers = {'Accept': 'application/json', 'Content-Type': 'application/json', 'access-token': access_token}
+
+    try:
+        response = requests.post(url, headers=headers)
+        if response.status_code == 200:
+            DhanKillProcessLog.objects.create(user=user, log=response.json(), order_count=0)
+            
+            if user.kill_switch_1 == False and user.kill_switch_1 == False :
+                user.kill_switch_1 = True
+                print(f"INFO: Kill switch 1 activated for user: {user.username}")
+            elif user.kill_switch_1 == True and user.kill_switch_1 == False :
+                user.kill_switch_2 = True
+                print(f"INFO: Kill switch 2 activated for user: {user.username}")
+            
+            user.save()
+        else:
+            print(f"ERROR: Failed to activate kill switch for user {user.username}: Status code {response.status_code}")
+    except requests.RequestException as e:
+        print(f"ERROR: Error activating kill switch for user {user.username}: {e}")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 def start_scheduler():
     scheduler = BackgroundScheduler()
 
@@ -507,9 +618,9 @@ def start_scheduler():
     
 
     # to test
-    scheduler.add_job(autoStopLossProcess, IntervalTrigger(seconds=2))
+    scheduler.add_job(autoStopLossProcess, IntervalTrigger(seconds=1))
+    scheduler.add_job(autoStopLossProcess, IntervalTrigger(seconds=10))
     scheduler.add_job(autoclosePositionProcess, IntervalTrigger(seconds=2))
-
     scheduler.add_job(autoAdminSwitchingProcess, IntervalTrigger(hours=1))
 
 
