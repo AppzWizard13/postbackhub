@@ -133,23 +133,23 @@
             <li class="sidebar-item">
               <a class="sidebar-link" href="{% url 'daily_account_overview_list' %}" aria-expanded="false">
                 <span>
-                  <i class="ti ti-eye"></i>
+                  <i class="ti ti-clipboard-text"></i>
                 </span>
-                <span class="hide-menu">Daily Overview Log</span>
+                <span class="hide-menu">Daily Overview Report</span>
               </a>
             </li>
             <li class="sidebar-item">
               <a class="sidebar-link" href="{% url 'dhan-kill-log-list' %}" aria-expanded="false">
                 <span>
-                  <i class="ti ti-eye"></i>
+                  <i class="ti ti-plug-connected-x"></i>
                 </span>
-                <span class="hide-menu">View Kill Log</span>
+                <span class="hide-menu">Kill Activation log</span>
               </a>
             </li>
             <li class="sidebar-item">
               <a class="sidebar-link" href="https://web.dhan.co/index/money" aria-expanded="false">
                 <span>
-                  <i class="ti ti-eye"></i>
+                  <i class="ti ti-building-bank"></i>
                 </span>
                 <span class="hide-menu">Go to Dhan </span>
               </a>
@@ -257,7 +257,7 @@
               <div class="mb-3 mb-sm-0 pr-5">
                 <a  class="btn btn-outline-primary mx-3  d-block">Dashboard : {{user.username}}</a>
               </div>
-              {% if dashboard_view %}
+              {% if dashboard_view and request.user.is_superuser %}
               <div>
                   <select class="form-select" id="userSelect">
                       <option value="" selected disabled>Select a user</option>
@@ -706,9 +706,83 @@
               </div>
             </div>
           </div>
-          
+
           <div class="row">
             <div class="col-lg-6 d-flex align-items-stretch">
+              <div class="card w-100">
+                <div class="card-body p-4">
+                  <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="card-title fw-semibold mb-0">Weekly Overview</h5>
+                  </div>
+                  <div class="col-12" style="height: 300px;">
+                    <!-- Ensure the container takes up 100% of the available space -->
+                    <div id="performanceoverview" style="height: 100%; width: 100%;"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-6 d-flex align-items-stretch">
+              <div class="card w-100">
+                <div class="card-body p-4">
+                  <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="card-title fw-semibold mb-0">Active Users</h5>
+                  </div>
+                  <div class="table-responsive" style="overflow-y: auto;">
+                    <table class="table text-nowrap mb-0 align-middle" id="positionsTable">
+                      <thead class="text-dark fs-4">
+                        <tr>
+                          <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Username</h6></th>
+                          <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Status</h6></th>
+                          <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Kill Status 1</h6></th>
+                          <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Kill Status 2</h6></th>
+                          <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Auto SL</h6></th>
+                        </tr>
+                      </thead>
+                      <tbody id="positionsTableBody">
+                        {% for user in allusers %}
+                        <tr>
+                          <td class="border-bottom-0">
+                            <h6 class="fw-semibold mb-0">{{ user.username }}</h6>
+                          </td>
+                          <td class="border-bottom-0">
+                            <span class="badge {% if user.status %}bg-success{% else %}bg-warning{% endif %} rounded-3 fw-semibold">
+                              {% if user.status %}Active{% else %}Inactive{% endif %}
+                            </span>
+                          </td>
+                          <td class="border-bottom-0">
+                            <span class="badge {% if user.kill_switch_1 %}bg-danger{% else %}bg-primary{% endif %} rounded-3 fw-semibold">
+                              {% if user.kill_switch_1 %}Enabled{% else %}Disabled{% endif %}
+                            </span>
+                          </td>
+                          <td class="border-bottom-0">
+                            <span class="badge {% if user.kill_switch_2 %}bg-danger{% else %}bg-primary{% endif %} rounded-3 fw-semibold">
+                              {% if user.kill_switch_2 %}Enabled{% else %}Disabled{% endif %}
+                            </span>
+                          </td>
+                          <td class="border-bottom-0">
+                            <span class="badge {% if user.auto_stop_loss %}bg-success{% else %}bg-danger{% endif %} rounded-3 fw-semibold">
+                              {% if user.auto_stop_loss %}Enabled{% else %}Disabled{% endif %}
+                            </span>
+                          </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                          <td colspan="5" class="text-center fw-semibold">No Active Users Found</td>
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>              
+            </div>
+            
+  
+ 
+          </div>
+          
+          <div class="row">
+            <div class="col-lg-5 d-flex align-items-stretch">
               <div class="card w-100">
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -725,11 +799,11 @@
                       <thead class="text-dark fs-4">
                         <tr>
                           <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Chart</h6></th>
-                          <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Trading Symbol</h6></th>
-                          <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Position Type</h6></th>
+                          <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Symbol</h6></th>
+                          <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Status</h6></th>
                           {% comment %} <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Buy Quantity</h6></th> {% endcomment %}
-                          <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Average Price</h6></th>
-                          <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Realized Profit</h6></th>
+                          {% comment %} <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Average Price</h6></th> {% endcomment %}
+                          <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Portfolio</h6></th>
                           {% comment %} <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Unrealized Profit</h6></th> {% endcomment %}
                         </tr>
                       </thead>
@@ -737,7 +811,7 @@
                         {% for position in position_data.data %}
                         <tr>
                           <td class="border-bottom-0">
-                            <button class="btn btn-success d-block" onclick="openPopup('{{ position.securityId }}')">View</button>
+                            <button class="btn btn-success m-2 fs-2 d-block" onclick="openPopup('{{ position.securityId }}')">View</button>
                         </td>
                         
                         <script>
@@ -756,9 +830,9 @@
                           {% comment %} <td class="border-bottom-0">
                             <h6 class="fw-semibold mb-0">{{ position.buyQty }}</h6>
                           </td> {% endcomment %}
-                          <td class="border-bottom-0">
+                          {% comment %} <td class="border-bottom-0">
                             <h6 class="fw-semibold mb-0">₹{{ position.buyAvg|floatformat:2 }}</h6>
-                          </td>
+                          </td> {% endcomment %}
                           <td class="border-bottom-0">
                             {% if position.realizedProfit > 0 %}
                             <span class="badge bg-success rounded-3 fw-semibold">₹{{ position.realizedProfit|floatformat:2 }}</span>
@@ -785,7 +859,7 @@
             </div>
             
   
-            <div class="col-lg-6 d-flex align-items-stretch">
+            <div class="col-lg-7 d-flex align-items-stretch">
               <div class="card w-100">
                   <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -802,7 +876,7 @@
                             <table class="table">
                               <thead class="text-dark fs-4">
                                   <tr>
-                                      <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Order ID</h6></th>
+                                      <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Symbol</h6></th>
                                       <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Status</h6></th>
                                       <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Transaction</h6></th>
                                       <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Quantity</h6></th>
@@ -813,7 +887,7 @@
                               <tbody id="ordersTableBody">
                                   {% for order in orderlistdata.data %}
                                   <tr>
-                                      <td class="border-bottom-0"><h6 class="fw-semibold mb-0">{{ order.orderId }}</h6></td>
+                                      <td class="border-bottom-0"><h6 class="fw-semibold mb-0">{{ order.tradingSymbol }}</h6></td>
                                       <td class="border-bottom-0">
                                           {% if order.orderStatus == 'TRADED' %}
                                           <span class="badge bg-success rounded-3 fw-semibold">TRADED</span>
@@ -929,10 +1003,10 @@
           rows[i].style.display = '';
         }
 
-        // Update pagination controls
+        {% comment %} // Update pagination controls
         pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
         prevButton.disabled = currentPage === 1;
-        nextButton.disabled = currentPage === totalPages || totalPages === 0;
+        nextButton.disabled = currentPage === totalPages || totalPages === 0; {% endcomment %}
       }
 
       // Event listeners for pagination buttons

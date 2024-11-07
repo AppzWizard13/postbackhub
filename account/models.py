@@ -92,6 +92,8 @@ class DailyAccountOverview(models.Model):
     closing_balance = models.FloatField()
     order_count = models.IntegerField()
     actual_profit = models.FloatField()
+    day_open = models.BooleanField(default=False)
+    day_close = models.BooleanField(default=False)
 
     def __str__(self):
         return f"Account Overview for {self.user.username} on {self.updated_on.strftime('%Y-%m-%d')}"

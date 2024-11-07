@@ -319,8 +319,15 @@ def get_pending_order_filter_dhan(response):
     return pending_sl_orders
 
 
-
 def DailyAccountOverviewUpdateProcess():
+    # Get the current hour
+    current_hour = datetime.now().hour
+    
+    # Set flags for the opening and closing runs
+    is_first_run = current_hour == 9
+    is_last_run = current_hour == 16
+    
+    # Query active users
     active_users = User.objects.filter(is_active=True)
     
     for user in active_users:
@@ -331,45 +338,51 @@ def DailyAccountOverviewUpdateProcess():
             # Initialize the Dhan client
             dhan = dhanhq(dhan_client_id, dhan_access_token)
             
-            # Fetch order list, fund data, and position data safely
+            # Fetch data
             order_list = dhan.get_order_list() or []
             fund_data = dhan.get_fund_limits()
             position_data = dhan.get_positions()
             
-            # Initialize variables for calculations
+            # Calculate traded orders and expenses
             traded_order_count = get_traded_order_count(order_list)
             total_realized_profit = 0.0
             total_expense = traded_order_count * float(settings.BROKERAGE_PARAMETER)
-
-            # Extract position data safely
+            # Process position data safely
             if position_data and 'data' in position_data:
                 positions = position_data['data']
                 total_realized_profit = sum(position.get('realizedProfit', 0) for position in positions)
             else:
                 logger.warning(f"No position data for user {user.username}. Setting realized profit to 0.")
 
-            # Get balances safely
+            # Calculate balances safely
             opening_balance = float(fund_data['data'].get('sodLimit', 0.0)) if fund_data and 'data' in fund_data else 0.0
             closing_balance = float(fund_data['data'].get('withdrawableBalance', 0.0)) if fund_data and 'data' in fund_data else 0.0
             
             # Calculate actual profit
             actual_profit = total_realized_profit - total_expense
             
-            # Create or update DailyAccountOverview entry
+            # Set day_open and day_close fields based on the time of day
+            day_open = is_first_run
+            day_close = is_last_run
+            
+            # Create or update the DailyAccountOverview entry
             DailyAccountOverview.objects.create(
                 user=user,
                 opening_balance=opening_balance,
                 pnl_status=total_realized_profit,
+                actual_profit = actual_profit,
                 expenses=total_expense,
                 closing_balance=closing_balance,
-                order_count=traded_order_count
+                order_count=traded_order_count,
+                day_open=day_open,
+                day_close=day_close
             )
+            
             print(f"INFO: DailyAccountOverview updated successfully for {user.username}")
         
         except Exception as e:
-            logger.error(f"Error processing user {user.username}: {e}")
+            print(f"INFO: Error processing user  for  {user.username}: {e}")
             continue  # Skip to the next user
-
 
 def autoclosePositionProcess():
     print("Auto Close Positions Process Running")
@@ -450,8 +463,6 @@ def autoAdminSwitchingProcess():
     try:
         # Get the current time
         current_hour = datetime.now().hour
-        print("?????????????????????????????????????????????????????????")
-
         if current_hour == 9:
             # Set vicky as superuser and remove superuser status from juztin and tradingwitch every day at 9 AM
             acting_admin = settings.ACTING_ADMIN
@@ -490,113 +501,106 @@ def autoAdminSwitchingProcess():
 
 
 
-def autoMaxlossKillProcess():
+
+def autoMaxlossMaxProfitKillProcess():
+    """Monitors and activates the kill switch for users based on max loss or profit limits."""
     print("Auto Max loss kill Process Running")
     now = datetime.now()
     print(f"Current date and time: {now.strftime('%Y-%m-%d %H:%M:%S')}")
-    
-    # Ensure it's within the defined weekday and time range (Monday to Friday, 9 AM to 4 PM)
-    if now.weekday() < 5 and (9 <= now.hour < 16):
-        try:
-            print("Starting Auto Max loss kill monitoring process...!")
-            # Fetch active users with certain conditions
-            active_users = User.objects.filter(is_active=True, kill_switch_2=False, quick_exit=True)
-            
-            # Iterate over each user and process them
-            for user in active_users:
-                try:
-                    if not user.kill_switch_2 and user.auto_stop_loss:
-                        dhan_client_id = user.dhan_client_id
-                        dhan_access_token = user.dhan_access_token
-                        print(f"Processing user: {user.username}, Client ID: {dhan_client_id}")
-                        
-                        # Fetch control data for the user
-                        control_data = Control.objects.filter(user=user).first()
-                        if control_data and control_data.max_loss_mode:
-                            # Fetch position data using Dhan API
-                            position_data = dhan.get_positions()
-                            
-                            if 'data' not in position_data or not isinstance(position_data['data'], list) or not position_data['data']:
-                                positions = False
-                            else:
-                                positions = position_data['data']
-                            
-                            if positions:
-                                # Calculate total realized profit/loss
-                                total_realized_profit = sum(position['realizedProfit'] for position in positions)
-                                total_realized_profit = float(total_realized_profit)
-                                
-                                # If realized profit is negative, convert it to positive
-                                if total_realized_profit < 0:
-                                    total_realized_profit = abs(total_realized_profit)
-                                    
-                                    # Check if the realized loss exceeds max loss limit and act accordingly
-                                    if total_realized_profit > control_data.max_loss_limit and total_realized_profit < control_data.peak_loss_limit:
-                                        print(f"INFO: Max loss exceeded for User {user.username}. Activating kill switch.")
-                                        activate_kill_switch_process(user, dhan_access_token)
-                                    elif total_realized_profit > control_data.max_loss_limit and total_realized_profit > control_data.peak_loss_limit:
-                                        print(f"INFO: Peak loss exceeded for User {user.username}. Activating kill switch.")
-                                        activate_kill_switch_process(user, dhan_access_token)
-                                    else:
-                                        print(f"INFO: Positive/Good Earning status for User {user.username}")
-                                else:
-                                    print(f"INFO: Positive/Good Earning status for User {user.username}")
-                            else:
-                                print(f"INFO: No positions found for User {user.username}")
-                        else:
-                            print(f"INFO: Control data not found or max loss mode disabled for User {user.username}")
-                except Exception as e:
-                    print(f"ERROR processing user {user.username}: {e}")
-        except Exception as e:
-            print(f"ERROR in autoMaxlossKillProcess: {e}")
-    else:
+
+    # Ensure execution only on weekdays from 9 AM to 4 PM
+    if not (now.weekday() < 5 and 9 <= now.hour < 16):
         print("INFO: Process is only running Monday to Friday, from 9 AM to 4 PM.")
+        return
+
+    try:
+        print("Starting Auto Max loss kill monitoring process...!")
+        active_users = User.objects.filter(is_active=True, kill_switch_2=False, quick_exit=True)
+        
+        for user in active_users:
+            if user.kill_switch_2 or not user.auto_stop_loss:
+                continue
+            print(f"Processing user: {user.username}, Client ID: {user.dhan_client_id}")
+            process_user(user)
+            
+    except Exception as e:
+        print(f"ERROR in autoMaxlossMaxProfitKillProcess: {e}")
 
 
+def process_user(user):
+    """Processes a single user for kill switch activation based on max loss/profit limits."""
+    try:
+        control_data = Control.objects.filter(user=user).first()
+        if not control_data:
+            print(f"INFO: Control data not found or max loss mode disabled for User {user.username}")
+            return
+        
+        positions = get_positions(user.dhan_access_token)
+        if not positions:
+            print(f"INFO: No positions found for User {user.username}")
+            return
+        
+        total_realized_profit = sum(position['realizedProfit'] for position in positions)
+        total_realized_profit = abs(total_realized_profit) if total_realized_profit < 0 and control_data.max_loss_mode else total_realized_profit
+        
+        # Check max loss and profit conditions
+        if control_data.max_loss_mode and total_realized_profit > control_data.max_loss_limit:
+            if total_realized_profit > control_data.peak_loss_limit:
+                print(f"INFO: Peak loss exceeded for User {user.username}. Activating kill switch.")
+                activate_kill_switch_process(user)
+            else:
+                print(f"INFO: Max loss exceeded for User {user.username}. Activating kill switch.")
+                activate_kill_switch_process(user)
+        elif control_data.max_profit_mode and total_realized_profit > control_data.max_profit_limit:
+            print(f"INFO: Max Profit exceeded for User {user.username}. Activating kill switch.")
+            activate_kill_switch_process(user)
+        else:
+            print(f"INFO: Positive/Good Earning status for User {user.username}")
 
-def activate_kill_switch_process(user, access_token):
+    except Exception as e:
+        print(f"ERROR processing user {user.username}: {e}")
+
+
+def get_positions(access_token):
+    """Fetches positions for a user from the Dhan API."""
+    try:
+        position_data = dhan.get_positions()
+        return position_data['data'] if 'data' in position_data and isinstance(position_data['data'], list) and position_data['data'] else None
+    except Exception as e:
+        print(f"ERROR fetching positions: {e}")
+        return None
+
+
+def activate_kill_switch_process(user):
+    """Activates the kill switch for a user and logs the action."""
     url = 'https://api.dhan.co/killSwitch?killSwitchStatus=ACTIVATE'
-    headers = {'Accept': 'application/json', 'Content-Type': 'application/json', 'access-token': access_token}
+    headers = {'Accept': 'application/json', 'Content-Type': 'application/json', 'access-token': user.dhan_access_token}
 
     try:
         response = requests.post(url, headers=headers)
         if response.status_code == 200:
-            DhanKillProcessLog.objects.create(user=user, log=response.json(), order_count=0)
-            
-            if user.kill_switch_1 == False and user.kill_switch_1 == False :
-                user.kill_switch_1 = True
-                print(f"INFO: Kill switch 1 activated for user: {user.username}")
-            elif user.kill_switch_1 == True and user.kill_switch_1 == False :
-                user.kill_switch_2 = True
-                print(f"INFO: Kill switch 2 activated for user: {user.username}")
-            
-            user.save()
+            log_kill_switch_action(user, response.json())
+            update_user_kill_switch(user)
         else:
             print(f"ERROR: Failed to activate kill switch for user {user.username}: Status code {response.status_code}")
     except requests.RequestException as e:
         print(f"ERROR: Error activating kill switch for user {user.username}: {e}")
 
 
+def log_kill_switch_action(user, response_data):
+    """Logs the kill switch activation."""
+    DhanKillProcessLog.objects.create(user=user, log=response_data, order_count=0)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+def update_user_kill_switch(user):
+    """Updates the user's kill switch status."""
+    if not user.kill_switch_1:
+        user.kill_switch_1 = True
+        print(f"INFO: Kill switch 1 activated for user: {user.username}")
+    else:
+        user.kill_switch_2 = True
+        print(f"INFO: Kill switch 2 activated for user: {user.username}")
+    user.save()
 
 
 
@@ -605,23 +609,27 @@ def start_scheduler():
 
     # Self-ping every 58 seconds
     scheduler.add_job(self_ping, IntervalTrigger(seconds=180))
-    scheduler.add_job(auto_order_count_monitoring_process, IntervalTrigger(seconds=10))
-
-
-
-    # Restore user kill switches every Monday to Friday at 4:00 PM
-    scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=16, minute=0))
-    scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=9, minute=0))
-    scheduler.add_job(DailyAccountOverviewUpdateProcess, CronTrigger(day_of_week='mon-fri', hour=15, minute=30))
-    scheduler.add_job(DailyAccountOverviewUpdateProcess, CronTrigger(day_of_week='mon-fri', hour=23, minute=50))
 
     
+    # scheduler.add_job(auto_order_count_monitoring_process, IntervalTrigger(seconds=10))
 
-    # to test
-    scheduler.add_job(autoStopLossProcess, IntervalTrigger(seconds=1))
-    scheduler.add_job(autoStopLossProcess, IntervalTrigger(seconds=10))
-    scheduler.add_job(autoclosePositionProcess, IntervalTrigger(seconds=2))
-    scheduler.add_job(autoAdminSwitchingProcess, IntervalTrigger(hours=1))
+
+
+    # # Restore user kill switches every Monday to Friday at 4:00 PM
+    # scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=16, minute=0))
+    # scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=9, minute=0))
+    # scheduler.add_job(DailyAccountOverviewUpdateProcess, CronTrigger(day_of_week='mon-fri', hour='9-16', minute=0))
+    # # Schedule the job to run every 10 seconds for testing
+
+    # # to test
+    # scheduler.add_job(autoStopLossProcess, IntervalTrigger(seconds=1))
+    # scheduler.add_job(autoStopLossProcess, IntervalTrigger(seconds=10))
+    # scheduler.add_job(autoclosePositionProcess, IntervalTrigger(seconds=2))
+    # scheduler.add_job(autoAdminSwitchingProcess, IntervalTrigger(hours=1))
+    # scheduler.add_job(autoMaxlossMaxProfitKillProcess, IntervalTrigger(seconds=2))
+
+
+    
 
 
 

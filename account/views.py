@@ -19,6 +19,9 @@ import requests
 from account.forms import UserLoginForm
 from .forms import CustomUserCreationForm, UserForm, CustomControlCreationForm, ControlForm
 from .models import Control
+from django.views.generic import ListView
+from .models import DhanKillProcessLog
+from .models import DailyAccountOverview
 
 from dhanhq import dhanhq
 from datetime import datetime, timedelta
@@ -125,6 +128,7 @@ class DashboardView(TemplateView):
         # Fetch slug from the URL if present, or default to using request.user
         self.slug = kwargs.get('slug')
         self.users = User.objects.filter(is_active=True, status=True)  # Query the active users
+        self.allusers = User.objects.filter(is_active=True)  # Query the active users
         self.dashboard_view = True
 
         # Call the parent class's dispatch method
@@ -248,6 +252,7 @@ class DashboardView(TemplateView):
         
         # Add the users to the context
         context['users'] = self.users
+        context['allusers'] = self.allusers
         context['dashboard_view'] = self.dashboard_view
 
         return context
@@ -453,8 +458,7 @@ class EditControlView(UpdateView):
         return get_object_or_404(Control, pk=self.kwargs['pk'])  # Assuming you're using the control ID as a URL parameter
 
 
-from django.views.generic import ListView
-from .models import DhanKillProcessLog
+
 
 class DhanKillProcessLogListView(ListView):
     model = DhanKillProcessLog
@@ -466,24 +470,58 @@ class DhanKillProcessLogListView(ListView):
         return DhanKillProcessLog.objects.all().order_by('-created_on')
 
 
-from django.views.generic import ListView
-from .models import DailyAccountOverview
+from django.utils.dateparse import parse_date
 
 class DailyAccountOverviewListView(ListView):
     model = DailyAccountOverview
-    template_name = 'dashboard/dailyaccountoverview.html'  # Update template name as necessary
-    context_object_name = 'daily_account_overviews'  # Change to reflect the context in the template
-    paginate_by = 10  # Optional: Add pagination (adjust the number as needed)
+    template_name = 'dashboard/dailyaccountoverview.html'
+    context_object_name = 'daily_account_overviews'
+    paginate_by = 10  # Optional: Adjust pagination number as needed
 
     def get_queryset(self):
-        # Return the queryset ordered by the updated_on field (descending)
-        return DailyAccountOverview.objects.all().order_by('-updated_on')
+        queryset = DailyAccountOverview.objects.all().order_by('-updated_on')
+
+        # Filter by user if a user_id is provided in the GET parameters
+        user_id = self.request.GET.get('user_id')
+        if user_id:
+            queryset = queryset.filter(user__id=user_id)
+
+        # Filter by date range if start_date and end_date are provided in the GET parameters
+        start_date = self.request.GET.get('start_date')
+        end_date = self.request.GET.get('end_date')
+        if start_date:
+            start_date_parsed = parse_date(start_date)  # Parse the start date to ensure it's a valid date
+            if start_date_parsed:
+                queryset = queryset.filter(updated_on__date__gte=start_date_parsed)
+        if end_date:
+            end_date_parsed = parse_date(end_date)  # Parse the end date
+            if end_date_parsed:
+                queryset = queryset.filter(updated_on__date__lte=end_date_parsed)
+
+        # Filter by opening and closing status if provided in the GET parameters
+        day_open = self.request.GET.get('day_open')
+        day_close = self.request.GET.get('day_close')
+        if day_open is not None:
+            queryset = queryset.filter(day_open=(day_open.lower() == 'true'))
+        if day_close is not None:
+            queryset = queryset.filter(day_close=(day_close.lower() == 'true'))
+
+        return queryset
 
     def get_context_data(self, **kwargs):
-        # Add any additional context variables if needed
         context = super().get_context_data(**kwargs)
-        context['title'] = 'Daily Account Overview'  # Optional: Add a title or other context variables
+        context['title'] = 'Daily Account Overview'
+
+        # Add filters to the context for form binding in the template
+        context['user_list'] = User.objects.all()  # For user filter options
+        context['selected_user'] = self.request.GET.get('user_id', '')  # Selected user ID
+        context['start_date'] = self.request.GET.get('start_date', '')  # Start date filter
+        context['end_date'] = self.request.GET.get('end_date', '')  # End date filter
+        context['day_open'] = self.request.GET.get('day_open', '')  # Opening filter
+        context['day_close'] = self.request.GET.get('day_close', '')  # Closing filter
+
         return context
+
 
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required

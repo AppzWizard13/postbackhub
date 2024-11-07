@@ -72,6 +72,20 @@ $(function () {
     var expenses = [];
     var chart_earning = [];
 
+    let positiveEarningsSum = 0;
+
+    // Iterate through chart_earning to sum positive values
+    chart_earning.forEach(function(value) {
+        if (value > 0) {
+            positiveEarningsSum += value;
+        }
+    });
+
+    let chartColor = (positiveEarningsSum > 0) ? "#49BEFF" : "#ff2626"; // Blue for positive sum, red for negative sum
+
+    let chartColor1 = chartColor
+
+
     // Process positions to populate categories, earnings, and expenses
     if (positions.length > 0) {
         positions.forEach(function(position) {
@@ -93,6 +107,8 @@ $(function () {
         earnings = [0];
         expenses = [0];
     }
+
+    let chart_earning1 = chart_earning
 
     // =====================================
     // Profit Chart
@@ -190,6 +206,57 @@ $(function () {
     chart.render();
 
 
+    // =====================================
+    // Performance Overview
+    // =====================================
+    var performanceOverview = {
+      chart: {
+        id: "performanceoverview",  // Unique ID for the performance overview chart
+        type: "area",
+        height: "100%", // Make the chart height 100% to fill the container
+        width: "100%",  // Make the chart width 100% to fill the container
+        sparkline: {
+          enabled: true,
+        },
+        group: "sparklines",
+        fontFamily: "'Plus Jakarta Sans', sans-serif",
+        foreColor: "#adb0bb",
+      },
+      series: [
+        {
+          name: "Performance",
+          color: chartColor1,  // You can customize the color here
+          data: [20,10,15,40,100,50,80,36],  // The data for performance overview
+        },
+      ],
+      stroke: {
+        curve: "smooth",
+        width: 2,
+      },
+      fill: {
+        colors: ["#f3feff"],
+        type: "solid",
+        opacity: 0.05,
+      },
+    
+      markers: {
+        size: 0,
+      },
+      tooltip: {
+        theme: "dark",
+        fixed: {
+          enabled: true,
+          position: "right",
+        },
+        x: {
+          show: false,
+        },
+      },
+    };
+    
+    // Render the performance overview chart
+    new ApexCharts(document.querySelector("#performanceoverview"), performanceOverview).render();
+    
     
   // =====================================
   // Earning
@@ -209,7 +276,7 @@ $(function () {
     series: [
       {
         name: "Earnings",
-        color: "#49BEFF",
+        color: chartColor,
         data:chart_earning,
       },
     ],
