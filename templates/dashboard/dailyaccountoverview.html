@@ -69,6 +69,27 @@
                         </div>
                     </div>
                 </form>
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.2/xlsx.full.min.js"></script>
+                <script>
+                    document.getElementById("exportExcel").addEventListener("click", function() {
+                        // Get the current username
+                        var username = "{{ request.user.username }}";
+                        
+                        // Get the current date and time in YYYY-MM-DD_HH-mm-ss format
+                        var now = new Date();
+                        var date = now.toISOString().split('T')[0];  // Get the current date (YYYY-MM-DD)
+                        var time = now.toTimeString().split(' ')[0].replace(/:/g, '-'); // Get the current time (HH-mm-ss)
+                
+                        // Combine username, date, and time to create the filename
+                        var filename = username + "_" + date + "_" + time + ".xlsx";
+                
+                        // Create a workbook from the table
+                        var wb = XLSX.utils.table_to_book(document.querySelector("table"), { sheet: "Sheet1" });
+                
+                        // Export the file with the dynamic filename
+                        XLSX.writeFile(wb, filename);
+                    });
+                </script>
 
                 <!-- Table -->
                 <div class="table-responsive">

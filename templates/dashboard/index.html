@@ -708,80 +708,34 @@
           </div>
 
           <div class="row">
-            <div class="col-lg-6 d-flex align-items-stretch">
+            {% comment %} <div class="col-lg-4 d-flex align-items-stretch">
               <div class="card w-100">
                 <div class="card-body p-4">
                   <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h5 class="card-title fw-semibold mb-0">Weekly Overview</h5>
+                    <h5 class="card-title fw-semibold mb-0">Daily Overview</h5>
                   </div>
                   <div class="col-12" style="height: 300px;">
                     <!-- Ensure the container takes up 100% of the available space -->
-                    <div id="performanceoverview" style="height: 100%; width: 100%;"></div>
+                    <div id="dailyperformanceOverview" style="height: 100%; width: 100%;"></div>
+                  </div>
+                </div>
+              </div>
+            </div> {% endcomment %}
+            
+            <div class="col-lg-7 d-flex align-items-stretch">
+              <div class="card w-100">
+                <div class="card-body p-4">
+                  <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="card-title fw-semibold mb-0">Hourly Overview</h5>
+                  </div>
+                  <div class="col-12" style="height: 300px;">
+                    <!-- Ensure the container takes up 100% of the available space -->
+                    <div id="hourlyperformanceoverview" style="height: 100%; width: 100%;"></div>
                   </div>
                 </div>
               </div>
             </div>
-            <div class="col-lg-6 d-flex align-items-stretch">
-              <div class="card w-100">
-                <div class="card-body p-4">
-                  <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h5 class="card-title fw-semibold mb-0">Active Users</h5>
-                  </div>
-                  <div class="table-responsive" style="overflow-y: auto;">
-                    <table class="table text-nowrap mb-0 align-middle" id="positionsTable">
-                      <thead class="text-dark fs-4">
-                        <tr>
-                          <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Username</h6></th>
-                          <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Status</h6></th>
-                          <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Kill Status 1</h6></th>
-                          <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Kill Status 2</h6></th>
-                          <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Auto SL</h6></th>
-                        </tr>
-                      </thead>
-                      <tbody id="positionsTableBody">
-                        {% for user in allusers %}
-                        <tr>
-                          <td class="border-bottom-0">
-                            <h6 class="fw-semibold mb-0">{{ user.username }}</h6>
-                          </td>
-                          <td class="border-bottom-0">
-                            <span class="badge {% if user.status %}bg-success{% else %}bg-warning{% endif %} rounded-3 fw-semibold">
-                              {% if user.status %}Active{% else %}Inactive{% endif %}
-                            </span>
-                          </td>
-                          <td class="border-bottom-0">
-                            <span class="badge {% if user.kill_switch_1 %}bg-danger{% else %}bg-primary{% endif %} rounded-3 fw-semibold">
-                              {% if user.kill_switch_1 %}Enabled{% else %}Disabled{% endif %}
-                            </span>
-                          </td>
-                          <td class="border-bottom-0">
-                            <span class="badge {% if user.kill_switch_2 %}bg-danger{% else %}bg-primary{% endif %} rounded-3 fw-semibold">
-                              {% if user.kill_switch_2 %}Enabled{% else %}Disabled{% endif %}
-                            </span>
-                          </td>
-                          <td class="border-bottom-0">
-                            <span class="badge {% if user.auto_stop_loss %}bg-success{% else %}bg-danger{% endif %} rounded-3 fw-semibold">
-                              {% if user.auto_stop_loss %}Enabled{% else %}Disabled{% endif %}
-                            </span>
-                          </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                          <td colspan="5" class="text-center fw-semibold">No Active Users Found</td>
-                        </tr>
-                        {% endfor %}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>              
-            </div>
             
-  
- 
-          </div>
-          
-          <div class="row">
             <div class="col-lg-5 d-flex align-items-stretch">
               <div class="card w-100">
                 <div class="card-body p-4">
@@ -857,6 +811,69 @@
                 </div>
               </div>
             </div>
+
+            
+  
+ 
+          </div>
+          
+          <div class="row">
+            <div class="col-lg-5 d-flex align-items-stretch">
+              <div class="card w-100">
+                <div class="card-body p-4">
+                  <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="card-title fw-semibold mb-0">Active Users</h5>
+                  </div>
+                  <div class="table-responsive" style="overflow-y: auto;">
+                    <table class="table text-nowrap mb-0 align-middle" id="positionsTable">
+                      <thead class="text-dark fs-4">
+                        <tr>
+                          <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Username</h6></th>
+                          <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Status</h6></th>
+                          <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Kill Status 1</h6></th>
+                          <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Kill Status 2</h6></th>
+                          <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Auto SL</h6></th>
+                        </tr>
+                      </thead>
+                      <tbody id="positionsTableBody">
+                        {% for user in allusers %}
+                        <tr>
+                          <td class="border-bottom-0">
+                            <h6 class="fw-semibold mb-0">{{ user.username }}</h6>
+                          </td>
+                          <td class="border-bottom-0">
+                            <span class="badge {% if user.status %}bg-success{% else %}bg-warning{% endif %} rounded-3 fw-semibold">
+                              {% if user.status %}Active{% else %}Inactive{% endif %}
+                            </span>
+                          </td>
+                          <td class="border-bottom-0">
+                            <span class="badge {% if user.kill_switch_1 %}bg-danger{% else %}bg-primary{% endif %} rounded-3 fw-semibold">
+                              {% if user.kill_switch_1 %}Enabled{% else %}Disabled{% endif %}
+                            </span>
+                          </td>
+                          <td class="border-bottom-0">
+                            <span class="badge {% if user.kill_switch_2 %}bg-danger{% else %}bg-primary{% endif %} rounded-3 fw-semibold">
+                              {% if user.kill_switch_2 %}Enabled{% else %}Disabled{% endif %}
+                            </span>
+                          </td>
+                          <td class="border-bottom-0">
+                            <span class="badge {% if user.auto_stop_loss %}bg-success{% else %}bg-danger{% endif %} rounded-3 fw-semibold">
+                              {% if user.auto_stop_loss %}Enabled{% else %}Disabled{% endif %}
+                            </span>
+                          </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                          <td colspan="5" class="text-center fw-semibold">No Active Users Found</td>
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>              
+            </div>
+
             
   
             <div class="col-lg-7 d-flex align-items-stretch">
@@ -1297,6 +1314,12 @@
     </script>
     <script type="application/json" id="breakup_labels">
       {{ breakup_labels|safe }}
+    </script>
+    <script type="application/json" id="hourly_status_data">
+      {{ hourly_status_data|safe }}
+    </script>
+    <script type="application/json" id="daily_status_data">
+      {{ daily_status_data|safe }}
     </script>
     <script>
       // Initialize all toasts

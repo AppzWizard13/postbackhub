@@ -6,6 +6,11 @@ $(function () {
     // Retrieve series data from the DOM element and parse it as JSON
     var breakup_seriesTag = document.getElementById('breakup_series');
     var breakup_seriesdata = breakup_seriesTag ? breakup_seriesTag.textContent : "";
+    var hourly_status_dataTag = document.getElementById('hourly_status_data');
+    var hourly_status_data = hourly_status_dataTag ? hourly_status_dataTag.textContent : "";
+    var daily_status_dataTag = document.getElementById('daily_status_data');
+    var daily_status_data = daily_status_dataTag ? daily_status_dataTag.textContent : "";
+
     try {
       // Parse the JSON data and round each number
       var parsedSeriesData = JSON.parse(breakup_seriesdata);
@@ -21,7 +26,33 @@ $(function () {
       if (breakup_series[1] < 0) {
         breakup_series[1] = Math.abs(breakup_series[1]);
       }
-      
+
+      // Suppose hourly_status_data is a comma-separated string of numbers, e.g., "-10, 20, -30"
+      var hourly_status_data = hourly_status_dataTag ? hourly_status_dataTag.textContent : "";
+
+      // Convert to an array of positive numbers
+      var hourly_adjusted_profit_list = hourly_status_data
+        .split(',')  // Split by commas to create an array
+        .map(function(value) {
+          // Convert each item to a number, and use Math.abs() to ensure positivity
+          var number = parseFloat(value.trim());
+          return isNaN(number) ? 0 : Math.abs(number); // Default to 0 if conversion fails
+        });
+
+        console.log("Adjusted profit list Hourly :", hourly_adjusted_profit_list); // Logs the list 
+
+      // Suppose hourly_status_data is a comma-separated string of numbers, e.g., "-10, 20, -30"
+      var daily_status_data = daily_status_dataTag ? daily_status_dataTag.textContent : "";
+
+      // Convert to an array of positive numbers
+      var daily_adjusted_profit_list = daily_status_data
+        .split(',')  // Split by commas to create an array
+        .map(function(value) {
+          // Convert each item to a number, and use Math.abs() to ensure positivity
+          var number = parseFloat(value.trim());
+          return isNaN(number) ? 0 : Math.abs(number); // Default to 0 if conversion fails
+        });
+      console.log("Adjusted profit list Daily :", daily_adjusted_profit_list); // Logs the list 
 
     
     } catch (e) {
@@ -84,6 +115,8 @@ $(function () {
     let chartColor = (positiveEarningsSum > 0) ? "#49BEFF" : "#ff2626"; // Blue for positive sum, red for negative sum
 
     let chartColor1 = chartColor
+
+    let chartColor2 = chartColor
 
 
     // Process positions to populate categories, earnings, and expenses
@@ -205,58 +238,116 @@ $(function () {
     var chart = new ApexCharts(document.querySelector("#chart"), chartOptions);
     chart.render();
 
+// =====================================
+// Performance Overview - Daily
+// =====================================
+var dailyperformanceOverview = {
+  chart: {
+    id: "dailyperformanceoverview",
+    type: "area",
+    height: "100%",
+    width: "100%",
+    sparkline: {
+      enabled: true,
+    },
+    group: "sparklines",
+    fontFamily: "'Plus Jakarta Sans', sans-serif",
+    foreColor: "#adb0bb",
+  },
+  series: [
+    {
+      name: "Performance",
+      color: typeof chartColor1 !== 'undefined' ? chartColor1 : "#00bfff",
+      data: Array.isArray(daily_adjusted_profit_list) && daily_adjusted_profit_list.length > 0 
+            ? daily_adjusted_profit_list 
+            : [0], // Default value if the list is empty
+    },
+  ],
+  stroke: {
+    curve: "smooth",
+    width: 2,
+  },
+  fill: {
+    colors: ["#f3feff"],
+    type: "solid",
+    opacity: 0.05,
+  },
+  markers: {
+    size: 0,
+  },
+  tooltip: {
+    theme: "dark",
+    fixed: {
+      enabled: true,
+      position: "right",
+    },
+    x: {
+      show: false,
+    },
+  },
+};
 
-    // =====================================
-    // Performance Overview
-    // =====================================
-    var performanceOverview = {
-      chart: {
-        id: "performanceoverview",  // Unique ID for the performance overview chart
-        type: "area",
-        height: "100%", // Make the chart height 100% to fill the container
-        width: "100%",  // Make the chart width 100% to fill the container
-        sparkline: {
-          enabled: true,
-        },
-        group: "sparklines",
-        fontFamily: "'Plus Jakarta Sans', sans-serif",
-        foreColor: "#adb0bb",
-      },
-      series: [
-        {
-          name: "Performance",
-          color: chartColor1,  // You can customize the color here
-          data: [20,10,15,40,100,50,80,36],  // The data for performance overview
-        },
-      ],
-      stroke: {
-        curve: "smooth",
-        width: 2,
-      },
-      fill: {
-        colors: ["#f3feff"],
-        type: "solid",
-        opacity: 0.05,
-      },
-    
-      markers: {
-        size: 0,
-      },
-      tooltip: {
-        theme: "dark",
-        fixed: {
-          enabled: true,
-          position: "right",
-        },
-        x: {
-          show: false,
-        },
-      },
-    };
-    
-    // Render the performance overview chart
-    new ApexCharts(document.querySelector("#performanceoverview"), performanceOverview).render();
-    
+// Check if element exists before rendering the daily chart
+if (document.querySelector("#dailyperformanceoverview")) {
+  new ApexCharts(document.querySelector("#dailyperformanceoverview"), dailyperformanceOverview).render();
+}
+
+// =====================================
+// Performance Overview - Hourly
+// =====================================
+var hourlyperformanceoverview = {
+  chart: {
+    id: "hourlyperformanceoverview",
+    type: "area",
+    height: "100%",
+    width: "100%",
+    sparkline: {
+      enabled: true,
+    },
+    group: "sparklines",
+    fontFamily: "'Plus Jakarta Sans', sans-serif",
+    foreColor: "#adb0bb",
+  },
+  series: [
+    {
+      name: "Performance",
+      color: typeof chartColor2 !== 'undefined' ? chartColor2 : "#ff6347",
+      data: Array.isArray(hourly_adjusted_profit_list) && hourly_adjusted_profit_list.length > 0 
+            ? hourly_adjusted_profit_list 
+            : [0], // Default value if the list is empty
+    },
+  ],
+  stroke: {
+    curve: "smooth",
+    width: 2,
+  },
+  fill: {
+    colors: ["#f3feff"],
+    type: "solid",
+    opacity: 0.05,
+  },
+  markers: {
+    size: 0,
+  },
+  tooltip: {
+    theme: "dark",
+    fixed: {
+      enabled: true,
+      position: "right",
+    },
+    x: {
+      show: false,
+    },
+  },
+};
+
+// Check if element exists before rendering the hourly chart
+if (document.querySelector("#hourlyperformanceoverview")) {
+  new ApexCharts(document.querySelector("#hourlyperformanceoverview"), hourlyperformanceoverview).render();
+}
+
+
+
     
   // =====================================
   // Earning

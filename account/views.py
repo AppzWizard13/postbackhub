@@ -220,6 +220,18 @@ class DashboardView(TemplateView):
         max_expected_expense = float(max_expected_loss) + day_exp_brokerge
 
 
+        # perfomance overview chart data 
+        # DailyAccountOverview.Objects.filter(user=user).orderedby('updated_on').get value 'actual_profit' as list 
+        hourly_status_data = DailyAccountOverview.objects.filter(user=user).order_by('updated_on').values_list('closing_balance', flat=True)
+
+
+        from django.db.models import Q
+
+        daily_status_data = DailyAccountOverview.objects.filter(user=user).filter(Q(day_open=True) | Q(day_close=True)).order_by('updated_on').values_list('closing_balance', flat=True)
+
+        print("........................", hourly_status_data)
+
+
 
         # Add data to context
         context['open_position'] = open_position
@@ -236,6 +248,8 @@ class DashboardView(TemplateView):
         context['order_limit'] = order_limit
         context['peak_order_limit'] = peak_order_limit
         context['user'] = user
+        context['daily_status_data'] = daily_status_data
+        context['hourly_status_data'] = hourly_status_data
         context['orderlistdata'] = traded_orders
         context['position_data'] = position_data
         context['current_date'] = current_date
