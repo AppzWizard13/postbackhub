@@ -482,25 +482,25 @@ def autoAdminSwitchingProcess():
 def start_scheduler():
     scheduler = BackgroundScheduler()
 
-    # # SELF PING TESTED OK
-    # scheduler.add_job(self_ping, IntervalTrigger(seconds=180))
+    # SELF PING TESTED OK
+    scheduler.add_job(self_ping, IntervalTrigger(seconds=180))
 
-    # # RESTORE KILL SWITCH BY 9 AM AND 4 PM TESTED OK
-    # scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=9, minute=0))
-    # scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=16, minute=0))
+    # RESTORE KILL SWITCH BY 9 AM AND 4 PM TESTED OK
+    scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=9, minute=0))
+    scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=16, minute=0))
 
 
-    # # ORDER COUNT-KILL FEATURE TESTED OK 
-    # scheduler.add_job(auto_order_count_monitoring_process, IntervalTrigger(seconds=2))
+    # ORDER COUNT-KILL FEATURE TESTED OK 
+    scheduler.add_job(auto_order_count_monitoring_process, IntervalTrigger(seconds=2))
 
-    # # QUICK EXIT FEATURE TESTED OK 
-    # scheduler.add_job(autoclosePositionProcess, IntervalTrigger(seconds=2))
+    # QUICK EXIT FEATURE TESTED OK 
+    scheduler.add_job(autoclosePositionProcess, IntervalTrigger(seconds=2))
 
-    # # AUTO STOPLOSS FEATURE TESTED OK
-    # scheduler.add_job(autoStopLossProcess, IntervalTrigger(seconds=2))
+    # AUTO STOPLOSS FEATURE TESTED OK
+    scheduler.add_job(autoStopLossProcess, IntervalTrigger(seconds=2))
 
-    # # AUTO ADMIN SWITCHING PROCESS TESTED OK 
-    # scheduler.add_job(autoAdminSwitchingProcess, IntervalTrigger(hours=1))
+    # AUTO ADMIN SWITCHING PROCESS TESTED OK 
+    scheduler.add_job(autoAdminSwitchingProcess, IntervalTrigger(hours=1))
 
 
     scheduler.start()
