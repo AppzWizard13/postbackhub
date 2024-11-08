@@ -611,22 +611,22 @@ def start_scheduler():
     scheduler.add_job(self_ping, IntervalTrigger(seconds=180))
 
     
-    # scheduler.add_job(auto_order_count_monitoring_process, IntervalTrigger(seconds=10))
+    scheduler.add_job(auto_order_count_monitoring_process, IntervalTrigger(seconds=10))
 
 
 
-    # # Restore user kill switches every Monday to Friday at 4:00 PM
-    # scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=16, minute=0))
-    # scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=9, minute=0))
-    # scheduler.add_job(DailyAccountOverviewUpdateProcess, CronTrigger(day_of_week='mon-fri', hour='9-16', minute=0))
-    # # Schedule the job to run every 10 seconds for testing
+    # Restore user kill switches every Monday to Friday at 4:00 PM
+    scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=16, minute=0))
+    scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=9, minute=0))
+    scheduler.add_job(DailyAccountOverviewUpdateProcess, CronTrigger(day_of_week='mon-fri', hour='9-16', minute=0))
+    # Schedule the job to run every 10 seconds for testing
 
-    # # to test
-    # scheduler.add_job(autoStopLossProcess, IntervalTrigger(seconds=1))
-    # scheduler.add_job(autoStopLossProcess, IntervalTrigger(seconds=10))
-    # scheduler.add_job(autoclosePositionProcess, IntervalTrigger(seconds=2))
-    # scheduler.add_job(autoAdminSwitchingProcess, IntervalTrigger(hours=1))
-    # scheduler.add_job(autoMaxlossMaxProfitKillProcess, IntervalTrigger(seconds=2))
+    # to test
+    scheduler.add_job(autoStopLossProcess, IntervalTrigger(seconds=1))
+    scheduler.add_job(autoStopLossProcess, IntervalTrigger(seconds=10))
+    scheduler.add_job(autoclosePositionProcess, IntervalTrigger(seconds=2))
+    scheduler.add_job(autoAdminSwitchingProcess, IntervalTrigger(hours=1))
+    scheduler.add_job(autoMaxlossMaxProfitKillProcess, IntervalTrigger(seconds=2))
 
 
     
