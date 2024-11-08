@@ -141,7 +141,7 @@ BROKERAGE_PARAMETER = "33"
 
 TRIGGER_SLIPPAGE = "0.05"
 
-DEV_ADMIN = 'tradingwitch'
+DEV_ADMIN = 'Appz'
 ACTIVE_TRADER = ['juztin', 'tradingwitch']
 ACTING_ADMIN = 'vicky'
 
