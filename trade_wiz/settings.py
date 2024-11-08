@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
+from decouple import config
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,17 +24,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-f-lro%0yj$70!j=-abx!**fm058-xn!3m*$#q05awh=9b^1b8j'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-
-NGROK_URL = os.environ.get('NGROK_URL', default=None)
-FYERS_APP_ID = os.environ.get('FYERS_APP_ID', default=None)
-FYERS_PIN_ID = os.environ.get('FYERS_PIN_ID', default=None)
-FYERS_SECRET_ID = os.environ.get('FYERS_SECRET_ID', default=None)
-DHAN_CLIENTID = os.environ.get('DHAN_CLIENTID', default=None)
-DHAN_ACCESS_TOKEN = os.environ.get('DHAN_ACCESS_TOKEN', default=None)
+DEBUG = config('DEBUG', default=False, cast=bool)
+TESTMODE = config('TESTMODE', default=False, cast=bool)
 
 ALLOWED_HOSTS = ['*']
 
@@ -99,15 +92,33 @@ AUTH_USER_MODEL = 'account.User'
 
 
 # Database
-# https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# Conditional database configuration based on DEBUG mode
+if TESTMODE:
+    # Use SQLite for development
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
-
+else:
+    # Database configuration
+    # DATABASES = {
+    #     'default': {
+    #         'ENGINE': 'django.db.backends.postgresql',
+    #         'NAME': config('DB_NAME'),
+    #         'USER': config('DB_USER'),
+    #         'PASSWORD': config('DB_PASSWORD'),
+    #         'HOST': config('DB_HOST'),
+    #         'PORT': config('DB_PORT', cast=int),  # Cast port to integer
+    #     }
+    # }
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR /  'LIVEDB/tradewiz-live.sqlite3',
+        }
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -142,7 +153,9 @@ BROKERAGE_PARAMETER = "33"
 TRIGGER_SLIPPAGE = "0.05"
 
 DEV_ADMIN = 'Appz'
+
 ACTIVE_TRADER = ['juztin', 'tradingwitch']
+
 ACTING_ADMIN = 'vicky'
 
 # Static files (CSS, JavaScript, Images)

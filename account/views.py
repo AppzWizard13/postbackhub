@@ -215,9 +215,12 @@ class DashboardView(TemplateView):
         else:
             breakup_series = [available_balance, total_realized_profit, total_expense ]
         breakup_labels = ['A/C Balance', 'Profit/Loss', 'Charges']
-
-        max_expected_loss = (actual_bal * exp_entry_count ) * (stoploss_percentage/100)
-        max_expected_expense = float(max_expected_loss) + day_exp_brokerge
+        max_expected_loss = 0 
+        max_expected_expense = 0 
+        order_limit = 0
+        if control_data:
+            max_expected_loss = (actual_bal * exp_entry_count ) * (stoploss_percentage/100)
+            max_expected_expense = float(max_expected_loss) + day_exp_brokerge
 
 
         # perfomance overview chart data 
