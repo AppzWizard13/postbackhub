@@ -16,10 +16,9 @@ $(function () {
       var parsedSeriesData = JSON.parse(breakup_seriesdata);
       var breakup_series = parsedSeriesData.map(num => Math.round(num));
     
-      // Set colors based on the second value's positivity/negativity
       var colors = [
         "#3267ff", // First color - Blue (default)
-        breakup_series[1] > 0 ? "#4cb849" : "#fa2d2d", // Green if positive, Red if negative
+        breakup_series[1] > 0 ? "#4cb849" : (breakup_series[1] < 0 ? "#fa2d2d" : "#3267ff"), // Green if positive, Red if negative, Blue if zero
         "#fff47d" // Third color - Orange (default)
       ];
       // Check if the second value is negative and make it positive if so
@@ -112,7 +111,7 @@ $(function () {
         }
     });
 
-    let chartColor = (positiveEarningsSum > 0) ? "#49BEFF" : "#ff2626"; // Blue for positive sum, red for negative sum
+    let chartColor = (positiveEarningsSum > 0) ? "#4cb849" : (positiveEarningsSum === 0 ? "#49BEFF" : "#ff2626"); 
 
     let chartColor1 = chartColor
 
