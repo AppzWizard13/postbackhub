@@ -30,9 +30,7 @@ if LIVE_MODE:
     DEBUG = config('DEBUG', default=False, cast=bool)
     TESTMODE = config('TESTMODE', default=False, cast=bool)
     TESTKEY = config('TESTKEY', default=False, cast=bool)
-    print("TESTKEYTESTKEYTESTKEYTESTKEY", TESTKEY)
-    print("TESTKEYTESTKEYTESTKEYTESTKEY", DEBUG)
-    print("TESTKEYTESTKEYTESTKEYTESTKEY", TESTMODE)
+
 else:
     from decouple import Config, RepositoryEnv
     DOTENV_FILE = '.envtest'
@@ -45,9 +43,7 @@ else:
     SECRET_KEY = 'django-insecure-f-lro%0yj$70!j=-abx!**fm058-xn!3m*$#q05awh=9b^1b8j'
     DEBUG = env_config.get('DEBUG', default=False, cast=bool)
     TESTMODE = env_config.get('TESTMODE', default=False, cast=bool)
-    print("TESTKEYTESTKEYTESTKEYTESTKEY", TESTKEY)
-    print("TESTKEYTESTKEYTESTKEYTESTKEY", DEBUG)
-    print("TESTKEYTESTKEYTESTKEYTESTKEY", TESTMODE)
+
 
 
 
@@ -127,22 +123,22 @@ if TESTMODE:
     }
 else:
     # Database configuration
-    # DATABASES = {
-    #     'default': {
-    #         'ENGINE': 'django.db.backends.postgresql',
-    #         'NAME': config('DB_NAME'),
-    #         'USER': config('DB_USER'),
-    #         'PASSWORD': config('DB_PASSWORD'),
-    #         'HOST': config('DB_HOST'),
-    #         'PORT': config('DB_PORT', cast=int),  # Cast port to integer
-    #     }
-    # }
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR /  'LIVEDB/tradewiz-live.sqlite3',
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': config('DB_NAME'),
+            'USER': config('DB_USER'),
+            'PASSWORD': config('DB_PASSWORD'),
+            'HOST': config('DB_HOST'),
+            'PORT': config('DB_PORT', cast=int),  # Cast port to integer
         }
     }
+    # DATABASES = {
+    #     'default': {
+    #         'ENGINE': 'django.db.backends.sqlite3',
+    #         'NAME': BASE_DIR /  'LIVEDB/tradewiz-live.sqlite3',
+    #     }
+    # }
 
 print("---------------------------------------------")
 print("USING DATA BASE                  :", DATABASES)
