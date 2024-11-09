@@ -549,6 +549,10 @@ def start_scheduler():
     # AUTO ADMIN SWITCHING PROCESS TESTED OK 
     scheduler.add_job(autoAdminSwitchingProcess, IntervalTrigger(hours=1))
 
+    # HOURLY DATA LOG MONITORING TESTED OK
+    scheduler.add_job(DailyAccountOverviewUpdateProcess, IntervalTrigger(hours=1))
+    
+
 
     scheduler.start()
     print("INFO: Scheduler started.")
