@@ -12,7 +12,23 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
-from decouple import config
+from decouple import Config, RepositoryEnv
+
+
+# Set LIVE_MODE as a variable in your code
+LIVE_MODE = True 
+
+if LIVE_MODE:
+    DOTENV_FILE = '.env'
+else:
+    DOTENV_FILE = '.envtest'
+
+
+
+env_config = Config(RepositoryEnv(DOTENV_FILE))
+
+TESTKEY = env_config.get('TESTKEY')
+
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -24,8 +40,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-f-lro%0yj$70!j=-abx!**fm058-xn!3m*$#q05awh=9b^1b8j'
-DEBUG = config('DEBUG', default=False, cast=bool)
-TESTMODE = config('TESTMODE', default=True, cast=bool)
+DEBUG = env_config.get('DEBUG', default=False, cast=bool)
+TESTMODE = env_config.get('TESTMODE', default=True, cast=bool)
+
+print("TESTKEYTESTKEYTESTKEYTESTKEY", TESTKEY)
+print("TESTKEYTESTKEYTESTKEYTESTKEY", DEBUG)
+print("TESTKEYTESTKEYTESTKEYTESTKEY", TESTMODE)
 
 ALLOWED_HOSTS = ['*']
 
