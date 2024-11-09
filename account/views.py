@@ -31,7 +31,7 @@ User = get_user_model()
 
 # Create your views here.
 class HomePageView( TemplateView):
-    template_name = "dashboard/authentication-login.html"
+    template_name = "landing/index.html"
 
 
     def dispatch(self, request, *args, **kwargs):

@@ -37,7 +37,7 @@
                 <div  class="text-nowrap logo-img text-center d-block py-3 w-100">
                   <img src="{% static 'dashboard/assets/images/logos/tradewizlogo.png' %}" width="250" alt="">
               </div>
-                <p class="text-center">Start your trading journey here</p>
+                {% comment %} <p class="text-center">Start your trading journey here</p> {% endcomment %}
                 <form method="POST">
                   {% csrf_token %}
                   <div class="mb-3">

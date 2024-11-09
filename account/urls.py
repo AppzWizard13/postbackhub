@@ -8,9 +8,9 @@ from .views import UserListView, UserDetailView, ControlListView, UserCreateView
 
 urlpatterns = [
     # landing page
-    # path('', views.HomePageView.as_view(), name='home'),
+    path('', views.HomePageView.as_view(), name='home'),
     # login 
-    path('', views.UserloginView.as_view(), name = 'login'),
+    path('login/', views.UserloginView.as_view(), name = 'login'),
     path('logout/', views.LogoutView.as_view(), name='logout'),  # Add this line
     # dashboard 
     path('dashboard', views.DashboardView.as_view(), name='dashboard'),
@@ -30,6 +30,7 @@ urlpatterns = [
 
     path('dhan_kill_logs/', DhanKillProcessLogListView.as_view(), name='dhan-kill-log-list'),
     path('dashboard/<slug:slug>/', DashboardView.as_view(), name='dashboard'),
+    # path('dashboard/<slug:slug>/<timeperiod:timeperiod>', DashboardView.as_view(), name='dashboard'),
 
     path('close-all-positions/', views.close_all_positions, name='close_all_positions'),
     path('clear-kill-log/', views.clear_kill_log, name='clear_kill_log'),
