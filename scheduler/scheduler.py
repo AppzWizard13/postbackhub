@@ -237,8 +237,7 @@ def autoStopLossLotControlProcess():
     print("Auto Stop Loss Process Running")
     now = datetime.now()
     print(f"Current date and time: {now.strftime('%Y-%m-%d %H:%M:%S')}")
-    # if now.weekday() < 5 and (9 <= now.hour < 16):  # Monday to Friday, 9 AM to 4 PM
-    if now:
+    if now.weekday() < 5 and (9 <= now.hour < 16):  # Monday to Friday, 9 AM to 4 PM
         try:
             active_users = User.objects.filter(is_active=True,  status=True, auto_stop_loss=True)
             print("************************************************************", active_users)
@@ -259,86 +258,88 @@ def autoStopLossLotControlProcess():
                         dhan = dhanhq(dhan_client_id, dhan_access_token)
                         order_list = dhan.get_order_list()
                         # Step 1: Sort filtered orders by timestamp in descending order
-                        latest_entry = order_list['data'][0]
-                        print("llllllllllllllllllllllllllllllllll")
-                        if latest_entry['transactionType'] == 'BUY' and latest_entry['orderStatus'] == 'TRADED':
-                            security_id = latest_entry['securityId']
-                            traded_symbol = latest_entry['tradingSymbol']
-                            client_id = latest_entry['dhanClientId']
-                            exchange_segment = latest_entry['exchangeSegment']
-                            quantity = latest_entry['quantity']
-                            traded_price = float(latest_entry['price'])
-                            traded_quantity = quantity
-                            sl_price, sl_trigger = calculateslprice(traded_price, stoploss_percentage)
-                            lot_control_check = lot_control_process(traded_quantity, traded_symbol, max_lot_size_limit )
-                            print("traded_quantitytraded_quantity", traded_quantity)
-                            print("traded_symboltraded_symboltraded_symbol", traded_symbol)
-                            print("max_lot_size_limitmax_lot_size_limit", max_lot_size_limit)
-                            print("***************************************************************************")
-                            print("lot_control_checklot_control_checklot_control_check", lot_control_check)
-                            print("AUTO STOP LOSS PROCESS FOR USER                    :" ,user.username )
-                            print("PRICE                                              :", sl_price)
-                            print("TRIGGER PRICE                                      :", sl_trigger)
-                            print(f"SECURITY ID                                       : {security_id}")
-                            print(f"CLIENT ID                                         : {client_id}")
-                            print(f"EXCHANGE SEGMENT                                  : {exchange_segment}")
-                            print(f"QUANTITY                                          : {quantity}")
-                            print("***************************************************************************")
-                            pending_sl_orders = get_pending_order_filter_dhan(order_list)
-                            if not lot_control_check:
-                                sell_qty = quantity - max_lot_size_limit
-                                stoploss_response = dhan.place_order(
-                                        security_id=security_id, 
-                                        exchange_segment=exchange_segment,
-                                        transaction_type='SELL',
-                                        quantity=sell_qty,
-                                        order_type='MARKET',
-                                        product_type='INTRADAY',
-                                        price=0)
-                                lot_control_check = True
-                                quantity = max_lot_size_limit
-
-                                
-                            if pending_sl_orders and lot_control_check :
-                                print(f"INFO: MODIFYING EXISTING STOP LOSS ORDER FOR :  {user.username}")
-                                for order in pending_sl_orders:
-                                    exst_qty = int(order['quantity'])
-                                    addon_qty = int(quantity)
-                                    total_qty = exst_qty + addon_qty
-                                    modify_slorder_response = dhan.modify_order(
-                                                    order_id = order['orderId'], 
-                                                    quantity=total_qty,
-                                                    order_type = order['orderType'],
-                                                    leg_name = order['legName'],
-                                                    price = order['price'],
-                                                    trigger_price = order['triggerPrice'],
-                                                    validity = order['validity'],
-                                                    disclosed_quantity = order['disclosedQuantity']
-                                                    )
-
-                                print("Stop Loss Modified Response :", modify_slorder_response)
-                                print(f"INFO: Stop Loss Order Modified Successfully..!")
-                            elif lot_control_check:
-                                # Place an order for NSE Futures & Options
-                                print(f"INFO: EXECUTING NEW STOP LOSS ORDER FOR :  {user.username}")
-                                stoploss_response = dhan.place_order(
+                        if not order_list['data'] == []:
+                            latest_entry = order_list['data'][0]
+                            if latest_entry['transactionType'] == 'BUY' and latest_entry['orderStatus'] == 'TRADED':
+                                security_id = latest_entry['securityId']
+                                traded_symbol = latest_entry['tradingSymbol']
+                                client_id = latest_entry['dhanClientId']
+                                exchange_segment = latest_entry['exchangeSegment']
+                                quantity = latest_entry['quantity']
+                                traded_price = float(latest_entry['price'])
+                                traded_quantity = quantity
+                                sl_price, sl_trigger = calculateslprice(traded_price, stoploss_percentage)
+                                lot_control_check = lot_control_process(traded_quantity, traded_symbol, max_lot_size_limit )
+                                print("traded_quantitytraded_quantity", traded_quantity)
+                                print("traded_symboltraded_symboltraded_symbol", traded_symbol)
+                                print("max_lot_size_limitmax_lot_size_limit", max_lot_size_limit)
+                                print("***************************************************************************")
+                                print("lot_control_checklot_control_checklot_control_check", lot_control_check)
+                                print("AUTO STOP LOSS PROCESS FOR USER                    :" ,user.username )
+                                print("PRICE                                              :", sl_price)
+                                print("TRIGGER PRICE                                      :", sl_trigger)
+                                print(f"SECURITY ID                                       : {security_id}")
+                                print(f"CLIENT ID                                         : {client_id}")
+                                print(f"EXCHANGE SEGMENT                                  : {exchange_segment}")
+                                print(f"QUANTITY                                          : {quantity}")
+                                print("***************************************************************************")
+                                pending_sl_orders = get_pending_order_filter_dhan(order_list)
+                                if not lot_control_check:
+                                    sell_qty = quantity - max_lot_size_limit
+                                    stoploss_response = dhan.place_order(
                                             security_id=security_id, 
                                             exchange_segment=exchange_segment,
                                             transaction_type='SELL',
-                                            quantity=quantity,
-                                            order_type='STOP_LOSS',
+                                            quantity=sell_qty,
+                                            order_type='MARKET',
                                             product_type='INTRADAY',
-                                            price=sl_price,
-                                            trigger_price=sl_trigger
-                                        )
-                                print(f"INFO: STOPLOSS ORDER RESPONSE :", stoploss_response)
-                                print(f"INFO: Stop Loss Order Executed Successfully..!")
+                                            price=0)
+                                    lot_control_check = True
+                                    quantity = max_lot_size_limit
+
+                                    
+                                if pending_sl_orders and lot_control_check :
+                                    print(f"INFO: MODIFYING EXISTING STOP LOSS ORDER FOR :  {user.username}")
+                                    for order in pending_sl_orders:
+                                        exst_qty = int(order['quantity'])
+                                        addon_qty = int(quantity)
+                                        total_qty = exst_qty + addon_qty
+                                        modify_slorder_response = dhan.modify_order(
+                                                        order_id = order['orderId'], 
+                                                        quantity=total_qty,
+                                                        order_type = order['orderType'],
+                                                        leg_name = order['legName'],
+                                                        price = order['price'],
+                                                        trigger_price = order['triggerPrice'],
+                                                        validity = order['validity'],
+                                                        disclosed_quantity = order['disclosedQuantity']
+                                                        )
+
+                                    print("Stop Loss Modified Response :", modify_slorder_response)
+                                    print(f"INFO: Stop Loss Order Modified Successfully..!")
+                                elif lot_control_check:
+                                    # Place an order for NSE Futures & Options
+                                    print(f"INFO: EXECUTING NEW STOP LOSS ORDER FOR :  {user.username}")
+                                    stoploss_response = dhan.place_order(
+                                                security_id=security_id, 
+                                                exchange_segment=exchange_segment,
+                                                transaction_type='SELL',
+                                                quantity=quantity,
+                                                order_type='STOP_LOSS',
+                                                product_type='INTRADAY',
+                                                price=sl_price,
+                                                trigger_price=sl_trigger
+                                            )
+                                    print(f"INFO: STOPLOSS ORDER RESPONSE :", stoploss_response)
+                                    print(f"INFO: Stop Loss Order Executed Successfully..!")
+                                else:
+                                    print(f"INFO: LOT CONTROL CHECK FAILED..! FOR :  {user.username}")
+
                             else:
-                                print(f"INFO: LOT CONTROL CHECK FAILED..! FOR :  {user.username}")
-                                
+                                print(f"INFO: No Recent BUY  Order found for User {user.username}")
 
                         else:
-                            print(f"INFO: No Open Order for User {user.username}")
+                            print(f"INFO: No Recent Order found for User {user.username}")
                         
                     else:
                         print(f"WARNING: Kill switch already activated twice for user: {user.username}")
@@ -346,8 +347,8 @@ def autoStopLossLotControlProcess():
                 except Exception as e:
                     print(f"ERROR: Error processing user {user.username}: {e}")
 
-            print("No User Found.(May be Killed Already/Not Active)")
-            print("Auto Stoplos sMonitoring process completed successfully.")
+            print(f"INFO :No User Found.(May be Killed Already/Not Active)")
+            print(f"INFO : Auto Stoplos sMonitoring process completed successfully.")
             return JsonResponse({'status': 'success', 'message': 'Monitoring process completed'})
 
         except Exception as e:
