@@ -18,7 +18,7 @@ $(function () {
     
       var colors = [
         "#3267ff", // First color - Blue (default)
-        breakup_series[1] > 0 ? "#4cb849" : (breakup_series[1] < 0 ? "#fa2d2d" : "#3267ff"), // Green if positive, Red if negative, Blue if zero
+        breakup_series[1] > 0 ? "#3569ff" : (breakup_series[1] < 0 ? "#fa2d2d" : "#3267ff"), // Green if positive, Red if negative, Blue if zero
         "#fff47d" // Third color - Orange (default)
       ];
       // Check if the second value is negative and make it positive if so
@@ -111,7 +111,7 @@ $(function () {
         }
     });
 
-    let chartColor = (positiveEarningsSum > 0) ? "#4cb849" : (positiveEarningsSum === 0 ? "#49BEFF" : "#ff2626"); 
+    let chartColor = (positiveEarningsSum > 0) ? "#3569ff" : (positiveEarningsSum === 0 ? "#49BEFF" : "#ff2626"); 
 
     let chartColor1 = chartColor
 

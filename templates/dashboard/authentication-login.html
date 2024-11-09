@@ -6,77 +6,203 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Trading Witch</title>
-  <link rel="shortcut icon" type="image/png" href="{% static 'dashboard/assets/images/logos/favicon.png' %}%"  />
+  <link rel="shortcut icon" type="image/png" href="{% static 'dashboard/assets/images/logos/favicon.png' %}" />
   <link rel="stylesheet" href="{% static 'dashboard/assets/css/styles.min.css' %}" />
+  <style>
+    /* Video background style */
+    #background-video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
+
+    /* Content on top of the video */
+    .content {
+      position: relative;
+      z-index: 1;
+      color: #e0e0e0; /* Light text color */
+    }
+
+    /* Dark theme styles */
+    body {
+      background-color: #121212;
+      color: #e0e0e0;
+      margin: 0;
+      padding: 0;
+    }
+
+    .page-wrapper {
+      background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent overlay */
+    }
+
+    .card {
+      background-color: rgba(0, 0, 0, 0.7); /* Darker card background */
+      border: 1px solid #333;
+    }
+
+    .radial-gradient::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7); /* Darker overlay with opacity */
+      z-index: 0; /* Ensure it stays behind the content */
+    }
+
+    .card-body {
+      color: #e0e0e0;
+    }
+
+    .btn-primary {
+      background-color: #0066cc;
+      border-color: #0066cc;
+    }
+
+    .btn-primary:hover {
+      background-color: #004d99;
+      border-color: #004d99;
+    }
+
+    .text-primary {
+      color: #0066cc !important;
+    }
+
+    .form-check-input {
+      background-color: #3a3a3a;
+      border-color: #444;
+    }
+
+    .form-check-label {
+      color: #e0e0e0;
+    }
+
+    .toast {
+      background-color: #333;
+      color: #e0e0e0;
+    }
+
+    .toast-header {
+      background-color: #444;
+    }
+
+    .logo-img img {
+      width: 250px;
+      /* filter: brightness(0) invert(1); Invert logo colors for dark theme */
+    }
+
+    /* Input field styles */
+    .form-control {
+      background-color: rgba(0, 0, 0, 0.8); /* Dark, slightly transparent background */
+      border-color: #444;
+      color: #d1d1d1;
+      padding: 12px;
+      border-radius: 5px;
+      transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
+
+    /* On focus, make the input darker */
+    .form-control:focus {
+      background-color: rgba(0, 0, 0, 0.9); /* Darken on focus */
+      border-color: green;
+      color: #e0e0e0;
+    }
+
+    a {
+      color: #0066cc;
+    }
+
+    a:hover {
+      color: #004d99;
+    }
+
+  </style>
 </head>
 
 <body>
-  <!-- Toast Container -->
-  <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
-  {% for message in messages %}
-  <div class="toast align-items-center text-bg-{{ message.tags }} border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="3000">
-      <div class="d-flex">
-          <div class="toast-body">
+  <!-- Background Video Section -->
+  <section id="home" class="s-home target-section" data-parallax="scroll" data-position-y="center">
+    <video autoplay muted loop id="background-video">
+      <source src="{% static 'landing/images/bg-video1.mp4' %}" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+
+    <!-- Content Section -->
+    <div class="content">
+      <!-- Toast Container -->
+      <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
+        {% for message in messages %}
+        <div class="toast align-items-center text-bg-{{ message.tags }} border-0" role="alert" aria-live="assertive"
+          aria-atomic="true" data-bs-delay="3000">
+          <div class="d-flex">
+            <div class="toast-body">
               {{ message }}
+            </div>
+            <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
           </div>
-          <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        {% endfor %}
       </div>
-  </div>
-  {% endfor %}
-  </div>
-  <!--  Body Wrapper -->
-  <div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6" data-sidebartype="full"
-    data-sidebar-position="fixed" data-header-position="fixed">
-    <div
-      class="position-relative overflow-hidden radial-gradient min-vh-100 d-flex align-items-center justify-content-center">
-      <div class="d-flex align-items-center justify-content-center w-100">
-        <div class="row justify-content-center w-100">
-          <div class="col-md-8 col-lg-6 col-xxl-3">
-            <div class="card mb-0">
-              <div class="card-body">
-                <div  class="text-nowrap logo-img text-center d-block py-3 w-100">
-                  <img src="{% static 'dashboard/assets/images/logos/tradewizlogo.png' %}" width="250" alt="">
-              </div>
-                {% comment %} <p class="text-center">Start your trading journey here</p> {% endcomment %}
-                <form method="POST">
-                  {% csrf_token %}
-                  <div class="mb-3">
-                      <label class="fw-bolder" for="exampleInputEmail1">{{ form.username.label }}</label>
-                      {{ form.username }}
-                  </div>
-                  <div class="mb-4">
-                      <label class="fw-bolder" for="exampleInputPassword1">{{ form.password.label }}</label>
-                      {{ form.password }}
-                  </div>
-                  <div class="d-flex align-items-center justify-content-between mb-4">
-                      <div class="form-check">
+
+      <!-- Body Wrapper -->
+      <div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6" data-sidebartype="full"
+        data-sidebar-position="fixed" data-header-position="fixed">
+        <div class="position-relative overflow-hidden radial-gradient min-vh-100 d-flex align-items-center justify-content-center">
+          <div class="d-flex align-items-center justify-content-center w-100">
+            <div class="row justify-content-center w-100">
+              <div class="col-md-8 col-lg-6 col-xxl-3">
+                <div class="card mb-0">
+                  <div class="card-body">
+                    <div class="text-nowrap logo-img text-center d-block py-3 w-100">
+                      <img src="{% static 'dashboard/assets/images/logos/tradewizlogo.png' %}" alt="">
+                    </div>
+                    <form method="POST">
+                      {% csrf_token %}
+                      <div class="mb-3">
+                        <label class="fw-bolder" for="exampleInputEmail1">{{ form.username.label }}</label>
+                        {{ form.username }}
+                      </div>
+                      <div class="mb-4">
+                        <label class="fw-bolder" for="exampleInputPassword1">{{ form.password.label }}</label>
+                        {{ form.password }}
+                      </div>
+                      <div class="d-flex align-items-center justify-content-between mb-4">
+                        <div class="form-check">
                           <input class="form-check-input primary" type="checkbox" value="" id="flexCheckChecked" checked>
                           <label class="form-check-label text-dark" for="flexCheckChecked">
-                              Remember this Device
+                            Remember this Device
                           </label>
+                        </div>
+                        <a class="text-primary fw-bolder" href="./index.html">Forgot Password?</a>
                       </div>
-                      <a class="text-primary fw-bolder" href="./index.html">Forgot Password?</a>
+                      <button type="submit" class="btn btn-success w-100 py-8 fs-4 mb-4 rounded-2" style="background:green; border-color:green;">Sign In</button>
+                    </form>
                   </div>
-                  <button type="submit" class="btn btn-primary w-100 py-8 fs-4 mb-4 rounded-2">Sign In</button>
-              </form>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
+  </section>
+
   <script src="{% static 'dashboard/assets/libs/jquery/dist/jquery.min.js' %}"></script>
   <script src="{% static 'dashboard/assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script>
   <script>
     // Initialize all toasts
     document.addEventListener('DOMContentLoaded', function() {
-        var toastElements = document.querySelectorAll('.toast');
-        toastElements.forEach(function(toastEl) {
-            var toast = new bootstrap.Toast(toastEl);
-            toast.show();
-          });
+      var toastElements = document.querySelectorAll('.toast');
+      toastElements.forEach(function(toastEl) {
+        var toast = new bootstrap.Toast(toastEl);
+        toast.show();
       });
+    });
   </script>
 </body>
 
