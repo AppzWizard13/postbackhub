@@ -162,7 +162,6 @@ def autoclosePositionProcess():
                         print(f"Processing user: {user.username}, Client ID: {dhan_client_id}")
                         # Fetch control data
                         control_data = Control.objects.filter(user=user).first()
-                        stoploss_percentage = float(control_data.stoploss_percentage)
                         # Initialize Dhan client
                         dhan = dhanhq(dhan_client_id, dhan_access_token)
                         order_list = dhan.get_order_list()
@@ -237,13 +236,12 @@ def autoStopLossLotControlProcess():
     print("Auto Stop Loss Process Running")
     now = datetime.now()
     print(f"Current date and time: {now.strftime('%Y-%m-%d %H:%M:%S')}")
-    if now.weekday() < 5 and (9 <= now.hour < 16):  # Monday to Friday, 9 AM to 4 PM
+    if now.weekday() < 5 and (0 <= now.hour < 16):  # Monday to Friday, 9 AM to 4 PM
         try:
             active_users = User.objects.filter(is_active=True,  status=True, auto_stop_loss=True)
             print("************************************************************", active_users)
             print("STARTING AUTO STOP MONITORING PROCESS......................!")
             for user in active_users:
-                print("ppppppppppppppppppppppppppppppppppppppppppppppp")
                 try:
                     if  user.auto_stop_loss:
                         dhan_client_id = user.dhan_client_id
@@ -251,7 +249,7 @@ def autoStopLossLotControlProcess():
                         print(f"Processing user: {user.username}, Client ID: {dhan_client_id}")
                         # Fetch control data
                         control_data = Control.objects.filter(user=user).first()
-                        stoploss_percentage = float(control_data.stoploss_percentage)
+                        stoploss_parameter = float(control_data.stoploss_parameter)
                         max_lot_size_limit = control_data.max_lot_size_limit
                         
                         # Initialize Dhan client
@@ -260,7 +258,7 @@ def autoStopLossLotControlProcess():
                         # Step 1: Sort filtered orders by timestamp in descending order
                         if not order_list['data'] == []:
                             latest_entry = order_list['data'][0]
-                            if latest_entry['transactionType'] == 'BUY' and latest_entry['orderStatus'] == 'TRADED':
+                            if latest_entry['transactionType'] == 'SELL' and latest_entry['orderStatus'] == 'TRADED':
                                 security_id = latest_entry['securityId']
                                 traded_symbol = latest_entry['tradingSymbol']
                                 client_id = latest_entry['dhanClientId']
@@ -268,7 +266,7 @@ def autoStopLossLotControlProcess():
                                 quantity = latest_entry['quantity']
                                 traded_price = float(latest_entry['price'])
                                 traded_quantity = quantity
-                                sl_price, sl_trigger = calculateslprice(traded_price, stoploss_percentage)
+                                sl_price, sl_trigger = calculateslprice(traded_price, stoploss_parameter, control_data.stoploss_type)
                                 lot_control_check = lot_control_process(traded_quantity, traded_symbol, max_lot_size_limit )
                                 print("traded_quantitytraded_quantity", traded_quantity)
                                 print("traded_symboltraded_symboltraded_symbol", traded_symbol)
@@ -378,14 +376,25 @@ def lot_control_process(traded_quantity, traded_symbol, max_lot_size_limit):
     return max_lot_size_limit >= actual_lot_count
 
 
-def calculateslprice(traded_price, stoploss_percentage):
-    sl_price = traded_price * (1 - stoploss_percentage / 100)
+
+def calculateslprice(traded_price, stoploss_parameter, stoploss_type):
+    # Check the value of stoploss_type
+    if stoploss_type == 'percentage':
+        # Calculate stop-loss price as a percentage of traded_price
+        sl_price = traded_price * (1 - stoploss_parameter / 100)
+    elif stoploss_type == 'points':
+        # Calculate stop-loss price by directly subtracting points from traded_price
+        sl_price = traded_price - stoploss_parameter
+
+    # Calculate slippage and trigger level for both types
     slippage = float(settings.TRIGGER_SLIPPAGE)
     sl_price = round(sl_price / slippage) * slippage
     sl_trigger = sl_price + slippage * 20
     sl_price = round(sl_price, 2)
     sl_trigger = round(sl_trigger, 2)
+    
     return sl_price, sl_trigger
+
 
 def get_pending_order_filter_dhan(response): 
     # Check if the response contains 'data'
@@ -529,37 +538,39 @@ def autoAdminSwitchingProcess():
 
 
 def start_scheduler():
-    scheduler = BackgroundScheduler()
+    print("ACITIVE CRONJOB STATUS :", settings.ACTIAVTE_CRONJOBS)
+    if settings.ACTIAVTE_CRONJOBS=='True':
+        scheduler = BackgroundScheduler()
 
-    # SELF PING TESTED OK
-    scheduler.add_job(self_ping, IntervalTrigger(seconds=180))
+        # # SELF PING TESTED OK
+        scheduler.add_job(self_ping, IntervalTrigger(seconds=180))
 
-    # RESTORE KILL SWITCH BY 9 AM AND 4 PM TESTED OK
-    scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=9, minute=0))
-    scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=16, minute=0))
-
-
-    # ORDER COUNT-KILL FEATURE TESTED OK 
-    scheduler.add_job(auto_order_count_monitoring_process, IntervalTrigger(seconds=2))
-
-    # QUICK EXIT FEATURE TESTED OK 
-    scheduler.add_job(autoclosePositionProcess, IntervalTrigger(seconds=1))
-
-    # AUTO STOPLOSS FEATURE TESTED OK
-    scheduler.add_job(autoStopLossLotControlProcess, IntervalTrigger(seconds=1))
-
-    # AUTO ADMIN SWITCHING PROCESS TESTED OK 
-    scheduler.add_job(autoAdminSwitchingProcess, IntervalTrigger(hours=1))
-
-    # HOURLY DATA LOG MONITORING TESTED OK
-    scheduler.add_job(DailyAccountOverviewUpdateProcess, IntervalTrigger(hours=1))
-    
+        # RESTORE KILL SWITCH BY 9 AM AND 4 PM TESTED OK
+        scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=9, minute=0))
+        scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=16, minute=0))
 
 
-    scheduler.start()
-    print("INFO: Scheduler started.")
+        # ORDER COUNT-KILL FEATURE TESTED OK 
+        scheduler.add_job(auto_order_count_monitoring_process, IntervalTrigger(seconds=2))
 
-    # Shut down the scheduler when exiting the app
-    atexit.register(lambda: scheduler.shutdown())
+        # QUICK EXIT FEATURE TESTED OK 
+        scheduler.add_job(autoclosePositionProcess, IntervalTrigger(seconds=1))
+
+        # # AUTO STOPLOSS FEATURE TESTED OK
+        scheduler.add_job(autoStopLossLotControlProcess, IntervalTrigger(seconds=1))
+
+        # AUTO ADMIN SWITCHING PROCESS TESTED OK 
+        scheduler.add_job(autoAdminSwitchingProcess, IntervalTrigger(hours=1))
+
+        # HOURLY DATA LOG MONITORING TESTED OK
+        scheduler.add_job(DailyAccountOverviewUpdateProcess, IntervalTrigger(hours=1))
+        
+
+
+        scheduler.start()
+        print("INFO: Scheduler started.")
+
+        # Shut down the scheduler when exiting the app
+        atexit.register(lambda: scheduler.shutdown())
 
 

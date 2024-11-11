@@ -29,19 +29,21 @@ if LIVE_MODE:
     SECRET_KEY = 'django-insecure-f-lro%0yj$70!j=-abx!**fm058-xn!3m*$#q05awh=9b^1b8j'
     DEBUG = config('DEBUG', default=False, cast=bool)
     TESTMODE = config('TESTMODE', default=False, cast=bool)
+    LIVEDB = config('LIVEDB', default=True, cast=bool)
     TESTKEY = config('TESTKEY', default=False, cast=bool)
+    ACTIAVTE_CRONJOBS = config('ACTIAVTE_CRONJOBS', default=True, cast=bool)
 
 else:
     from decouple import Config, RepositoryEnv
     DOTENV_FILE = '.envtest'
     env_config = Config(RepositoryEnv(DOTENV_FILE))
-    TESTKEY = env_config.get('TESTKEY')
-
+    ACTIAVTE_CRONJOBS = env_config.get('ACTIAVTE_CRONJOBS')
     # Quick-start development settings - unsuitable for production
     # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
     # SECURITY WARNING: keep the secret key used in production secret!
     SECRET_KEY = 'django-insecure-f-lro%0yj$70!j=-abx!**fm058-xn!3m*$#q05awh=9b^1b8j'
     DEBUG = env_config.get('DEBUG', default=False, cast=bool)
+    LIVEDB = env_config.get('LIVEDB', default=False, cast=bool)
     TESTMODE = env_config.get('TESTMODE', default=False, cast=bool)
 
 
@@ -113,15 +115,7 @@ AUTH_USER_MODEL = 'account.User'
 
 # Database
 # Conditional database configuration based on DEBUG mode
-if TESTMODE:
-    # Use SQLite for development
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
-else:
+if LIVEDB:
     # Database configuration
     DATABASES = {
         'default': {
@@ -139,6 +133,15 @@ else:
     #         'NAME': BASE_DIR /  'LIVEDB/tradewiz-live.sqlite3',
     #     }
     # }
+else:
+    # Use SQLite for development
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+
 
 print("---------------------------------------------")
 print("USING DATA BASE                  :", DATABASES)
@@ -184,7 +187,7 @@ ACTING_ADMIN = 'vicky'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = '/staticfiles/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')

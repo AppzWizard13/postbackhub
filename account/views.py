@@ -200,7 +200,7 @@ class DashboardView(TemplateView):
         if control_data:
             order_limit = control_data.max_order_limit
             peak_order_limit = control_data.peak_order_limit
-            stoploss_percentage = control_data.stoploss_percentage
+            stoploss_parameter = control_data.stoploss_parameter
         else:
             peak_order_limit = 0
         day_exp_brokerge = float(peak_order_limit) * float(settings.BROKERAGE_PARAMETER)
@@ -219,7 +219,7 @@ class DashboardView(TemplateView):
         max_expected_expense = 0 
         order_limit = 0
         if control_data:
-            max_expected_loss = (actual_bal * exp_entry_count ) * (stoploss_percentage/100)
+            max_expected_loss = (actual_bal * exp_entry_count ) * (stoploss_parameter/100)
             max_expected_expense = float(max_expected_loss) + day_exp_brokerge
 
 
@@ -448,7 +448,7 @@ class EditControlView(UpdateView):
                 'max_profit_limit': form.cleaned_data.get('max_profit_limit'),
                 'max_profit_mode': form.cleaned_data.get('max_profit_mode'),
                 'max_order_count_mode': form.cleaned_data.get('max_order_count_mode'),
-                'stoploss_percentage': form.cleaned_data.get('stoploss_percentage'),
+                'stoploss_parameter': form.cleaned_data.get('stoploss_parameter'),
                 'user': form.cleaned_data.get('user'),  # User field should be handled
             }
             

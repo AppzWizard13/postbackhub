@@ -46,6 +46,10 @@ class Control(models.Model):
         ('0', 'Disable'),
         ('1', 'Enable'),
     ]
+    STOPLOSS_TYPE_CHOICES = [
+        ('percentage', 'Percentage'),
+        ('points', 'Points'),
+    ]
 
     max_order_limit = models.IntegerField(default=0)
     peak_order_limit = models.IntegerField(default=0)
@@ -58,7 +62,12 @@ class Control(models.Model):
     max_profit_mode = models.CharField(max_length=1, choices=ENABLE_DISABLE_CHOICES, default='0')
     max_order_count_mode = models.CharField(max_length=1, choices=ENABLE_DISABLE_CHOICES, default='0')
     max_lot_size_mode = models.CharField(max_length=1, choices=ENABLE_DISABLE_CHOICES, default='0')
-    stoploss_percentage = models.IntegerField(default=0)
+    stoploss_parameter = models.IntegerField(default=0)
+    stoploss_type = models.CharField(
+        max_length=10,
+        choices=STOPLOSS_TYPE_CHOICES,
+        default='percentage',
+    )
     user = models.ForeignKey(User, on_delete=models.CASCADE)  # Foreign key for user
 
     def __str__(self):
