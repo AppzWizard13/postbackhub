@@ -128,11 +128,12 @@
       color:grey;
 
     }
-    {% comment %} .logo-img img {
-      width: 250px;
-      /* filter: brightness(0) invert(1); Invert logo colors for dark theme */
-    } {% endcomment %}
-  
+    .form-label:{
+      color: white  !important;
+    }
+    .form-label {
+      color: white !important;
+     }
     /* Input field styles */
     .form-control {
       background-color: rgba(0, 0, 0, 0.8); /* Dark, slightly transparent background */
@@ -146,7 +147,7 @@
     /* On focus, make the input darker */
     .form-control:focus {
       background-color: rgba(0, 0, 0, 0.9); /* Darken on focus */
-      border-color: green;
+      border-color: #121c85;
       color: #e0e0e0;
     }
   
@@ -167,6 +168,20 @@
     /* Grey color for all headings and font texts */
     h1, h2, h3, h4, h5, h6, p, span, label {
       color: #c7c7c7; /* Grey color for headings and fonts */
+    }
+
+    .bg-danger,  .btn-danger{
+      background: #ff0000!important;
+      border-color:  #ff0000!important;
+    }
+
+    .bg-success, .btn-success, .text-bg-success{
+      background: #1a6b18!important;
+      border-color:  #1a6b18!important;
+    }
+
+    .bg-primary{
+      background: #0d41d9 !important;
     }
 
 
@@ -208,25 +223,25 @@
             <nav class="sidebar-nav scroll-sidebar" data-simplebar="">
                 <ul id="sidebarnav">
             <li class="nav-small-cap">
-              <i class="dark ti ti-dots nav-small-cap-icon fs-4"></i>
+              <i  style="color: light-blue;" class="ti ti-dots nav-small-cap-icon fs-4"></i>
               <span class="hide-menu">Home</span>
             </li>
             <li class="sidebar-item">
               <a class="sidebar-link" href="{% url 'dashboard' %}" aria-expanded="false">
                 <span>
-                  <i class="dark ti ti-layout-dashboard"></i>
+                  <i  style="color: light-blue;" class="ti ti-layout-dashboard"></i>
                 </span>
                 <span class="hide-menu">Dashboard</span>
               </a>
             </li>
             <li class="nav-small-cap">
-              <i class="dark ti ti-dots nav-small-cap-icon fs-4"></i>
+              <i  style="color: light-blue;" class="ti ti-dots nav-small-cap-icon fs-4"></i>
               <span class="hide-menu">USER MANAGEMENT</span>
             </li>
             <li class="sidebar-item">
               <a class="sidebar-link" href="{% url 'create_user' %}" aria-expanded="false">
                 <span>
-                  <i class="dark ti ti-user-plus"></i>
+                  <i  style="color: light-blue;" class="ti ti-user-plus"></i>
                 </span>
                 <span class="hide-menu">Add Member</span>
               </a>
@@ -234,19 +249,19 @@
             <li class="sidebar-item">
               <a class="sidebar-link" href="{% url 'manage_user' %}" aria-expanded="false">
                 <span>
-                  <i class="dark ti ti-user"></i>
+                  <i  style="color: light-blue;" class="ti ti-user"></i>
                 </span>
                 <span class="hide-menu">Manage Members</span>
               </a>
             </li> 
             <li class="nav-small-cap">
-              <i class="dark ti ti-dots nav-small-cap-icon fs-4"></i>
+              <i  style="color: light-blue;" class="ti ti-dots nav-small-cap-icon fs-4"></i>
               <span class="hide-menu">CONTROL MANAGEMENT</span>
             </li>   
             <li class="sidebar-item">
               <a class="sidebar-link" href="{% url 'create_control' %}" aria-expanded="false">
                 <span>
-                  <i class="dark ti ti-plus"></i>
+                  <i  style="color: light-blue;" class="ti ti-plus"></i>
                 </span>
                 <span class="hide-menu">Add Control</span>
               </a>
@@ -254,31 +269,19 @@
             <li class="sidebar-item">
               <a class="sidebar-link" href="{% url 'manage_controls' %}" aria-expanded="false">
                 <span>
-                  <i class="dark ti ti-settings"></i>
+                  <i  style="color: light-blue;" class="ti ti-settings"></i>
                 </span>
                 <span class="hide-menu">Manage Control</span>
               </a>
             </li> 
-            {% comment %} <li class="nav-small-cap">
-              <i class="dark ti ti-dots nav-small-cap-icon fs-4"></i>
-              <span class="hide-menu">RISK MANAGEMENT</span>
-            </li>   
-            <li class="sidebar-item">
-              <a class="sidebar-link" href="{% url 'create_control' %}" aria-expanded="false">
-                <span>
-                  <i class="dark ti ti-calculator"></i>
-                </span>
-                <span class="hide-menu">Risk Calculator</span>
-              </a>
-            </li>            {% endcomment %}
             <li class="nav-small-cap">
-              <i class="dark ti ti- nav-small-cap-icon fs-4"></i>
+              <i  style="color: light-blue;" class="ti ti- nav-small-cap-icon fs-4"></i>
               <span class="hide-menu">LOG</span>
             </li>
             <li class="sidebar-item">
               <a class="sidebar-link" href="{% url 'daily_account_overview_list' %}" aria-expanded="false">
                 <span>
-                  <i class="dark ti ti-clipboard-text"></i>
+                  <i  style="color: light-blue;" class="ti ti-clipboard-text"></i>
                 </span>
                 <span class="hide-menu">Daily Overview Report</span>
               </a>
@@ -286,7 +289,7 @@
             <li class="sidebar-item">
               <a class="sidebar-link" href="{% url 'dhan-kill-log-list' %}" aria-expanded="false">
                 <span>
-                  <i class="dark ti ti-plug-connected-x"></i>
+                  <i class=" ti ti-plug-connected-x"></i>
                 </span>
                 <span class="hide-menu">Kill Activation log</span>
               </a>
@@ -294,7 +297,7 @@
             <li class="sidebar-item">
               <a class="sidebar-link" href="https://web.dhan.co/index/money" aria-expanded="false">
                 <span>
-                  <i class="dark ti ti-building-bank"></i>
+                  <i class=" ti ti-building-bank"></i>
                 </span>
                 <span class="hide-menu">Go to Dhan </span>
               </a>
@@ -404,10 +407,10 @@
               </div>
               {% if dashboard_view and request.user.is_superuser %}
               <div>
-                  <select class="form-select" id="userSelect">
-                      <option value="" selected disabled>Select a user</option>
+                  <select class="form-select bg-dark text-white border-dark" id="userSelect" style="background-color: #333; color: #fff; border-color: #555;">
+                      <option value="" selected disabled style="background-color: #333; color: #bbb;">Select a user</option>
                       {% for user in users %}
-                          <option value="{{ user.username }}">{{ user.username }}</option>
+                          <option value="{{ user.username }}" style="background-color: #333; color: #fff;">{{ user.username }}</option>
                       {% endfor %}
                   </select>
               </div>
@@ -592,17 +595,15 @@
                         <div class="col-8">
                           <h4 class="fw-semibold mb-3">₹ {{fund_data.data.availabelBalance|floatformat:2}}</h4>
                           <div class="d-flex align-items-center mb-3">
-                            <span
-                              class="me-1 rounded-circle bg-light-success round-20 d-flex align-items-center justify-content-center">
-                              <i class="fs-5 dark ti ti-cash text-success"></i>
+                            <span >
+                              <i class="fs-5 dark ti ti-cash text-success mx-2"></i>
                             </span>
                             <p class="text-grey me-1 fs-3  mb-0">SOD Balance :</p>
                             <p class="fs-3  mb-0">₹ {{fund_data.data.sodLimit|floatformat:2}}</p>
                           </div>
                           <div class="d-flex align-items-center mb-3">
-                            <span
-                              class="me-1 rounded-circle bg-light-primary round-20 d-flex align-items-center justify-content-center">
-                              <i class="fs-5 dark ti ti-cash text-primary"></i>
+                            <span>
+                              <i class="fs-5 dark ti ti-cash text-primary  mx-2"></i>
                             </span>
                             <p class="text-grey me-1 fs-3  mb-0">EOD Balance :</p>
                             <p class="fs-3  mb-0">₹ {{actual_balance|floatformat:2}}</p>
@@ -629,20 +630,20 @@
                           <div class="d-flex align-items-center pb-1">
                             {% if total_realized_profit > 0 %}
                               <!-- Positive value: up-right arrow and light success color -->
-                              <span class="me-2 rounded-circle bg-light-success round-20 d-flex align-items-center justify-content-center">
-                                <i class="fs-5 dark ti ti-arrow-up-right text-success"></i>
+                              <span >
+                                <i class="fs-5 dark ti ti-arrow-up-right text-success mx-2"></i>
                               </span>
                               <p class="text-success me-1 fs-3 mb-0 fw-bolder">{{pnl_percentage|floatformat:2}}&nbsp;&nbsp;%&nbsp;Profit</p>
                             {% elif total_realized_profit < 0 %}
                               <!-- Negative value: down-right arrow and light danger color -->
-                              <span class="me-2 rounded-circle bg-light-danger round-20 d-flex align-items-center justify-content-center">
-                                <i class="fs-5 dark ti ti-arrow-down-right text-danger"></i>
+                              <span >
+                                <i class="fs-5 dark ti ti-arrow-down-right text-danger mx-2"></i>
                               </span>
                               <p class="text-danger me-1 fs-3 mb-0 fw-bolder">{{pnl_percentage|floatformat:2}}&nbsp;&nbsp;%&nbsp;Loss</p>
                             {% else %}
                               <!-- Zero value: dot icon and light primary color -->
-                              <span class="me-2 rounded-circle bg-light-primary round-20 d-flex align-items-center justify-content-center">
-                                <i class="fs-5 dark ti ti-clock text-primary"></i>
+                              <span >
+                                <i class="fs-5 dark ti ti-clock text-primary mx-2"></i>
                               </span>
                               <p class="text-primary me-1 fs-3 mb-3 fw-bolder" style="margin-top: 13px;">{{pnl_percentage|floatformat:2}}&nbsp;&nbsp;%&nbsp;NO Trades</p>{% endif %}
                           </div>
@@ -677,8 +678,8 @@
                             <div class="d-flex align-items-center mb-1">
                               {% if total_realized_profit > 0 %}
                                 <!-- Positive value: up-right arrow and light success color -->
-                                <span class="me-1 rounded-circle bg-light-success round-20 d-flex align-items-center justify-content-center">
-                                  <i class="fs-4 dark ti ti-arrow-up-right text-success"></i>
+                                <span>
+                                  <i class="fs-4 dark ti ti-arrow-up-right text-success mx-2"></i>
                                 </span>
                                 <p class="text-success me-1 fs-4 mb-3 fw-bolder" style="margin-top: 13px;">{{pnl_percentage|floatformat:2}}&nbsp;&nbsp;%&nbsp;Profit</p>
                               {% elif total_realized_profit < 0 %}
@@ -696,15 +697,15 @@
                               {% endif %}
                             </div>
                             <div class="d-flex align-items-center mb-3">
-                                <span class="me-1 rounded-circle bg-light-success round-20 d-flex align-items-center justify-content-center">
-                                    <i class="fs-5 dark ti ti-coin-rupee text-success"></i>
+                                <span>
+                                    <i class="fs-5 dark ti ti-coin-rupee text-success mx-2"></i>
                                 </span>
                                 <p class="text-grey me-1 fs-3 mb-0">Max Loss:</p>
                                 <p class="fs-2 mb-0" id="order-details">{{max_expected_loss|floatformat:2}}</p>
                             </div>
                             <div class="d-flex align-items-center mb-3">
-                                <span class="me-1 rounded-circle bg-light-info round-20 d-flex align-items-center justify-content-center">
-                                    <i class="fs-5 dark ti ti-coin-rupee text-info"></i>
+                                <span >
+                                    <i class="fs-5 dark ti ti-coin-rupee text-info mx-2"></i>
                                 </span>
                                 <p class="text-grey me-1 fs-3 mb-0">Max Expense:</p>
                                 <p class="fs-2 mb-0" id="another-detail">{{max_expected_expense|floatformat:2}}</p>
@@ -731,11 +732,11 @@
                               <h5 class="modal-title" id="confirmationModalLabel">Confirm Action</h5>
                               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
-                            <div class="modal-body">
+                            <div class="modal-body fs-4">
                               Are you sure you want to activate the kill switch?
                             </div>
                             <div class="modal-footer">
-                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                              <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
                               <button type="button" class="btn btn-danger" id="confirmAction">Activate Kill</button>
                             </div>
                           </div>
@@ -755,8 +756,8 @@
                       <h5 class="card-title fw-semibold" style="margin-bottom: 30px !important;">Service Status</h5>
 
                       <div class="d-flex align-items-center mt-4">
-                        <span class="mx-1 rounded-circle bg-light-danger round-20 d-flex align-items-center justify-content-center">
-                            <i class="fs-5 dark ti ti-power text-danger"></i>
+                        <span >
+                            <i class="fs-5 dark ti ti-power text-danger mx-2"></i>
                         </span>
                         <p class="text-grey mx-1 fs-3 mb-0 fw-bold flex-shrink-0" style="width: 150px;">Kill Status:</p>
                         <div class="ms-auto">
@@ -771,8 +772,8 @@
                     </div>
                     
                     <div class="d-flex align-items-center mt-3">
-                        <span class="mx-1 rounded-circle bg-light-warning round-20 d-flex align-items-center justify-content-center">
-                            <i class="fs-5 dark ti ti-power text-warning"></i>
+                        <span >
+                            <i class="fs-5 dark ti ti-power text-warning mx-2"></i>
                         </span>
                         <p class="text-grey mx-1 fs-3 mb-0 fw-bold flex-shrink-0" style="width: 150px;">Auto Kill:</p>
                         <div class="ms-auto">
@@ -783,12 +784,13 @@
                             {% endif %}
                         </div>
                     </div>
-                    
+                   
                     <div class="d-flex align-items-center mt-3">
-                        <span class="mx-1 rounded-circle bg-light-danger round-20 d-flex align-items-center justify-content-center">
-                            <i class="fs-5 dark ti ti-stairs-down text-danger"></i>
+                        <span >
+                            <i class="fs-5 dark ti ti-stairs-down text-danger mx-2"></i>
                         </span>
                         <p class="text-grey mx-1 fs-3 mb-0 fw-bold flex-shrink-0" style="width: 150px;">Auto SL:</p>
+                        {% if request.user.is_superadmin %}
                         <div class="ms-auto">
                             {% if user.auto_stop_loss %}
                                 <span class="badge bg-success fs-3">Enabled</span>
@@ -796,6 +798,7 @@
                                 <span class="badge bg-warning fs-3">Disabled</span>
                             {% endif %}
                         </div>
+                        {% endif %}
                     </div>
                     
                     </div>
@@ -823,15 +826,15 @@
                       <h5 class="card-title mb-9 fw-semibold">Today Expense</h5>
                       <h4 class="fw-semibold mb-3">₹ {{total_expense|floatformat:2}}</h4>
                       <div class="d-flex align-items-center mb-3">
-                        <span class="me-1 rounded-circle bg-light-danger round-20 d-flex align-items-center justify-content-center">
-                          <i class="fs-5 dark ti ti-clock text-danger"></i>
+                        <span >
+                          <i class="fs-5 dark ti ti-clock text-danger mx-2"></i>
                         </span>
                         <p class="text-grey me-1 fs-3 mb-0">Order Limit:</p>
                         <p class="fs-3 mb-0">{{order_limit}} to {{peak_order_limit}}</p>
                       </div>
                       <div class="d-flex align-items-center mb-3">
-                        <span class="me-1 rounded-circle bg-light-primary round-20 d-flex align-items-center justify-content-center">
-                          <i class="fs-5 dark ti ti-cash text-primary"></i>
+                        <span >
+                          <i class="fs-5 dark ti ti-cash text-primary mx-2"></i>
                         </span>
                         <p class="text-grey me-1 fs-3 mb-0">Brokerage:</p>
                         <p class="fs-3 mb-0">₹ {{day_exp_brokerge|floatformat:2}}</p>
@@ -899,10 +902,11 @@
                         <tr>
                           <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Chart</h6></th>
                           <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Symbol</h6></th>
+                          <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Portfolio</h6></th>
                           <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Status</h6></th>
                           {% comment %} <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Buy Quantity</h6></th> {% endcomment %}
                           {% comment %} <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Average Price</h6></th> {% endcomment %}
-                          <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Portfolio</h6></th>
+                          
                           {% comment %} <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Unrealized Profit</h6></th> {% endcomment %}
                         </tr>
                       </thead>
@@ -923,9 +927,7 @@
                           <td class="border-bottom-0">
                             <h6 class="fw-semibold mb-0">{{ position.tradingSymbol }}</h6>
                           </td>
-                          <td class="border-bottom-0">
-                            <span class="fw-normal">{{ position.positionType }}</span>
-                          </td>
+
                           {% comment %} <td class="border-bottom-0">
                             <h6 class="fw-semibold mb-0">{{ position.buyQty }}</h6>
                           </td> {% endcomment %}
@@ -940,6 +942,9 @@
                             {% else %}
                             <span class="badge bg-danger rounded-3 fw-semibold">₹{{ position.realizedProfit|floatformat:2 }}</span>
                             {% endif %}
+                          </td>
+                          <td class="border-bottom-0">
+                            <span class="fw-normal">{{ position.positionType }}</span>
                           </td>
                           {% comment %} <td class="border-bottom-0">
                             <h6 class="fw-semibold mb-0">₹{{ position.unrealizedProfit|floatformat:2 }}</h6>

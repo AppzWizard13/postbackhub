@@ -230,7 +230,7 @@ class DashboardView(TemplateView):
 
         from django.db.models import Q
 
-        daily_status_data = DailyAccountOverview.objects.filter(user=user).filter(Q(day_open=True) | Q(day_close=True)).order_by('updated_on').values_list('actual_profit', flat=True)
+        # daily_status_data = DailyAccountOverview.objects.filter(user=user).filter(Q(day_open=True) | Q(day_close=True)).order_by('updated_on').values_list('actual_profit', flat=True)
 
 
 
@@ -249,7 +249,7 @@ class DashboardView(TemplateView):
         context['order_limit'] = order_limit
         context['peak_order_limit'] = peak_order_limit
         context['user'] = user
-        context['daily_status_data'] = daily_status_data
+        # context['daily_status_data'] = daily_status_data
         context['hourly_status_data'] = hourly_status_data
         context['orderlistdata'] = traded_orders
         context['position_data'] = position_data

@@ -156,7 +156,7 @@ $(function () {
             height: 345,
             offsetX: -15,
             toolbar: { show: true },
-            foreColor: "#adb0bb",
+            foreColor: "#000000d9",
             fontFamily: 'inherit',
             sparkline: { enabled: false },
         },
@@ -175,12 +175,17 @@ $(function () {
         markers: { size: 0 },
 
         dataLabels: {
-            enabled: false,
+            enabled: true,
         },
 
         legend: {
-            show: false,
-        },
+          show: true,
+          labels: {
+              colors: '#FFFFFF',  // Set the legend label color to white
+              useSeriesColors: false  // Ensure it doesn't use the series colors
+          }
+      },
+      
 
         grid: {
             borderColor: "rgba(0,0,0,0.1)",
@@ -193,12 +198,16 @@ $(function () {
         },
 
         xaxis: {
-            type: "category",
-            categories: categories,  // Dynamic trading symbols
-            labels: {
-                style: { cssClass: "grey--text lighten-2--text fill-color" },
-            },
-        },
+          type: "category",
+          categories: categories,  // Dynamic trading symbols
+          labels: {
+              style: {
+                  colors: '#FFFFFF',         // Set the label color to white
+                  fontSize: '10px',            // Adjust font size as needed
+              }
+          }
+      },
+        
 
         yaxis: {
             show: true,
@@ -206,9 +215,8 @@ $(function () {
             max: Math.max(...earnings.concat(expenses)) || 10,  // Dynamically adjust the max value or use default
             tickAmount: 4,
             labels: {
-                style: {
-                    cssClass: "grey--text lighten-2--text fill-color",
-                },
+                style: {  colors: '#FFFFFF',         // Set the label color to white, 
+                cssClass: "grey--text lighten-2--text fill-color", },
             },
         },
         stroke: {
@@ -218,7 +226,7 @@ $(function () {
             colors: ["transparent"],
         },
 
-        tooltip: { theme: "light" },
+        tooltip: { theme: "dark" },
 
         responsive: [
             {
@@ -379,6 +387,7 @@ if (document.querySelector("#hourlyperformanceoverview")) {
       type: "solid",
       opacity: 0.05,
     },
+    
 
     markers: {
       size: 0,
@@ -390,7 +399,7 @@ if (document.querySelector("#hourlyperformanceoverview")) {
         position: "right",
       },
       x: {
-        show: false,
+        show: true,
       },
     },
   };
@@ -425,7 +434,7 @@ if (document.querySelector("#hourlyperformanceoverview")) {
     },
 
     dataLabels: {
-      enabled: false,
+      enabled: true,
     },
 
     legend: {
