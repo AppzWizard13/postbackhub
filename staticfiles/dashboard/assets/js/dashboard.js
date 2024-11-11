@@ -18,9 +18,11 @@ $(function () {
     
       var colors = [
         "#3267ff", // First color - Blue (default)
-        breakup_series[1] > 0 ? "#3569ff" : (breakup_series[1] < 0 ? "#fa2d2d" : "#3267ff"), // Green if positive, Red if negative, Blue if zero
+        breakup_series[1] > 0 ? "#32df2d" : (breakup_series[1] < 0 ? "#fa2d2d" : "#3569ff"), // Green if positive, Red if negative, Blue if zero
         "#fff47d" // Third color - Orange (default)
       ];
+      console.log("colorscolorscolorscolorscolors", colors)
+      console.log("breakup_seriesbreakup_seriesbreakup_seriesbreakup_series", colors)
       // Check if the second value is negative and make it positive if so
       if (breakup_series[1] < 0) {
         breakup_series[1] = Math.abs(breakup_series[1]);
@@ -109,13 +111,16 @@ $(function () {
         if (value > 0) {
             positiveEarningsSum += value;
         }
-    });
+    }
+  );
 
-    let chartColor = (positiveEarningsSum > 0) ? "#3569ff" : (positiveEarningsSum === 0 ? "#49BEFF" : "#ff2626"); 
+    let chartColor = (positiveEarningsSum > 0) ? "#32df2d" : (positiveEarningsSum === 0 ? "#49BEFF" : "#ff2626"); 
 
     let chartColor1 = chartColor
 
     let chartColor2 = chartColor
+
+    console.log("chartColorchartColorchartColorchartColor", chartColor, "positiveEarningsSum", positiveEarningsSum)
 
 
     // Process positions to populate categories, earnings, and expenses

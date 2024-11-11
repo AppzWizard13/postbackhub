@@ -38,6 +38,10 @@
       object-fit: cover;
       z-index: -1;
     }
+    .nav-icon-hover:hover:before{
+      background-color : #0d41d9 ;
+    }
+    
   
     /* Content on top of the video */
     .content {
@@ -534,7 +538,7 @@
                       <div id="remainingTime"> - </div>
                     </div>
                     <div>
-                      <select class="form-select">
+                      <select class="form-select text-white fw-bolder">
                         <option value="1">{{current_date}}</option>
                       </select>
                     </div>
@@ -1031,7 +1035,7 @@
               <div class="card w-100">
                   <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-center mb-4">
-                      <h5 class="card-title fw-semibold mb-0">Recent Transactions</h5>
+                      <h5 class="card-title fw-semibold mb-0">Recent Transactions </h5>
                       <!-- Pagination Controls -->
                       <div class="pagination-controls d-flex align-items-center">
                           <button id="prevPage" class="btn btn-primary rounded-circle me-2">‹</button>

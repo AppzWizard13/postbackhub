@@ -331,6 +331,8 @@ def autoStopLossLotControlProcess():
                                                 trigger_price=sl_trigger
                                             )
                                     print(f"INFO: STOPLOSS ORDER RESPONSE :", stoploss_response)
+
+                                    DhanKillProcessLog.objects.create(user=user, log=stoploss_response.json(), order_count=quantity)
                                     print(f"INFO: Stop Loss Order Executed Successfully..!")
                                 else:
                                     print(f"INFO: LOT CONTROL CHECK FAILED..! FOR :  {user.username}")
@@ -541,10 +543,10 @@ def start_scheduler():
     scheduler.add_job(auto_order_count_monitoring_process, IntervalTrigger(seconds=2))
 
     # QUICK EXIT FEATURE TESTED OK 
-    scheduler.add_job(autoclosePositionProcess, IntervalTrigger(seconds=2))
+    scheduler.add_job(autoclosePositionProcess, IntervalTrigger(seconds=1))
 
     # AUTO STOPLOSS FEATURE TESTED OK
-    scheduler.add_job(autoStopLossLotControlProcess, IntervalTrigger(seconds=2))
+    scheduler.add_job(autoStopLossLotControlProcess, IntervalTrigger(seconds=1))
 
     # AUTO ADMIN SWITCHING PROCESS TESTED OK 
     scheduler.add_job(autoAdminSwitchingProcess, IntervalTrigger(hours=1))
