@@ -106,21 +106,9 @@ $(function () {
 
     let positiveEarningsSum = 0;
 
-    // Iterate through chart_earning to sum positive values
-    chart_earning.forEach(function(value) {
-        if (value > 0) {
-            positiveEarningsSum += value;
-        }
-    }
-  );
 
-    let chartColor = (positiveEarningsSum > 0) ? "#32df2d" : (positiveEarningsSum === 0 ? "#49BEFF" : "#ff2626"); 
 
-    let chartColor1 = chartColor
 
-    let chartColor2 = chartColor
-
-    console.log("chartColorchartColorchartColorchartColor", chartColor, "positiveEarningsSum", positiveEarningsSum)
 
 
     // Process positions to populate categories, earnings, and expenses
@@ -144,8 +132,26 @@ $(function () {
         earnings = [0];
         expenses = [0];
     }
+    
+    // Iterate through chart_earning to sum positive values
+    chart_earning.forEach(function(value) {
+      if (value > 0) {
+            positiveEarningsSum += value;
+        }
+      }
+    );
 
     let chart_earning1 = chart_earning
+
+    console.log("chart_earning1chart_earning1chart_earning1", positiveEarningsSum)
+
+    let chartColor = (positiveEarningsSum > 0) ? "#32df2d" : (positiveEarningsSum === 0 ? "#49BEFF" : "#ff2626"); 
+
+    let chartColor1 = chartColor
+
+    let chartColor2 = chartColor
+
+    console.log("chartColorchartColorchartColorchartColor", chartColor, "positiveEarningsSum", positiveEarningsSum)
 
     // =====================================
     // Profit Chart
