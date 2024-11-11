@@ -236,7 +236,7 @@ def autoStopLossLotControlProcess():
     print("Auto Stop Loss Process Running")
     now = datetime.now()
     print(f"Current date and time: {now.strftime('%Y-%m-%d %H:%M:%S')}")
-    if now.weekday() < 5 and (0 <= now.hour < 16):  # Monday to Friday, 9 AM to 4 PM
+    if now.weekday() < 5 and (9 <= now.hour < 16):  # Monday to Friday, 9 AM to 4 PM
         try:
             active_users = User.objects.filter(is_active=True,  status=True, auto_stop_loss=True)
             print("************************************************************", active_users)
