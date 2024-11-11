@@ -17,6 +17,7 @@ import os
 # Set LIVE_MODE as a variable in your code
 LIVE_MODE = True 
 
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 if LIVE_MODE:
     from decouple import config
@@ -112,6 +113,12 @@ TEMPLATES = [
 WSGI_APPLICATION = 'trade_wiz.wsgi.application'
 AUTH_USER_MODEL = 'account.User'
 
+if LIVEDB:
+    DB_NAME='tradewizdblive'
+    DB_USER='appz'
+    DB_PASSWORD='b8Agdnm9r0eVfEQlYwE1ytPWZELPHzub'
+    DB_HOST='dpg-cslqcga3esus73c9csog-a.oregon-postgres.render.com'
+    DB_PORT=5432
 
 # Database
 # Conditional database configuration based on DEBUG mode
@@ -120,11 +127,11 @@ if LIVEDB:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': config('DB_NAME'),
-            'USER': config('DB_USER'),
-            'PASSWORD': config('DB_PASSWORD'),
-            'HOST': config('DB_HOST'),
-            'PORT': config('DB_PORT', cast=int),  # Cast port to integer
+            'NAME': DB_NAME,
+            'USER': DB_USER,
+            'PASSWORD': DB_PASSWORD,
+            'HOST': DB_HOST,
+            'PORT': DB_PORT
         }
     }
     # DATABASES = {
