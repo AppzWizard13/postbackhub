@@ -538,39 +538,37 @@ def autoAdminSwitchingProcess():
 
 
 def start_scheduler():
-    print("ACITIVE CRONJOB STATUS :", settings.ACTIAVTE_CRONJOBS)
-    if settings.ACTIAVTE_CRONJOBS=='True':
-        scheduler = BackgroundScheduler()
+    scheduler = BackgroundScheduler()
 
-        # # SELF PING TESTED OK
-        scheduler.add_job(self_ping, IntervalTrigger(seconds=180))
+    # # SELF PING TESTED OK
+    scheduler.add_job(self_ping, IntervalTrigger(seconds=180))
 
-        # RESTORE KILL SWITCH BY 9 AM AND 4 PM TESTED OK
-        scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=9, minute=0))
-        scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=16, minute=0))
+    # RESTORE KILL SWITCH BY 9 AM AND 4 PM TESTED OK
+    scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=9, minute=0))
+    scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=16, minute=0))
 
 
-        # ORDER COUNT-KILL FEATURE TESTED OK 
-        scheduler.add_job(auto_order_count_monitoring_process, IntervalTrigger(seconds=2))
+    # ORDER COUNT-KILL FEATURE TESTED OK 
+    scheduler.add_job(auto_order_count_monitoring_process, IntervalTrigger(seconds=2))
 
-        # QUICK EXIT FEATURE TESTED OK 
-        scheduler.add_job(autoclosePositionProcess, IntervalTrigger(seconds=1))
+    # QUICK EXIT FEATURE TESTED OK 
+    scheduler.add_job(autoclosePositionProcess, IntervalTrigger(seconds=1))
 
-        # # AUTO STOPLOSS FEATURE TESTED OK
-        scheduler.add_job(autoStopLossLotControlProcess, IntervalTrigger(seconds=1))
+    # # AUTO STOPLOSS FEATURE TESTED OK
+    scheduler.add_job(autoStopLossLotControlProcess, IntervalTrigger(seconds=1))
 
-        # AUTO ADMIN SWITCHING PROCESS TESTED OK 
-        scheduler.add_job(autoAdminSwitchingProcess, IntervalTrigger(hours=1))
+    # AUTO ADMIN SWITCHING PROCESS TESTED OK 
+    scheduler.add_job(autoAdminSwitchingProcess, IntervalTrigger(hours=1))
 
-        # HOURLY DATA LOG MONITORING TESTED OK
-        scheduler.add_job(DailyAccountOverviewUpdateProcess, IntervalTrigger(hours=1))
-        
+    # HOURLY DATA LOG MONITORING TESTED OK
+    scheduler.add_job(DailyAccountOverviewUpdateProcess, IntervalTrigger(hours=1))
+    
 
 
-        scheduler.start()
-        print("INFO: Scheduler started.")
+    scheduler.start()
+    print("INFO: Scheduler started.")
 
-        # Shut down the scheduler when exiting the app
-        atexit.register(lambda: scheduler.shutdown())
+    # Shut down the scheduler when exiting the app
+    atexit.register(lambda: scheduler.shutdown())
 
 
