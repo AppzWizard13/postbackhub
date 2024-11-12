@@ -171,7 +171,7 @@ $(function () {
             type: "bar",
             height: 345,
             offsetX: -15,
-            toolbar: { show: false },
+            toolbar: { show: true },
             foreColor: "#000000d9",
             fontFamily: 'inherit',
             sparkline: { enabled: false },
@@ -342,7 +342,7 @@ var hourlyperformanceoverview = {
   ],
   stroke: {
     curve: "smooth",
-    width: 3,
+    width: 2,
   },
   fill: {
     colors: ["#f3feff"],
