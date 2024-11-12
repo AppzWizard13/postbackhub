@@ -258,7 +258,7 @@ def autoStopLossLotControlProcess():
                         # Step 1: Sort filtered orders by timestamp in descending order
                         if not order_list['data'] == []:
                             latest_entry = order_list['data'][0]
-                            if latest_entry['transactionType'] == 'SELL' and latest_entry['orderStatus'] == 'TRADED':
+                            if latest_entry['transactionType'] == 'BUY' and latest_entry['orderStatus'] == 'TRADED':
                                 security_id = latest_entry['securityId']
                                 traded_symbol = latest_entry['tradingSymbol']
                                 client_id = latest_entry['dhanClientId']
