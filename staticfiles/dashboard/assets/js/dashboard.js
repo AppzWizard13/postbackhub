@@ -171,13 +171,13 @@ $(function () {
             type: "bar",
             height: 345,
             offsetX: -15,
-            toolbar: { show: true },
+            toolbar: { show: false },
             foreColor: "#000000d9",
             fontFamily: 'inherit',
             sparkline: { enabled: false },
         },
 
-        colors: ["#3569ff", "#FF0000"],
+        colors: ["#32df2d", "#FF0000"],
 
         plotOptions: {
             bar: {

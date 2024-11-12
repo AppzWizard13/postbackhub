@@ -17,6 +17,7 @@ class User(AbstractUser):
     kill_switch_2 = models.BooleanField(default=False)  # New is_kill_2  field
     quick_exit = models.BooleanField(default=False)
     sl_control_mode = models.BooleanField(default=False)
+    last_order_count = models.IntegerField(default=0)
 
     # Adding related_name to prevent reverse accessor clashes
     groups = models.ManyToManyField(

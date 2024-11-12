@@ -40,7 +40,7 @@ def self_ping():
 
 def restore_user_kill_switches():
     active_users = User.objects.filter(is_active=True)
-    active_users.update(kill_switch_1=False, kill_switch_2=False, status=True)
+    active_users.update(kill_switch_1=False, kill_switch_2=False, status=True,last_order_count=0)
     print(f"INFO: Reset kill switches for {active_users.count()} users.")
 
 
@@ -433,17 +433,16 @@ def get_pending_order_filter_dhan(response):
 
 # HOURLY ACCOUNT OVERVIEW LOGGING :  TESTED OK ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-def DailyAccountOverviewUpdateProcess():
+def check_and_update_daily_account_overview():
     print("INFO: HOURLY ACCOUNT OVERVIEW PROCESS RUNNING ....!")
-    # Get the current hour
+
+    # Set timezone and flags for opening and closing runs
     ist = pytz.timezone('Asia/Kolkata')
     current_time = datetime.now(ist)
     current_hour = current_time.hour
-    current_minute = current_time.minute
-    
-    # Set flags for the opening and closing runs
     is_first_run = current_hour == 9
     is_last_run = current_hour == 16
+
     # Query active users
     active_users = User.objects.filter(is_active=True)
     for user in active_users:
@@ -456,49 +455,57 @@ def DailyAccountOverviewUpdateProcess():
             
             # Fetch data
             order_list = dhan.get_order_list() or []
-            fund_data = dhan.get_fund_limits()
-            position_data = dhan.get_positions()
-            
-            # Calculate traded orders and expenses
-            traded_order_count = get_traded_order_count(order_list)
-            total_realized_profit = 0.0
-            total_expense = traded_order_count * float(settings.BROKERAGE_PARAMETER)
-            # Process position data safely
-            if position_data and 'data' in position_data:
-                positions = position_data['data']
-                total_realized_profit = sum(position.get('realizedProfit', 0) for position in positions)
-            else:
-                logger.warning(f"No position data for user {user.username}. Setting realized profit to 0.")
+            actual_order_count = get_traded_order_count(order_list)
 
-            # Calculate balances safely
-            opening_balance = float(fund_data['data'].get('sodLimit', 0.0)) if fund_data and 'data' in fund_data else 0.0
-            closing_balance = float(fund_data['data'].get('withdrawableBalance', 0.0)) if fund_data and 'data' in fund_data else 0.0
-            
-            # Calculate actual profit
-            actual_profit = total_realized_profit - total_expense
-            
-            # Set day_open and day_close fields based on the time of day
-            day_open = is_first_run
-            day_close = is_last_run
-            
-            # Create or update the DailyAccountOverview entry
-            DailyAccountOverview.objects.create(
-                user=user,
-                opening_balance=opening_balance,
-                pnl_status=total_realized_profit,
-                actual_profit = actual_profit,
-                expenses=total_expense,
-                closing_balance=closing_balance,
-                order_count=traded_order_count,
-                day_open=day_open,
-                day_close=day_close
-            )
-            
-            print(f"INFO: DailyAccountOverview updated successfully for {user.username}")
-        
+            # Compare with the stored order count in User model
+            if user.last_order_count != actual_order_count:
+                # Update the User model with the new order count
+                user.last_order_count = actual_order_count
+                user.save()
+                print(f"INFO: Order count changed for {user.username}. Executing update process.")
+
+                # Check specific order conditions for triggering updates
+                if actual_order_count:
+                    latest_entry = order_list['data'][0]
+                    if latest_entry['orderStatus'] == 'TRADED' and latest_entry['transactionType'] == 'SELL':
+                        # Fetch funds and positions data
+                        fund_data = dhan.get_fund_limits()
+                        position_data = dhan.get_positions()
+
+                        # Calculate traded orders and expenses
+                        total_expense = actual_order_count * float(settings.BROKERAGE_PARAMETER)
+                        total_realized_profit = sum(
+                            position.get('realizedProfit', 0) for position in (position_data.get('data', []) if position_data else [])
+                        )
+                        opening_balance = float(fund_data['data'].get('sodLimit', 0.0)) if fund_data else 0.0
+                        closing_balance = float(fund_data['data'].get('withdrawableBalance', 0.0)) if fund_data else 0.0
+                        actual_profit = total_realized_profit - total_expense
+
+                        # Set day_open and day_close fields based on the time of day
+                        day_open = is_first_run
+                        day_close = is_last_run
+
+                        # Create or update the DailyAccountOverview entry
+                        DailyAccountOverview.objects.create(
+                            user=user,
+                            opening_balance=opening_balance,
+                            pnl_status=total_realized_profit,
+                            actual_profit=actual_profit,
+                            expenses=total_expense,
+                            closing_balance=closing_balance,
+                            order_count=actual_order_count,
+                            day_open=day_open,
+                            day_close=day_close
+                        )
+
+                        print(f"INFO: DailyAccountOverview updated successfully for {user.username}")
+            else:
+                print(f"INFO: No change in order count for {user.username}. No update required.")
+
         except Exception as e:
-            print(f"INFO: Error processing user  for  {user.username}: {e}")
-            continue  # Skip to the next user
+            print(f"INFO: Error processing user {user.username}: {e}")
+            continue
+
 
 # AUTO ADMIN SWITCHING PROCESS :  TESTED OK ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -577,7 +584,7 @@ def start_scheduler():
     scheduler.add_job(autoAdminSwitchingProcess, IntervalTrigger(hours=1))
 
     # # # HOURLY DATA LOG MONITORING TESTED OK
-    scheduler.add_job( DailyAccountOverviewUpdateProcess, CronTrigger(minute='0,15,30,45', hour='9-16', timezone=ist))
+    scheduler.add_job( check_and_update_daily_account_overview, IntervalTrigger(seconds=10))
     
 
 
