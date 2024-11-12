@@ -21,26 +21,19 @@ LIVE_MODE = True
 BASE_DIR = Path(__file__).resolve().parent.parent
 if LIVE_MODE:
     from decouple import config
-    # Build paths inside the project like this: BASE_DIR / 'subdir'.
-    
-    # Quick-start development settings - unsuitable for production
-    # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
-
+    # Build paths inside the project like this: BASE_DIR / 'subdir'
     # SECURITY WARNING: keep the secret key used in production secret!
     SECRET_KEY = 'django-insecure-f-lro%0yj$70!j=-abx!**fm058-xn!3m*$#q05awh=9b^1b8j'
     DEBUG = config('DEBUG', default=False, cast=bool)
     TESTMODE = config('TESTMODE', default=False, cast=bool)
-    LIVEDB = config('LIVEDB', default=True, cast=bool)
+    LIVEDB = config('LIVEDB', default=False, cast=bool)
     TESTKEY = config('TESTKEY', default=False, cast=bool)
-    ACTIAVTE_CRONJOBS = config('ACTIAVTE_CRONJOBS', default=True, cast=bool)
 
 else:
     from decouple import Config, RepositoryEnv
     DOTENV_FILE = '.envtest'
     env_config = Config(RepositoryEnv(DOTENV_FILE))
-    ACTIAVTE_CRONJOBS = env_config.get('ACTIAVTE_CRONJOBS')
     # Quick-start development settings - unsuitable for production
-    # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
     # SECURITY WARNING: keep the secret key used in production secret!
     SECRET_KEY = 'django-insecure-f-lro%0yj$70!j=-abx!**fm058-xn!3m*$#q05awh=9b^1b8j'
     DEBUG = env_config.get('DEBUG', default=False, cast=bool)
@@ -122,7 +115,7 @@ if LIVEDB:
 
 # Database
 # Conditional database configuration based on DEBUG mode
-if LIVEDB:
+if LIVEDB == True:
     # Database configuration
     DATABASES = {
         'default': {

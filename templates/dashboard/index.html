@@ -1051,6 +1051,7 @@
                                       <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Symbol</h6></th>
                                       <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Status</h6></th>
                                       <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Transaction</h6></th>
+                                      <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Type</h6></th>
                                       <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Quantity</h6></th>
                                       <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Price</h6></th>
                                       <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Order Time</h6></th>
@@ -1079,6 +1080,7 @@
                                           <p class="badge bg-danger rounded-3 fw-semibold">{{ order.transactionType }}</p>
                                         {% endif %}
                                       </td>
+                                      <td class="border-bottom-0"><h6 class="fw-semibold mb-0">{{ order.orderType }}</h6></td>
                                       <td class="border-bottom-0"><h6 class="fw-semibold mb-0">{{ order.quantity }}</h6></td>
                                       <td class="border-bottom-0"><h6 class="fw-semibold mb-0 fs-4">₹{{ order.price|floatformat:2 }}</h6></td>
                                       <td class="border-bottom-0"><h6 class="fw-semibold mb-0">{{ order.createTime }}</h6></td>

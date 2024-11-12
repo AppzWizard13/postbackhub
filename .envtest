@@ -6,5 +6,4 @@ DB_PASSWORD=b8Agdnm9r0eVfEQlYwE1ytPWZELPHzub
 DB_HOST=dpg-cslqcga3esus73c9csog-a.oregon-postgres.render.com
 DB_PORT=5432
 TESTKEY=False
-LIVEDB=True
-ACTIAVTE_CRONJOBS=True
+LIVEDB=False

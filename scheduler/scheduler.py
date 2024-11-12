@@ -10,6 +10,7 @@ from dhanhq import dhanhq
 from account.models import Control, DhanKillProcessLog, DailyAccountOverview, TempNotifierTable, slOrderslog
 from datetime import datetime
 from django.db.models import F
+import pytz
 User = get_user_model()
 
 
@@ -47,18 +48,19 @@ def restore_user_kill_switches():
 # KILL SIWTCH ON ORDER COUNT LIMIT TESTED OK----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 def auto_order_count_monitoring_process():
-    now = datetime.now()
+    ist = pytz.timezone('Asia/Kolkata')
+    now =  datetime.now(ist)
     print(f"Current date and time: {now.strftime('%Y-%m-%d %H:%M:%S')}")
     if now.weekday() < 5 and (9 <= now.hour < 16):  # Monday to Friday, 9 AM to 4 PM
         try:
-            print("Starting auto order count monitoring process..................")
+            print("STARTING KILL SIWTCH ON ORDER COUNT LIMIT PROCESS......!")
             active_users = User.objects.filter(is_active=True, status=True)
             for user in active_users:
                 try:
                     if user:
                         dhan_client_id = user.dhan_client_id
                         dhan_access_token = user.dhan_access_token
-                        print(f"Processing user: {user.username}, Client ID: {dhan_client_id}")
+                        print(f" KILL SWITCH ON ORDER COUNT LIMIT PROCESS  : Processing user: {user.username}, Client ID: {dhan_client_id}")
                         # Initialize Dhan client
                         dhan = dhanhq(dhan_client_id, dhan_access_token)
                         # Fetch order list
@@ -147,19 +149,20 @@ def activate_kill_switch(user, access_token, traded_order_count, switch):
 
 
 def autoclosePositionProcess():
-    print("Auto Close Positions Process Running")
-    now = datetime.now()
+    print("AUTO CLOSE POSITIONS PROCESS RUNNING....")
+    ist = pytz.timezone('Asia/Kolkata')
+    now =  datetime.now(ist)
     print(f"Current date and time: {now.strftime('%Y-%m-%d %H:%M:%S')}")
     if now.weekday() < 5 and (9 <= now.hour < 16):  # Monday to Friday, 9 AM to 4 PM
         try:
-            print("Starting Auto close position  monitoring process...!")
+            print("STARTING AUTO CLOSE POSITION  MONITORING PROCESS...!")
             active_users = User.objects.filter(is_active=True, status=True, quick_exit=True)
             for user in active_users:
                 try:
-                    if user.auto_stop_loss:
+                    if user.quick_exit:
                         dhan_client_id = user.dhan_client_id
                         dhan_access_token = user.dhan_access_token
-                        print(f"Processing user: {user.username}, Client ID: {dhan_client_id}")
+                        print(f"STARTING QUICK CLOSE POSITION : Processing user: {user.username}, Client ID: {dhan_client_id}")
                         # Fetch control data
                         control_data = Control.objects.filter(user=user).first()
                         # Initialize Dhan client
@@ -168,10 +171,11 @@ def autoclosePositionProcess():
                         # print("order_listorder_listorder_list", order_list)
                         # Step 1: Sort filtered orders by timestamp in descending order
                         traded_order_count = get_traded_order_count(order_list)
-                        print("traded_order_counttraded_order_counttraded_order_counttraded_order_count", traded_order_count)
                         if traded_order_count:
                             latest_entry = order_list['data'][0]
-                            if latest_entry['transactionType'] == 'SELL' and latest_entry['orderStatus'] == 'CANCELLED':
+                            print('LATEST ENTRY : ' , latest_entry)
+                            if latest_entry['orderType'] == 'STOP_LOSS' and latest_entry['orderStatus'] == 'CANCELLED'and latest_entry['transactionType'] == 'SELL':
+                                print("LATEST CANCELLED STOPLOSS ENTRY DETECTED")
                                 sl_order_id = latest_entry['orderId']
                                 symbol = latest_entry['tradingSymbol']
                                 security_id = latest_entry['securityId']
@@ -181,10 +185,10 @@ def autoclosePositionProcess():
                                 traded_price = float(latest_entry['price'])
                                 print("***************************************************************************")
                                 print("QUICK EXIT : SELL ORDER PAYLOAD DATA FOR USER     :", user.username)
-                                print("SECURITY ID                                       :", SECURITY_ID)
-                                print("CLIENT ID                                         :", CLIENT_ID)
-                                print("EXCHANGE SEGMENT                                  :", EXCHANGE_SEGMENT)
-                                print("QUANTITY                                          :", QUANTITY)
+                                print("SECURITY ID                                       :", security_id)
+                                print("CLIENT ID                                         :", client_id)
+                                print("EXCHANGE SEGMENT                                  :", exchange_segment)
+                                print("QUANTITY                                          :", quantity)
                                 print("***************************************************************************")
                                 # Place an order for NSE Futures & Options
                                 sellOrderResponse = dhan.place_order(
@@ -196,21 +200,43 @@ def autoclosePositionProcess():
                                             product_type='INTRADAY',
                                             price=0
                                         )
-                                print("SELL ORDER RESPONSE         :", sellOrderResponse)
-                                slOrderslog.objects.filter(order_id=sl_order_id).delete()
+                                try:
+                                    # Save the response in the database
+                                    DhanKillProcessLog.objects.create(user=user, log=sellOrderResponse, order_count=quantity)
+                                    # Check for failure in response and save the error message if present
+                                    if sellOrderResponse.get('status') == 'failure':
+                                        error_message = sellOrderResponse.get('remarks', {}).get('error_message', 'Unknown error')
+                                        error_code = sellOrderResponse.get('remarks', {}).get('error_code', 'Unknown code')
+                                        # Log error in the database
+                                        DhanKillProcessLog.objects.create(
+                                            user=user,
+                                            log={"error_message": error_message, "error_code": error_code},
+                                            order_count=0
+                                        )
+                                        print("Order failed:", error_message)
+
+                                except Exception as e:
+                                    # If an exception occurs, log it in the database and print it
+                                    DhanKillProcessLog.objects.create(
+                                        user=user,
+                                        log={"error_message": str(e), "error_code": "Exception"},
+                                        order_count=0
+                                    )
+                                    print("An error occurred while placing the order:", str(e))
+
                                 print(f"INFO: Position Closing Executed Successfully..!")
                             else:
                                 print(f"INFO: No Open Order for User {user.username}")
                         else:
-                            print(f"INFO: No Open Order for User {user.username}")
+                            print(f"INFO: No Open Order for User :{user.username}")
                     else:
-                        print(f"WARNING: Kill switch already activated twice for user: {user.username}")
+                        print(f"WARNING: Auto SL Disabled for User : {user.username}")
 
                 except Exception as e:
                     print(f"ERROR: Error processing user {user.username}: {e}")
 
             print("No User Found.(May be Killed Already/Not Active)")
-            print("Auto Stoplos sMonitoring process completed successfully.")
+            print("Auto Quick Exit process completed successfully.")
             return JsonResponse({'status': 'success', 'message': 'Monitoring process completed'})
 
         except Exception as e:
@@ -234,19 +260,19 @@ def get_traded_order_count(order_list):
 
 def autoStopLossLotControlProcess():
     print("Auto Stop Loss Process Running")
-    now = datetime.now()
+    ist = pytz.timezone('Asia/Kolkata')
+    now =  datetime.now(ist)
     print(f"Current date and time: {now.strftime('%Y-%m-%d %H:%M:%S')}")
     if now.weekday() < 5 and (9 <= now.hour < 16):  # Monday to Friday, 9 AM to 4 PM
         try:
             active_users = User.objects.filter(is_active=True,  status=True, auto_stop_loss=True)
-            print("************************************************************", active_users)
-            print("STARTING AUTO STOP MONITORING PROCESS......................!")
+            print("STARTING AUTO STOP LOSS MONITORING PROCESS......................!")
             for user in active_users:
                 try:
                     if  user.auto_stop_loss:
                         dhan_client_id = user.dhan_client_id
                         dhan_access_token = user.dhan_access_token
-                        print(f"Processing user: {user.username}, Client ID: {dhan_client_id}")
+                        print(f"AUTO STOP LOSS MONITORING PROCESS : Processing user: {user.username}, Client ID: {dhan_client_id}")
                         # Fetch control data
                         control_data = Control.objects.filter(user=user).first()
                         stoploss_parameter = float(control_data.stoploss_parameter)
@@ -329,9 +355,6 @@ def autoStopLossLotControlProcess():
                                                 trigger_price=sl_trigger
                                             )
                                     print(f"INFO: STOPLOSS ORDER RESPONSE :", stoploss_response)
-
-                                    DhanKillProcessLog.objects.create(user=user, log=stoploss_response.json(), order_count=quantity)
-                                    print(f"INFO: Stop Loss Order Executed Successfully..!")
                                 else:
                                     print(f"INFO: LOT CONTROL CHECK FAILED..! FOR :  {user.username}")
 
@@ -342,7 +365,7 @@ def autoStopLossLotControlProcess():
                             print(f"INFO: No Recent Order found for User {user.username}")
                         
                     else:
-                        print(f"WARNING: Kill switch already activated twice for user: {user.username}")
+                        print(f"WARNING: Auto SL Disabled for User : {user.username}")
 
                 except Exception as e:
                     print(f"ERROR: Error processing user {user.username}: {e}")
@@ -411,16 +434,18 @@ def get_pending_order_filter_dhan(response):
 # HOURLY ACCOUNT OVERVIEW LOGGING :  TESTED OK ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 def DailyAccountOverviewUpdateProcess():
+    print("INFO: HOURLY ACCOUNT OVERVIEW PROCESS RUNNING ....!")
     # Get the current hour
-    current_hour = datetime.now().hour
+    ist = pytz.timezone('Asia/Kolkata')
+    current_time = datetime.now(ist)
+    current_hour = current_time.hour
+    current_minute = current_time.minute
     
     # Set flags for the opening and closing runs
     is_first_run = current_hour == 9
     is_last_run = current_hour == 16
-    
     # Query active users
     active_users = User.objects.filter(is_active=True)
-    
     for user in active_users:
         try:
             dhan_client_id = user.dhan_client_id
@@ -478,9 +503,10 @@ def DailyAccountOverviewUpdateProcess():
 # AUTO ADMIN SWITCHING PROCESS :  TESTED OK ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 def autoAdminSwitchingProcess():
+    print(f"INFO:  AUTO ADMIN SWITCHING PROCESS : RUNNING")
+    ist = pytz.timezone('Asia/Kolkata')
+    current_hour = datetime.now(ist).hour
     try:
-        # Get the current time
-        current_hour = datetime.now().hour
         if current_hour == 9:
             # Set vicky as superuser and remove superuser status from juztin and tradingwitch every day at 9 AM
             acting_admin = settings.ACTING_ADMIN
@@ -524,44 +550,34 @@ def autoAdminSwitchingProcess():
 
 
 
-
-
-
-
-
-
-
-
-
-
 # CRON JOBS STRAT PROCESS :  TESTED OK ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 def start_scheduler():
     scheduler = BackgroundScheduler()
+    ist = pytz.timezone('Asia/Kolkata')
 
-    # # SELF PING TESTED OK
+    # SELF PING TESTED OK
     scheduler.add_job(self_ping, IntervalTrigger(seconds=180))
 
-    # RESTORE KILL SWITCH BY 9 AM AND 4 PM TESTED OK
-    scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=9, minute=0))
-    scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=16, minute=0))
+    # # # RESTORE KILL SWITCH BY 9 AM AND 4 PM TESTED OK
+    scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=9, minute=0,  timezone=ist))
+    scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=16, minute=0,  timezone=ist))
 
-
-    # ORDER COUNT-KILL FEATURE TESTED OK 
+    # # # ORDER COUNT-KILL FEATURE TESTED OK 
     scheduler.add_job(auto_order_count_monitoring_process, IntervalTrigger(seconds=2))
 
-    # QUICK EXIT FEATURE TESTED OK 
-    scheduler.add_job(autoclosePositionProcess, IntervalTrigger(seconds=1))
+    # # # QUICK EXIT FEATURE TESTED OK 
+    scheduler.add_job(autoclosePositionProcess, IntervalTrigger(seconds=2))
 
-    # # AUTO STOPLOSS FEATURE TESTED OK
+    # # # AUTO STOPLOSS FEATURE TESTED OK
     scheduler.add_job(autoStopLossLotControlProcess, IntervalTrigger(seconds=1))
 
-    # AUTO ADMIN SWITCHING PROCESS TESTED OK 
+    # # # AUTO ADMIN SWITCHING PROCESS TESTED OK 
     scheduler.add_job(autoAdminSwitchingProcess, IntervalTrigger(hours=1))
 
-    # HOURLY DATA LOG MONITORING TESTED OK
-    scheduler.add_job(DailyAccountOverviewUpdateProcess, IntervalTrigger(hours=1))
+    # # # HOURLY DATA LOG MONITORING TESTED OK
+    scheduler.add_job( DailyAccountOverviewUpdateProcess, CronTrigger(minute='0,15,30,45', hour='9-16', timezone=ist))
     
 
 
