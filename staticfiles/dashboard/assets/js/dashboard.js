@@ -132,20 +132,25 @@ $(function () {
         earnings = [0];
         expenses = [0];
     }
-    
+    var colour_selector = 0 
     // Iterate through chart_earning to sum positive values
     chart_earning.forEach(function(value) {
       if (value > 0) {
             positiveEarningsSum += value;
+            colour_selector += value;
         }
+        else{
+          colour_selector += value;
+        }
+      
       }
     );
 
     let chart_earning1 = chart_earning
 
-    console.log("chart_earning1chart_earning1chart_earning1", positiveEarningsSum)
+    console.log("colour_selectorcolour_selectorcolour_selectorcolour_selector", colour_selector)
 
-    let chartColor = (positiveEarningsSum > 0) ? "#32df2d" : (positiveEarningsSum === 0 ? "#49BEFF" : "#ff2626"); 
+    let chartColor = (colour_selector > 0) ? "#32df2d" : (colour_selector === 0 ? "#49BEFF" : "#ff2626"); 
 
     let chartColor1 = chartColor
 
