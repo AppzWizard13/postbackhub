@@ -342,7 +342,7 @@ var hourlyperformanceoverview = {
   ],
   stroke: {
     curve: "smooth",
-    width: 2,
+    width: 3,
   },
   fill: {
     colors: ["#f3feff"],

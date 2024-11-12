@@ -794,7 +794,7 @@
                             <i class="fs-5 dark ti ti-stairs-down text-danger mx-2"></i>
                         </span>
                         <p class="text-grey mx-1 fs-3 mb-0 fw-bold flex-shrink-0" style="width: 150px;">Auto SL:</p>
-                        {% if request.user.is_superadmin %}
+                        {% if request.user.is_superuser %}
                         <div class="ms-auto">
                             {% if user.auto_stop_loss %}
                                 <span class="badge bg-success fs-3">Enabled</span>

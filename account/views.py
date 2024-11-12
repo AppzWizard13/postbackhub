@@ -225,7 +225,9 @@ class DashboardView(TemplateView):
 
         # perfomance overview chart data 
         # DailyAccountOverview.Objects.filter(user=user).orderedby('updated_on').get value 'actual_profit' as list 
-        hourly_status_data = DailyAccountOverview.objects.filter(user=user).order_by('updated_on').values_list('closing_balance', flat=True)
+        hourly_status_data = DailyAccountOverview.objects.filter(user=user).order_by('-updated_on').values_list('closing_balance', flat=True)
+        # i need recent 20 data modify the code for it
+        print("hourly_status_datahourly_status_datahourly_status_data", hourly_status_data)
 
 
         from django.db.models import Q
