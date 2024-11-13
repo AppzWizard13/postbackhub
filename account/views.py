@@ -219,8 +219,12 @@ class DashboardView(TemplateView):
         max_expected_expense = 0 
         order_limit = 0
         if control_data:
-            max_expected_loss = (actual_bal * exp_entry_count ) * (stoploss_parameter/100)
-            max_expected_expense = float(max_expected_loss) + day_exp_brokerge
+            if control_data.stoploss_type ==  "price" :
+                max_expected_loss = exp_entry_count  * stoploss_parameter
+                max_expected_expense = float(max_expected_loss) + day_exp_brokerge
+            else:
+                max_expected_loss = (actual_bal * exp_entry_count ) * (stoploss_parameter/100)
+                max_expected_expense = float(max_expected_loss) + day_exp_brokerge
 
 
         # perfomance overview chart data 
