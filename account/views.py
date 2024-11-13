@@ -225,9 +225,14 @@ class DashboardView(TemplateView):
 
         # perfomance overview chart data 
         # DailyAccountOverview.Objects.filter(user=user).orderedby('updated_on').get value 'actual_profit' as list 
-        hourly_status_data = DailyAccountOverview.objects.filter(user=user).order_by('-updated_on').values_list('closing_balance', flat=True)
-        # i need recent 20 data modify the code for it
-        print("hourly_status_datahourly_status_datahourly_status_data", hourly_status_data)
+        hourly_status_data = list(
+            DailyAccountOverview.objects
+            .filter(user=user)
+            .order_by('-updated_on')
+            .values_list('closing_balance', flat=True)[:20]
+        )[::-1]
+
+        print("hourly_status_data:", hourly_status_data)
 
 
         from django.db.models import Q
@@ -488,12 +493,13 @@ class DhanKillProcessLogListView(ListView):
 
 
 from django.utils.dateparse import parse_date
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 
 class DailyAccountOverviewListView(ListView):
     model = DailyAccountOverview
     template_name = 'dashboard/dailyaccountoverview.html'
     context_object_name = 'daily_account_overviews'
-    paginate_by = 10  # Optional: Adjust pagination number as needed
+    paginate_by = 20
 
     def get_queryset(self):
         queryset = DailyAccountOverview.objects.all().order_by('-updated_on')
@@ -507,11 +513,11 @@ class DailyAccountOverviewListView(ListView):
         start_date = self.request.GET.get('start_date')
         end_date = self.request.GET.get('end_date')
         if start_date:
-            start_date_parsed = parse_date(start_date)  # Parse the start date to ensure it's a valid date
+            start_date_parsed = parse_date(start_date)
             if start_date_parsed:
                 queryset = queryset.filter(updated_on__date__gte=start_date_parsed)
         if end_date:
-            end_date_parsed = parse_date(end_date)  # Parse the end date
+            end_date_parsed = parse_date(end_date)
             if end_date_parsed:
                 queryset = queryset.filter(updated_on__date__lte=end_date_parsed)
 
@@ -530,14 +536,15 @@ class DailyAccountOverviewListView(ListView):
         context['title'] = 'Daily Account Overview'
 
         # Add filters to the context for form binding in the template
-        context['user_list'] = User.objects.all()  # For user filter options
-        context['selected_user'] = self.request.GET.get('user_id', '')  # Selected user ID
-        context['start_date'] = self.request.GET.get('start_date', '')  # Start date filter
-        context['end_date'] = self.request.GET.get('end_date', '')  # End date filter
-        context['day_open'] = self.request.GET.get('day_open', '')  # Opening filter
-        context['day_close'] = self.request.GET.get('day_close', '')  # Closing filter
+        context['user_list'] = User.objects.all()
+        context['selected_user'] = self.request.GET.get('user_id', '')
+        context['start_date'] = self.request.GET.get('start_date', '')
+        context['end_date'] = self.request.GET.get('end_date', '')
+        context['day_open'] = self.request.GET.get('day_open', '')
+        context['day_close'] = self.request.GET.get('day_close', '')
 
         return context
+
 
 
 from django.views.decorators.http import require_POST

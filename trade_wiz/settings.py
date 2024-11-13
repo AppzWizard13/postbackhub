@@ -107,7 +107,7 @@ WSGI_APPLICATION = 'trade_wiz.wsgi.application'
 AUTH_USER_MODEL = 'account.User'
 
 
-if LIVEDB:
+if LIVEDB == True:
     DB_NAME='tradewizdblive'
     DB_USER='appz'
     DB_PASSWORD='b8Agdnm9r0eVfEQlYwE1ytPWZELPHzub'
@@ -128,12 +128,6 @@ if LIVEDB == True:
             'PORT': DB_PORT
         }
     }
-    # DATABASES = {
-    #     'default': {
-    #         'ENGINE': 'django.db.backends.sqlite3',
-    #         'NAME': BASE_DIR /  'LIVEDB/tradewiz-live.sqlite3',
-    #     }
-    # }
 else:
     # Use SQLite for development
     DATABASES = {

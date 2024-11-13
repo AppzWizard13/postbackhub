@@ -50,6 +50,7 @@ class Control(models.Model):
     STOPLOSS_TYPE_CHOICES = [
         ('percentage', 'Percentage'),
         ('points', 'Points'),
+        ('price', 'Price'),
     ]
 
     max_order_limit = models.IntegerField(default=0)

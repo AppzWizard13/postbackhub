@@ -129,23 +129,8 @@
                     </table>
                 </div>
 
-                {% comment %} <div class="pagination">
-                    <span class="step-links">
-                        {% if daily_account_overviews.has_previous %}
-                            <a href="?page=1{% if request.GET.user_id %}&user_id={{ request.GET.user_id }}{% endif %}{% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}{% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}{% if request.GET.day_open %}&day_open={{ request.GET.day_open }}{% endif %}{% if request.GET.day_close %}&day_close={{ request.GET.day_close }}{% endif %}">First</a>
-                            <a href="?page={{ daily_account_overviews.previous_page_number }}{% if request.GET.user_id %}&user_id={{ request.GET.user_id }}{% endif %}{% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}{% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}{% if request.GET.day_open %}&day_open={{ request.GET.day_open }}{% endif %}{% if request.GET.day_close %}&day_close={{ request.GET.day_close }}{% endif %}">Previous</a>
-                        {% endif %}
                 
-                        <span class="current">
-                            Page {{ daily_account_overviews.number }} of {{ daily_account_overviews.paginator.num_pages }}.
-                        </span>
-                
-                        {% if daily_account_overviews.has_next %}
-                            <a href="?page={{ daily_account_overviews.next_page_number }}{% if request.GET.user_id %}&user_id={{ request.GET.user_id }}{% endif %}{% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}{% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}{% if request.GET.day_open %}&day_open={{ request.GET.day_open }}{% endif %}{% if request.GET.day_close %}&day_close={{ request.GET.day_close }}{% endif %}">Next</a>
-                            <a href="?page={{ daily_account_overviews.paginator.num_pages }}{% if request.GET.user_id %}&user_id={{ request.GET.user_id }}{% endif %}{% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}{% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}{% if request.GET.day_open %}&day_open={{ request.GET.day_open }}{% endif %}{% if request.GET.day_close %}&day_close={{ request.GET.day_close }}{% endif %}">Last</a>
-                        {% endif %}
-                    </span>
-                </div> {% endcomment %}
+
             </div>
         </div>
     </div>

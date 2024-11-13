@@ -396,8 +396,13 @@
             </li>
             <li class="nav-item">
               <a class="nav-link nav-icon-hover" href="javascript:void(0)">
-                <i class="dark ti ti-bell-ringing"></i>
-                <div class="notification bg-primary rounded-circle"></div>
+                {% if user.kill_switch_1 and not user.kill_switch_2 %}
+                  <i class="dark ti ti-bell-ringing" style="color:orange;"></i>
+                {% elif not user.kill_switch_1 and not user.kill_switch_2 %}
+                  <i class="dark ti ti-bell-ringing" style="color:green;"></i>
+                {% elif user.kill_switch_1 and user.kill_switch_2 %}
+                  <i class="dark ti ti-bell-ringing" style="color:red;"></i>
+                {% endif %}
               </a>
             </li>
           </ul>
@@ -688,13 +693,13 @@
                                 <p class="text-success me-1 fs-4 mb-3 fw-bolder" style="margin-top: 13px;">{{pnl_percentage|floatformat:2}}&nbsp;&nbsp;%&nbsp;Profit</p>
                               {% elif total_realized_profit < 0 %}
                                 <!-- Negative value: down-right arrow and light danger color -->
-                                <span class="me-1 rounded-circle bg-light-danger round-20 d-flex align-items-center justify-content-center">
+                                <span >
                                   <i class="fs-5 dark ti ti-arrow-down-right text-danger"></i>
                                 </span>
                                 <p class="text-danger me-1 fs-4 mb-3 fw-bolder" style="margin-top: 13px;">{{pnl_percentage|floatformat:2}}&nbsp;&nbsp;%&nbsp;Loss</p>
                               {% else %}
                                 <!-- Zero value: dot icon and light primary color -->
-                                <span class="me-1 rounded-circle bg-light-primary round-20 d-flex align-items-center justify-content-center">
+                                <span>
                                   <i class="fs-4 dark ti ti-clock text-primary"></i>
                                 </span>
                                 <p class="text-primary me-1 fs-3 mb-3 fw-bolder" style="margin-top: 13px;">{{pnl_percentage|floatformat:2}}&nbsp;&nbsp;%&nbsp;NO Trades</p>
@@ -730,22 +735,22 @@
 
                         <!-- Confirmation Modal -->
                         <div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
-                        <div class="modal-dialog">
-                          <div class="modal-content">
-                            <div class="modal-header">
-                              <h5 class="modal-title" id="confirmationModalLabel">Confirm Action</h5>
-                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            <div class="modal-dialog">
+                              <div class="modal-content">
+                                <div class="modal-header">
+                                  <h5 class="modal-title" id="confirmationModalLabel">Confirm Action</h5>
+                                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body fs-4">
+                                  Are you sure you want to activate the kill switch?
+                                </div>
+                                <div class="modal-footer">
+                                  <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
+                                  <button type="button" class="btn btn-danger" id="confirmAction">Activate Kill</button>
+                                </div>
+                              </div>
                             </div>
-                            <div class="modal-body fs-4">
-                              Are you sure you want to activate the kill switch?
-                            </div>
-                            <div class="modal-footer">
-                              <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
-                              <button type="button" class="btn btn-danger" id="confirmAction">Activate Kill</button>
-                            </div>
-                          </div>
                         </div>
-                      </div>
                     </div>
                 </div>
               </div>  
@@ -878,7 +883,7 @@
               <div class="card w-100">
                 <div class="card-body p-4">
                   <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h5 class="card-title fw-semibold mb-0">Hourly Overview</h5>
+                    <h5 class="card-title fw-semibold mb-0">Perfomance Overview</h5>
                   </div>
                   <div class="col-12" style="height: 300px;">
                     <!-- Ensure the container takes up 100% of the available space -->
@@ -972,7 +977,7 @@
           </div>
 
            {% if request.user.is_superuser %}
-          <div class="row">
+          <div class="row" style="padding-bottom:500px;">
             <div class="col-lg-5 d-flex align-items-stretch">
               <div class="card w-100">
                 <div class="card-body p-4">
