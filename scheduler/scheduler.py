@@ -561,7 +561,7 @@ def check_and_update_daily_account_overview():
     current_time = datetime.now(ist)
     current_hour = current_time.hour
     is_first_run = current_hour == 9
-    is_last_run = current_hour == 16
+    is_last_run = current_hour == 15
 
     # Query active users
     active_users = User.objects.filter(is_active=True)
@@ -587,7 +587,7 @@ def check_and_update_daily_account_overview():
                 # Check specific order conditions for triggering updates
                 if actual_order_count:
                     latest_entry = order_list['data'][0]
-                    if (latest_entry['orderStatus'] == 'TRADED' or latest_entry['orderStatus'] == 'REJECTED') and latest_entry['transactionType'] == 'SELL':
+                    if ((latest_entry['orderStatus'] == 'TRADED' or latest_entry['orderStatus'] == 'REJECTED') and latest_entry['transactionType'] == 'SELL') or is_first_run  or  is_last_run: 
                         time.sleep(10)
                         # Fetch funds and positions data
                         fund_data = dhan.get_fund_limits()
