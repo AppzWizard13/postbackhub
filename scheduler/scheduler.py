@@ -687,7 +687,7 @@ def start_scheduler():
     scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=16, minute=0,  timezone=ist))
 
     #  ORDER COUNT-KILL FEATURE TESTED OK 
-    scheduler.add_job(auto_order_count_monitoring_process, IntervalTrigger(seconds=2))
+    scheduler.add_job(auto_order_count_monitoring_process, IntervalTrigger(seconds=3))
 
     #  QUICK EXIT FEATURE TESTED OK 
     scheduler.add_job(autoclosePositionProcess, IntervalTrigger(seconds=1))
