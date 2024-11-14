@@ -284,9 +284,6 @@ def autoclosePositionProcess():
                     traded_order_count = get_traded_order_count(order_list)
                     if traded_order_count > 0:
                         latest_entry = order_list['data'][0]
-                        print("LATEST ENTRY               :", latest_entry)
-                        # if (latest_entry['orderStatus'] == 'REJECTED' and 
-                        #     latest_entry['transactionType'] == 'SELL'):
                         if (latest_entry['orderType'] == 'STOP_LOSS' and 
                             latest_entry['orderStatus'] == 'CANCELLED' and 
                             latest_entry['transactionType'] == 'SELL'):
