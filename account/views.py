@@ -229,14 +229,15 @@ class DashboardView(TemplateView):
 
         # perfomance overview chart data 
         # DailyAccountOverview.Objects.filter(user=user).orderedby('updated_on').get value 'actual_profit' as list 
+        from django.db.models import F, Sum
+
         hourly_status_data = list(
             DailyAccountOverview.objects
             .filter(user=user)
+            .annotate(total=F('closing_balance') + F('actual_profit'))  # Compute total for each record
             .order_by('-updated_on')
-            .values_list('closing_balance', flat=True)[:20]
+            .values_list('total', flat=True)[:20]
         )[::-1]
-
-        print("hourly_status_data:", hourly_status_data)
 
 
         from django.db.models import Q
