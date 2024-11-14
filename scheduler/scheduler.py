@@ -287,7 +287,6 @@ def autoclosePositionProcess():
                         if (latest_entry['orderType'] == 'STOP_LOSS' and 
                             latest_entry['orderStatus'] == 'CANCELLED' and 
                             latest_entry['transactionType'] == 'SELL'):
-                            print("LATEST CANCELLED STOPLOSS ENTRY DETECTED             :True")
                             sl_order_id = latest_entry['orderId']
                             symbol = latest_entry['tradingSymbol']
                             security_id = latest_entry['securityId']
@@ -296,11 +295,13 @@ def autoclosePositionProcess():
                             quantity = latest_entry['quantity']
                             traded_price = float(latest_entry['price'])
                             print("***************************************************************************")
+                            print("LATEST CANCELLED STOPLOSS ENTRY DETECTED          : True")
                             print("QUICK EXIT : SELL ORDER PAYLOAD DATA FOR USER     :", user.username)
                             print("SECURITY ID                                       :", security_id)
                             print("CLIENT ID                                         :", client_id)
                             print("EXCHANGE SEGMENT                                  :", exchange_segment)
                             print("QUANTITY                                          :", quantity)
+                            print("TRADE PRICE                                          :", quantity)
                             print("***************************************************************************")
                             # Place an order for NSE Futures & Options
                             sellOrderResponse = dhan.place_order(
@@ -313,7 +314,6 @@ def autoclosePositionProcess():
                                 price=0
                             )
                             print("sellOrderResponsesellOrderResponsesellOrderResponse", sellOrderResponse)
-
                             # Save the response in the database with a single transaction
                             with transaction.atomic():
                                 DhanKillProcessLog.objects.create(user=user, log=sellOrderResponse, order_count=quantity)
@@ -687,13 +687,14 @@ def start_scheduler():
     scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=16, minute=0,  timezone=ist))
 
     #  ORDER COUNT-KILL FEATURE TESTED OK 
-    scheduler.add_job(auto_order_count_monitoring_process, IntervalTrigger(seconds=3))
+    scheduler.add_job(auto_order_count_monitoring_process, IntervalTrigger(seconds=2), max_instances=3, replace_existing=True)
 
     #  QUICK EXIT FEATURE TESTED OK 
-    scheduler.add_job(autoclosePositionProcess, IntervalTrigger(seconds=1))
+    scheduler.add_job(autoclosePositionProcess, IntervalTrigger(seconds=1), max_instances=3, replace_existing=True)
+
 
     #  AUTO STOPLOSS FEATURE TESTED OK
-    scheduler.add_job(autoStopLossLotControlProcess, IntervalTrigger(seconds=1))
+    scheduler.add_job(autoStopLossLotControlProcess, IntervalTrigger(seconds=1), max_instances=3, replace_existing=True)
 
     #  AUTO ADMIN SWITCHING PROCESS TESTED OK 
     scheduler.add_job(autoAdminSwitchingProcess, IntervalTrigger(hours=1))
