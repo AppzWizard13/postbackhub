@@ -587,7 +587,7 @@ def check_and_update_daily_account_overview():
                 # Check specific order conditions for triggering updates
                 if actual_order_count:
                     latest_entry = order_list['data'][0]
-                    if latest_entry['orderStatus'] == 'REJECTED' and latest_entry['transactionType'] == 'SELL':
+                    if (latest_entry['orderStatus'] == 'TRADED' or latest_entry['orderStatus'] == 'REJECTED') and latest_entry['transactionType'] == 'SELL':
                         time.sleep(10)
                         # Fetch funds and positions data
                         fund_data = dhan.get_fund_limits()
