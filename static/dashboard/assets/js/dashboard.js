@@ -438,6 +438,7 @@ if (document.querySelector("#hourlyperformanceoverview")) {
     },
     plotOptions: {
       pie: {
+        customScale: 0.8,
         startAngle: 0,
         endAngle: 360,
         donut: {
@@ -454,7 +455,7 @@ if (document.querySelector("#hourlyperformanceoverview")) {
     },
 
     legend: {
-      show: false,
+      show: true,
     },
     colors: colors,
 
@@ -463,7 +464,10 @@ if (document.querySelector("#hourlyperformanceoverview")) {
         breakpoint: 991,
         options: {
           chart: {
-            width: 150,
+            width: 300,
+          },
+          legend: {
+            position: "bottom"
           },
         },
       },
@@ -477,4 +481,3 @@ if (document.querySelector("#hourlyperformanceoverview")) {
   var chart = new ApexCharts(document.querySelector("#breakup"), breakup);
   chart.render();
 })
-
