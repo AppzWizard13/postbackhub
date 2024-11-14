@@ -598,27 +598,27 @@
                 <div class="col-lg-12">
                   <!-- Yearly Breakup -->
                   <div class="card overflow-hidden">
-                    <div class="card-body" style="padding-block: 3.5rem !important;">
+                    <div class="card-body">
                       <h5 class="card-title mb-9 fw-semibold">Account Balance</h5>
                       <div class="row align-items-center">
-                        <div class="col-8">
+                        <div class="col-6">
                           <h4 class="fw-semibold mb-3">₹ {{fund_data.data.availabelBalance|floatformat:2}}</h4>
                           <div class="d-flex align-items-center mb-3">
                             <span >
                               <i class="fs-5 dark ti ti-cash text-success mx-2"></i>
                             </span>
-                            <p class="text-grey me-1 fs-3  mb-0">SOD Balance :</p>
+                            <p class="text-grey me-1 fs-3  mb-0">SOD :</p>
                             <p class="fs-3  mb-0">₹ {{fund_data.data.sodLimit|floatformat:2}}</p>
                           </div>
                           <div class="d-flex align-items-center mb-3">
                             <span>
                               <i class="fs-5 dark ti ti-cash text-primary  mx-2"></i>
                             </span>
-                            <p class="text-grey me-1 fs-3  mb-0">EOD Balance :</p>
+                            <p class="text-grey me-1 fs-3  mb-0">EOD :</p>
                             <p class="fs-3  mb-0">₹ {{actual_balance|floatformat:2}}</p>
                           </div>
                         </div> 
-                        <div class="col-4">
+                        <div class="col-6">
                           <div class="d-flex justify-content-center">
                             <div id="breakup"></div>
                           </div>
@@ -663,7 +663,7 @@
                             <div class="mb-3 mb-sm-0 pr-5">
                               <a class="btn btn-primary mx-3 fs-3 fw-bold d-block" 
                                  style="border-width: 3px; border-style: solid;">
-                                P/L : &nbsp;&nbsp; {{ actual_profit|floatformat:2 }}
+                                PL  &nbsp;&nbsp; {{ actual_profit|floatformat:2 }}
                               </a>
                             </div>
                           </div>
