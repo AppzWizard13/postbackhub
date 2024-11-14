@@ -467,13 +467,14 @@
           .clock {
             font-size: .7rem;
             border: 2px solid #c6c6c8;
-            padding: 6px 15px;
+            padding: 9px 15px;
             border-radius: 5px;
-            font-weight: 500;
+            
         }
         #time, #remainingTime {
           display: inline-block;
-          margin-inline:10px;
+          margin-inline:5px;
+          font-weight: 1000;
         }
       </style>
       <script>
@@ -498,7 +499,7 @@
 
       
           // Check if it's Monday to Friday and before 3:00 PM
-          if (day >= 1 && day <= 5 && currentTime.getHours() < 15) {
+          if (day >= 1 && day <= 5 && ((currentTime.getHours() > 9 || (currentTime.getHours() === 9 && currentTime.getMinutes() >= 15)) && (currentTime.getHours() < 15 || (currentTime.getHours() === 15 && currentTime.getMinutes() <= 30)))) {
               // Calculate time remaining until 3:00 PM
               let endTime = new Date(currentTime);
               endTime.setHours(15, 30, 0, 0); // Set end time to 3:00 PM
@@ -564,7 +565,7 @@
                         {% endif %}
                       </div>
                       
-                      <div class="mb-3 mb-sm-0">
+                      {% comment %} <div class="mb-3 mb-sm-0">
                         {% if pending_sl_order %}
                           <!-- Button with trading symbol, enabled and green if position data exists -->
                           <button class="btn btn-success d-block" onclick="openStopLossPopup('{{ pending_sl_order.securityId }}')">
@@ -576,7 +577,7 @@
                             Active Stop loss  :  No Active Stoploss 
                           </button>
                         {% endif %}
-                      </div>
+                      </div> {% endcomment %}
                     </div>
 
                     <script>

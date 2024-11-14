@@ -461,11 +461,10 @@ if (document.querySelector("#hourlyperformanceoverview")) {
 
     responsive: [
       {
-        breakpoint: 2600,
+        breakpoint: 3840,
         options: {
           chart: {
             width: 300,
-          },
           legend: {
             position: "right"
           },
