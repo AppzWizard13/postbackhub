@@ -464,9 +464,10 @@ if (document.querySelector("#hourlyperformanceoverview")) {
         breakpoint: 3840,
         options: {
           chart: {
-            width: 300,
+            width: 350,
+          },
           legend: {
-            position: "right"
+            position: "right",
           },
         },
       },
