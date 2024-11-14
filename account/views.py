@@ -234,10 +234,13 @@ class DashboardView(TemplateView):
         hourly_status_data = list(
             DailyAccountOverview.objects
             .filter(user=user)
-            .annotate(total=F('closing_balance') + F('pnl_status') - F('expenses'))  # Compute total for each record
+            .annotate(total=F('opening_balance') + F('pnl_status') - F('expenses'))  # Compute total for each record
             .order_by('-updated_on')
             .values_list('total', flat=True)[:20]
         )[::-1]
+
+
+        print("hourly_status_datahourly_status_datahourly_status_datahourly_status_data", hourly_status_data)
 
 
         from django.db.models import Q
