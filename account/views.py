@@ -571,9 +571,9 @@ class OrderHistoryListView(ListView):
         # Filter by user if a user_id is provided in the GET parameters
         user_id = self.request.GET.get('user_id')
         if user_id:
-            user = User.objects.filter(id=user_id).first()  # Adjust filter based on your slug logic
+            self.user = User.objects.filter(id=user_id).first()  # Store user as instance attribute
         else:
-            user = self.request.user
+            self.user = self.request.user
 
         # Get the selected date from the GET parameters
         selected_date = self.request.GET.get('date')
@@ -583,7 +583,7 @@ class OrderHistoryListView(ListView):
         # If no date is provided or if the selected date is the current date, fetch data from the Dhan API
         if selected_date_parsed is None or selected_date_parsed == current_date:
             # Get Dhan client data
-            dhan = dhanhq(user.dhan_client_id, user.dhan_access_token)
+            dhan = dhanhq(self.user.dhan_client_id, self.user.dhan_access_token)
             # Fetch order list data from Dhan API
             order_list = dhan.get_order_list()
 
@@ -612,9 +612,15 @@ class OrderHistoryListView(ListView):
         # Optionally, you can pass the filtered order list data from the API here (for current date)
         if hasattr(self, 'orderlistdata'):
             context['orderlistdata'] = self.orderlistdata
-        context['user'] = user
-        context['today'] = date.today() 
+
+        # Pass the user object to the context
+        context['user'] = self.user  # Use self.user, which is set in get_queryset()
+
+        # Pass today's date to the template context
+        context['today'] = date.today()
+
         return context
+
 
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
