@@ -70,6 +70,7 @@
                     <table class="table text-nowrap mb-0 align-middle">
                         <thead class="text-grey fs-4">
                             <tr>
+                                <th class="border-bottom-0"><h6 class="fw-semibold mb-0">User</h6></th>
                                 <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Symbol</h6></th>
                                 <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Status</h6></th>
                                 <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Transaction</h6></th>
@@ -83,6 +84,7 @@
                             {% if orderlistdata %}
                                 {% for order in orderlistdata.data %}
                                 <tr>
+                                    <td class="border-bottom-0"><h6 class="fw-semibold mb-0">{{ user.username }}</h6></td>
                                     <td class="border-bottom-0"><h6 class="fw-semibold mb-0">{{ order.tradingSymbol }}</h6></td>
                                     <td class="border-bottom-0">
                                         {% if order.orderStatus == 'TRADED' %}

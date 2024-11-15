@@ -612,6 +612,7 @@ class OrderHistoryListView(ListView):
         # Optionally, you can pass the filtered order list data from the API here (for current date)
         if hasattr(self, 'orderlistdata'):
             context['orderlistdata'] = self.orderlistdata
+        context['user'] = user
         context['today'] = date.today() 
         return context
 
