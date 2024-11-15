@@ -7,7 +7,7 @@ import atexit
 from django.http import JsonResponse
 from django.contrib.auth import get_user_model
 from dhanhq import dhanhq
-from account.models import Control, DhanKillProcessLog, DailyAccountOverview, TempNotifierTable, slOrderslog
+from account.models import Control, DhanKillProcessLog, DailyAccountOverview, TempNotifierTable, slOrderslog, OrderHistoryLog
 from datetime import datetime
 from django.db.models import F
 import pytz
@@ -362,6 +362,15 @@ def get_traded_order_count(order_list):
     traded_count = len([order for order in order_list['data'] if order.get('orderStatus') == 'TRADED'])
     return traded_count if traded_count else 0
 
+def get_order_count(order_list):
+    # Check if 'data' key is in order_list and that 'data' is a list
+    if 'data' not in order_list or not isinstance(order_list['data'], list) or not order_list['data']:
+        return 0
+    
+    # Calculate traded_count without filtering by order status
+    traded_count = len(order_list['data'])  # Count all orders in the data list
+    return traded_count if traded_count else 0
+
 
 # AUTO STOPLOSS PROCESS : TESTED OK  ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -671,6 +680,67 @@ def autoAdminSwitchingProcess():
     except Exception as e:
         print(f"ERROR: An error occurred in update_superuser_status: {e}")
 
+# CRON JOBS STRAT PROCESS :  TESTED OK -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+def update_order_history():
+    # Get active users
+    active_users = User.objects.filter(is_active=True)
+
+    for user in active_users:
+        try:
+            # Get Dhan client information
+            dhan_client_id = user.dhan_client_id
+            dhan_access_token = user.dhan_access_token
+
+            # Initialize the Dhan client
+            dhan = dhanhq(dhan_client_id, dhan_access_token)
+
+            # Fetch order list
+            order_list = dhan.get_order_list() or []
+            actual_order_count = len(order_list.get('data', []))
+
+            # Process if there are orders
+            if actual_order_count:
+                latest_entry = order_list['data'][0]  # Assuming you want the first entry
+                # Fetch fund and position data
+                fund_data = dhan.get_fund_limits() or {}
+                position_data = dhan.get_positions() or {}
+
+                # Calculate expenses and profits
+                total_expense = actual_order_count * float(settings.BROKERAGE_PARAMETER)
+                total_realized_profit = sum(
+                    position.get('realizedProfit', 0) for position in position_data.get('data', [])
+                )
+
+                # Opening and closing balances
+                opening_balance = float(fund_data.get('data', {}).get('sodLimit', 0.0))
+                closing_balance = float(fund_data.get('data', {}).get('withdrawableBalance', 0.0))
+
+                # Actual profit calculation
+                actual_profit = total_realized_profit - total_expense
+
+                # Create or update OrderHistoryLog
+                OrderHistoryLog.objects.create(
+                    user=user,
+                    order_data=order_list,  # Store the full order list or just relevant data
+                    date=datetime.today().date(),
+                    order_count=actual_order_count,
+                    profit_loss=actual_profit,
+                    eod_balance=closing_balance,
+                    sod_balance=opening_balance,
+                    expense=total_expense
+                )
+
+                print(f"INFO: OrderHistoryLog updated successfully for {user.username}")
+
+            else:
+                print(f"INFO: No orders found for {user.username}. No update required.")
+
+        except Exception as e:
+            print(f"INFO: Error processing user {user.username}: {e}")
+            continue
+
+
 
 # CRON JOBS STRAT PROCESS :  TESTED OK -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -692,7 +762,6 @@ def start_scheduler():
     #  QUICK EXIT FEATURE TESTED OK 
     scheduler.add_job(autoclosePositionProcess, IntervalTrigger(seconds=1), max_instances=3, replace_existing=True)
 
-
     #  AUTO STOPLOSS FEATURE TESTED OK
     scheduler.add_job(autoStopLossLotControlProcess, IntervalTrigger(seconds=1), max_instances=3, replace_existing=True)
 
@@ -700,7 +769,11 @@ def start_scheduler():
     scheduler.add_job(autoAdminSwitchingProcess, IntervalTrigger(hours=1))
 
     #  HOURLY DATA LOG MONITORING TESTED OK
-    scheduler.add_job( check_and_update_daily_account_overview, IntervalTrigger(seconds=10))
+    scheduler.add_job( check_and_update_daily_account_overview, IntervalTrigger(seconds=15), max_instances=10, replace_existing=True)
+
+    #  ORDER DATA  LOG MONITORING TESTED OK
+    scheduler.add_job( update_order_history, CronTrigger(day_of_week='mon-fri', hour=15, minute=30,  timezone=ist))
+    
     
 
 

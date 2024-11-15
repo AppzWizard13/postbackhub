@@ -280,7 +280,15 @@
             </li> 
             <li class="nav-small-cap">
               <i  style="color: light-blue;" class="ti ti- nav-small-cap-icon fs-4"></i>
-              <span class="hide-menu">LOG</span>
+              <span class="hide-menu">REPORTS</span>
+            </li>
+            <li class="sidebar-item">
+              <a class="sidebar-link" href="{% url 'order_history' %}" aria-expanded="false">
+                <span>
+                  <i  style="color: light-blue;" class="ti ti-clipboard-text"></i>
+                </span>
+                <span class="hide-menu">Order History</span>
+              </a>
             </li>
             <li class="sidebar-item">
               <a class="sidebar-link" href="{% url 'daily_account_overview_list' %}" aria-expanded="false">
@@ -606,17 +614,17 @@
                           <h4 class="fw-semibold mb-3">₹ {{fund_data.data.availabelBalance|floatformat:2}}</h4>
                           <div class="d-flex align-items-center mb-3">
                             <span >
-                              <i class="fs-5 dark ti ti-cash text-success mx-2"></i>
+                              <i class="fs-5 dark ti ti-coin-rupee text-success mx-2"></i>
                             </span>
-                            <p class="text-grey me-1 fs-3  mb-0">SOD :</p>
-                            <p class="fs-3  mb-0">₹ {{fund_data.data.sodLimit|floatformat:2}}</p>
+                            <p class="text-grey mr-1 fs-3  mb-0">SOD:</p>
+                            <p class="fs-3  mb-0">{{fund_data.data.sodLimit|floatformat:2}}</p>
                           </div>
                           <div class="d-flex align-items-center mb-3">
                             <span>
-                              <i class="fs-5 dark ti ti-cash text-primary  mx-2"></i>
+                              <i class="fs-5 dark ti ti-coin-rupee text-primary  mx-2"></i>
                             </span>
-                            <p class="text-grey me-1 fs-3  mb-0">EOD :</p>
-                            <p class="fs-3  mb-0">₹ {{actual_balance|floatformat:2}}</p>
+                            <p class="text-grey mr-1 fs-3  mb-0">EOD:</p>
+                            <p class="fs-3  mb-0">{{actual_balance|floatformat:2}}</p>
                           </div>
                         </div> 
                         <div class="col-6">
@@ -684,8 +692,8 @@
                 <div class="card-body">
                     <div class="row align-items-start">
                         <div class="col-8">
-                            <h5 class="card-title fw-semibold" style="margin-bottom: 5px !important;">Risk Overview</h5>                            
-                            <div class="d-flex align-items-center mb-1">
+                            <h5 class="card-title fw-semibold" style="margin-bottom: 20px !important;">Risk Overview</h5>                            
+                            {% comment %} <div class="d-flex align-items-center mb-1">
                               {% if total_realized_profit > 0 %}
                                 <!-- Positive value: up-right arrow and light success color -->
                                 <span>
@@ -705,12 +713,19 @@
                                 </span>
                                 <p class="text-primary me-1 fs-3 mb-3 fw-bolder" style="margin-top: 13px;">{{pnl_percentage|floatformat:2}}&nbsp;&nbsp;%&nbsp;NO Trades</p>
                               {% endif %}
-                            </div>
+                            </div> {% endcomment %}
+                            <div class="d-flex align-items-center mb-3">
+                              <span>
+                                  <i class="fs-5 dark ti ti-coin-rupee text-success mx-2"></i>
+                              </span>
+                              <p class="text-grey me-1 fs-3 mb-0">Max Loss (Trade):</p>
+                              <p class="fs-2 mb-0" id="order-details">{{stoploss_parameter|floatformat:2}} : {{stoploss_type}}</p>
+                          </div>
                             <div class="d-flex align-items-center mb-3">
                                 <span>
                                     <i class="fs-5 dark ti ti-coin-rupee text-success mx-2"></i>
                                 </span>
-                                <p class="text-grey me-1 fs-3 mb-0">Max Loss:</p>
+                                <p class="text-grey me-1 fs-3 mb-0">Max Loss (Day):</p>
                                 <p class="fs-2 mb-0" id="order-details">{{max_expected_loss|floatformat:2}}</p>
                             </div>
                             <div class="d-flex align-items-center mb-3">
@@ -1061,7 +1076,7 @@
                                           {% elif order.orderStatus == 'REJECTED' %}
                                           <span class="badge bg-danger rounded-3 fw-semibold">REJECTED</span>
                                           {% else %}
-                                          <span class="badge bg-info rounded-3 fw-semibold">{{ order.orderStatus }}</span>
+                                          <span class="badge bg-warning rounded-3 fw-semibold">{{ order.orderStatus }}</span>
                                           {% endif %}
                                       </td>
                                       

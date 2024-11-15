@@ -1,7 +1,26 @@
 {% extends 'dashboard/index.html' %}
 {% load static %}
 {% block content %}
-
+<style>
+    .form-check-input {
+        width: 2em;
+        height: 1.2em;
+    }
+    .form-check-label {
+        font-size: 1.1em;
+    }
+    .container-fluid {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    .card-body {
+        height: calc(100vh - 20px); /* Adjust for padding/margin */
+        overflow-y: auto;
+    }
+</style>
 <div class="container-fluid " style="max-width:none">
     <div class="card w-100">
         <div class="card-body">

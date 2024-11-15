@@ -5,7 +5,7 @@
 <div class="container-fluid" style="max-width:none">
     <div class="col-lg-12 d-flex align-items-stretch">
         <div class="card w-100">
-            <div class="card-body p-4" style="height:100vh">
+            <div class="card-body p-4" style="height:100vh;">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h5 class="card-title fw-semibold">Daily Account Overview</h5>
                 </div>
@@ -27,7 +27,12 @@
                     {% else %}
                     <input type="hidden" name="user_id" value="{{ request.user.id }}">
                     {% endif %}
-
+                    <style>
+                        input[type="date"]::-webkit-calendar-picker-indicator {
+                            filter: invert(1); /* Makes the icon white */
+                        }
+                    </style>
+                    
                     <div class="col-md-2">
                         <label for="start_date" class="form-label">Start Date</label>
                         <input type="date" name="start_date" id="start_date" class="form-control" value="{{ start_date }}">
@@ -72,28 +77,19 @@
                 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.2/xlsx.full.min.js"></script>
                 <script>
                     document.getElementById("exportExcel").addEventListener("click", function() {
-                        // Get the current username
                         var username = "{{ request.user.username }}";
-                        
-                        // Get the current date and time in YYYY-MM-DD_HH-mm-ss format
                         var now = new Date();
-                        var date = now.toISOString().split('T')[0];  // Get the current date (YYYY-MM-DD)
-                        var time = now.toTimeString().split(' ')[0].replace(/:/g, '-'); // Get the current time (HH-mm-ss)
-                
-                        // Combine username, date, and time to create the filename
+                        var date = now.toISOString().split('T')[0];
+                        var time = now.toTimeString().split(' ')[0].replace(/:/g, '-');
                         var filename = username + "_" + date + "_" + time + ".xlsx";
-                
-                        // Create a workbook from the table
                         var wb = XLSX.utils.table_to_book(document.querySelector("table"), { sheet: "Sheet1" });
-                
-                        // Export the file with the dynamic filename
                         XLSX.writeFile(wb, filename);
                     });
                 </script>
 
                 <!-- Table -->
-                <div class="table-responsive">
-                    <table class="table text-nowrap mb-0 align-middle">
+                <div class="table-responsive" style="max-height: calc(100vh - 350px); overflow-y: auto;">
+                    <table class="table  text-nowrap mb-0 align-middle">
                         <thead class="text-dark fs-4">
                             <tr>
                                 <th class="border-bottom-0"><h6 class="fw-semibold mb-0">User</h6></th>
@@ -122,15 +118,17 @@
                                 {% endif %}
                             {% empty %}
                             <tr>
-                                <td colspan="8" class="text-center">No daily account overview records found.</td>
+                                <td colspan="8" class="text-center bg-dark" style="
+                                    background: black !important;
+                                    color: white !important;
+                                ">
+                                    No daily account order records found.
+                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
-
-                
-
             </div>
         </div>
     </div>

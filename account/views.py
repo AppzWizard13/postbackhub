@@ -12,6 +12,7 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse_lazy
 from django.http import JsonResponse
 from datetime import datetime
+from datetime import date
 import http.client
 import json
 import requests
@@ -201,8 +202,10 @@ class DashboardView(TemplateView):
             order_limit = control_data.max_order_limit
             peak_order_limit = control_data.peak_order_limit
             stoploss_parameter = control_data.stoploss_parameter
+            stoploss_type = control_data.stoploss_type
         else:
             peak_order_limit = 0
+            stoploss_type =""
         day_exp_brokerge = float(peak_order_limit) * float(settings.BROKERAGE_PARAMETER)
         exp_entry_count = peak_order_limit // 2 
         actual_entry_count = order_count // 2 
@@ -264,7 +267,8 @@ class DashboardView(TemplateView):
         context['order_limit'] = order_limit
         context['peak_order_limit'] = peak_order_limit
         context['user'] = user
-        # context['daily_status_data'] = daily_status_data
+        context['stoploss_parameter'] = stoploss_parameter
+        context['stoploss_type'] = stoploss_type.upper()
         context['hourly_status_data'] = hourly_status_data
         context['orderlistdata'] = traded_orders
         context['position_data'] = position_data
@@ -554,6 +558,62 @@ class DailyAccountOverviewListView(ListView):
         return context
 
 
+from django.db.models import Q
+from .models import  OrderHistoryLog
+
+class OrderHistoryListView(ListView):
+    model = OrderHistoryLog
+    template_name = 'dashboard/order_history_list.html'
+    context_object_name = 'orders'
+    paginate_by = 20
+
+    def get_queryset(self):
+        # Filter by user if a user_id is provided in the GET parameters
+        user_id = self.request.GET.get('user_id')
+        if user_id:
+            user = User.objects.filter(id=user_id).first()  # Adjust filter based on your slug logic
+        else:
+            user = self.request.user
+
+        # Get the selected date from the GET parameters
+        selected_date = self.request.GET.get('date')
+        selected_date_parsed = parse_date(selected_date) if selected_date else None
+        current_date = date.today()
+
+        # If no date is provided or if the selected date is the current date, fetch data from the Dhan API
+        if selected_date_parsed is None or selected_date_parsed == current_date:
+            # Get Dhan client data
+            dhan = dhanhq(user.dhan_client_id, user.dhan_access_token)
+            # Fetch order list data from Dhan API
+            order_list = dhan.get_order_list()
+
+            # You can return the data from the Dhan API if needed for the view, or store it in context
+            self.orderlistdata = order_list
+
+            # Since we're fetching from Dhan API, we don't need to filter by the DB table
+            return OrderHistoryLog.objects.none()  # No data from DB needed for today
+
+        else:
+            # If the selected date is in the past, fetch from the OrderHistoryLog table
+            queryset = OrderHistoryLog.objects.all()
+
+            if selected_date_parsed:
+                queryset = queryset.filter(date=selected_date_parsed)
+
+            # Add any additional filtering conditions here if necessary
+
+            return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Include the full list of users to display in the context
+        context['user_list'] = User.objects.all()
+
+        # Optionally, you can pass the filtered order list data from the API here (for current date)
+        if hasattr(self, 'orderlistdata'):
+            context['orderlistdata'] = self.orderlistdata
+        context['today'] = date.today() 
+        return context
 
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required

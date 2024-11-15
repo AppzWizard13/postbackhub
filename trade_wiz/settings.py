@@ -106,6 +106,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'trade_wiz.wsgi.application'
 AUTH_USER_MODEL = 'account.User'
 
+# LIVEDB = True
 
 if LIVEDB == True:
     DB_NAME='tradewizdblive'

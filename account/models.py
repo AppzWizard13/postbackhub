@@ -151,3 +151,24 @@ class slOrderslog(models.Model):
     def __str__(self):
         return f"Order {self.id} - {self.transaction_type} {self.quantity} units at {self.price}"
 
+
+
+
+
+class OrderHistoryLog(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    order_data = models.JSONField()
+    date = models.DateField()
+    order_count = models.IntegerField()
+    profit_loss = models.DecimalField(max_digits=10, decimal_places=2)
+    eod_balance = models.DecimalField(max_digits=10, decimal_places=2)
+    sod_balance = models.DecimalField(max_digits=10, decimal_places=2)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expense = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        return f"Order History Log for {self.user.username} on {self.date}"
+
+    class Meta:
+        ordering = ['-date']
+
