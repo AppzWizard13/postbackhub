@@ -13,13 +13,14 @@
         height: 100vh;
         display: flex;
         flex-direction: column;
-        justify-content: center;
-        align-items: center;
+        justify-content: start;
+        align-items: start;
     }
-    .card-body {
+    {% comment %} .card-body {
+        margin-top: 200px;
         height: calc(100vh - 20px); /* Adjust for padding/margin */
         overflow-y: auto;
-    }
+    } {% endcomment %}
 </style>
 <div class="container-fluid " style="max-width:none">
     <div class="card w-100">
