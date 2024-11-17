@@ -561,7 +561,7 @@ class DailyAccountOverviewListView(ListView):
 from django.db.models import Q
 from .models import  OrderHistoryLog
 
-class OrderHistoryListView(ListView):
+class orderHistoryListView(ListView):
     model = OrderHistoryLog
     template_name = 'dashboard/order_history_list.html'
     context_object_name = 'orders'
@@ -620,6 +620,83 @@ class OrderHistoryListView(ListView):
         context['today'] = date.today()
 
         return context
+
+
+
+from django.views.generic import TemplateView
+from datetime import datetime, date
+from django.utils.dateparse import parse_date
+
+class TradeHistoryListView(TemplateView):
+    template_name = 'dashboard/trade_history_list.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Get user info
+        user_id = self.request.GET.get('user_id')
+        if user_id:
+            self.user = User.objects.filter(id=user_id).first()
+        else:
+            self.user = self.request.user
+
+        # Get start and end dates from GET parameters
+        start_date = self.request.GET.get('start_date')
+        end_date = self.request.GET.get('end_date')
+
+        # Parse and validate the dates
+        start_date_parsed = parse_date(start_date) if start_date else None
+        end_date_parsed = parse_date(end_date) if end_date else None
+
+        current_date = date.today()
+        if not start_date_parsed:
+            start_date_parsed = current_date
+        if not end_date_parsed:
+            end_date_parsed = current_date
+
+        # Ensure start_date <= end_date
+        if start_date_parsed > end_date_parsed:
+            end_date_parsed = start_date_parsed
+
+        # Format dates as strings for the API call
+        from_date_str = start_date_parsed.strftime('%Y-%m-%d')
+        to_date_str = end_date_parsed.strftime('%Y-%m-%d')
+
+
+        # Fetch trade history from Dhan API
+        dhan = dhanhq(self.user.dhan_client_id, self.user.dhan_access_token)
+        response = dhan.get_trade_history(from_date_str, to_date_str, page_number=0)
+        trade_history = response['data']
+
+        # Initialize total charges sum
+        total_charges = 0
+
+        # Add 'charges' field for each log and calculate total charges
+        for trade in trade_history:
+            charges = sum([
+                trade.get('sebiTax', 0),
+                trade.get('stt', 0),
+                trade.get('brokerageCharges', 0),
+                trade.get('serviceTax', 0),
+                trade.get('exchangeTransactionCharges', 0),
+                trade.get('stampDuty', 0)
+            ])
+            trade['charges'] = charges
+            total_charges += charges  # Add to total charges
+
+        # Calculate total order counts
+        total_order_counts = len(trade_history)  # Total number of orders
+
+        # Add trade history data, total charges, and total order counts to the context
+        context['user_list'] = User.objects.all()
+        context['trade_history'] = trade_history
+        context['selected_start_date'] = start_date_parsed
+        context['selected_end_date'] = end_date_parsed
+        context['total_charges'] = total_charges  # Pass total charges to context
+        context['total_order_counts'] = total_order_counts  # Pass total order counts to context
+
+        return context
+
 
 
 from django.views.decorators.http import require_POST

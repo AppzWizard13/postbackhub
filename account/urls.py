@@ -35,7 +35,8 @@ urlpatterns = [
     path('close-all-positions/', views.close_all_positions, name='close_all_positions'),
     path('clear-kill-log/', views.clear_kill_log, name='clear_kill_log'),
     path('daily-account-overview/', views.DailyAccountOverviewListView.as_view(), name='daily_account_overview_list'),
-    path('order-history/', views.OrderHistoryListView.as_view(), name='order_history'),
+    path('order-history/', views.orderHistoryListView.as_view(), name='order_history'),
+    path('trade-history/', views.TradeHistoryListView.as_view(), name='trade_history'),
 
 
 

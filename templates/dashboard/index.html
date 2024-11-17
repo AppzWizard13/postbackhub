@@ -291,9 +291,17 @@
               </a>
             </li>
             <li class="sidebar-item">
+              <a class="sidebar-link" href="{% url 'trade_history' %}" aria-expanded="false">
+                <span>
+                  <i  style="color: light-blue;" class="ti ti-report-analytics"></i>
+                </span>
+                <span class="hide-menu">Trade History</span>
+              </a>
+            </li>
+            <li class="sidebar-item">
               <a class="sidebar-link" href="{% url 'daily_account_overview_list' %}" aria-expanded="false">
                 <span>
-                  <i  style="color: light-blue;" class="ti ti-clipboard-text"></i>
+                  <i  style="color: light-blue;" class="ti ti-calendar-event"></i>
                 </span>
                 <span class="hide-menu">Daily Overview Report</span>
               </a>
@@ -306,10 +314,14 @@
                 <span class="hide-menu">Kill Activation log</span>
               </a>
             </li>
+            <li class="nav-small-cap">
+              <i  style="color: light-blue;" class="ti ti- nav-small-cap-icon fs-4"></i>
+              <span class="hide-menu">BROKER</span>
+            </li>
             <li class="sidebar-item">
-              <a class="sidebar-link" href="https://web.dhan.co/index/money" aria-expanded="false">
+              <a class="sidebar-link" href="https://web.dhan.co/index/money" target="_blank" aria-expanded="false">
                 <span>
-                  <i class=" ti ti-building-bank"></i>
+                  <i class="ti ti-building-bank"></i>
                 </span>
                 <span class="hide-menu">Go to Dhan </span>
               </a>

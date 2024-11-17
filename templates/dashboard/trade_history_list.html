@@ -1,0 +1,143 @@
+{% extends 'dashboard/index.html' %}
+{% load static %}
+{% block content %}
+
+<div class="container-fluid" style="max-width:none">
+    <div class="col-lg-12 d-flex align-items-stretch">
+        <div class="card w-100">
+            <div class="card-body p-4" style="height:100vh;">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="card-title fw-semibold">Trade History</h5>
+                    <!-- Disabled outline buttons aligned to the right -->
+                    <div class="ml-auto d-flex">
+                        <!-- Total Orders Button -->
+                        <button type="button" class="btn btn-outline-secondary btn-sm mr-2" disabled>
+                            Total Orders: {{ total_order_counts }}
+                        </button>
+                        <!-- Total Charges Button -->
+                        <button type="button" class="btn btn-outline-secondary btn-sm" disabled>
+                            Total Charges: ₹{{ total_charges|floatformat:2 }}
+                        </button>
+                    </div>
+                </div>
+                
+
+                <!-- Filter Form -->
+                <form method="get" class="row g-3 mb-4">
+                    {% if request.user.is_superuser %}
+                    <div class="col-md-3">
+                        <label for="user_id" class="form-label">User</label>
+                        <select name="user_id" id="user_id" class="form-select">
+                            <option value="">All Users</option>
+                            {% for user in user_list %}
+                                <option value="{{ user.id }}" {% if user.id|stringformat:"s" == selected_user|stringformat:"s" %}selected{% endif %}>
+                                    {{ user.username }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% else %}
+                    <input type="hidden" name="user_id" value="{{ request.user.id }}">
+                    {% endif %}
+                    
+                    <style>
+                        input[type="date"]::-webkit-calendar-picker-indicator {
+                            filter: invert(1); /* Makes the icon white */
+                        }
+                    </style>
+
+                    <!-- Start Date Filter -->
+                    <div class="col-md-2">
+                        <label for="start_date" class="form-label">Start Date</label>
+                        <input type="date" name="start_date" id="start_date" class="form-control" value="{{ selected_start_date|date:'Y-m-d' }}">
+                    </div>
+
+                    <!-- End Date Filter -->
+                    <div class="col-md-2">
+                        <label for="end_date" class="form-label">End Date</label>
+                        <input type="date" name="end_date" id="end_date" class="form-control" value="{{ selected_end_date|date:'Y-m-d' }}">
+                    </div>
+
+                    <!-- Button Section (Filter and Export) -->
+                    <div class="col-md-4 d-flex justify-content-between align-items-center" style="margin-top: 3.5rem !important;">
+                        <div class="col-md-6 mx-2">
+                            <button type="submit" class="btn btn-primary w-100">Filter</button>
+                        </div>
+                        <div class="col-md-6 mx-2">
+                            <button id="exportExcel" class="btn btn-success w-100">Export</button>
+                        </div>
+                    </div>
+                </form>
+
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.2/xlsx.full.min.js"></script>
+                <script>
+                    document.getElementById("exportExcel").addEventListener("click", function(event) {
+                        event.preventDefault(); // Prevent form submission
+                        var username = "{{ request.user.username }}";
+                        var now = new Date();
+                        var date = now.toISOString().split('T')[0];
+                        var time = now.toTimeString().split(' ')[0].replace(/:/g, '-');
+                        var filename = username + "_" + date + "_" + time + ".xlsx";
+                        var wb = XLSX.utils.table_to_book(document.querySelector("table"), { sheet: "Sheet1" });
+                        XLSX.writeFile(wb, filename);
+                    });
+                </script>
+
+                <!-- Table -->
+                <div class="table-responsive" style="max-height: calc(100vh - 350px); overflow-y: auto;">
+                    <table class="table text-nowrap mb-0 align-middle">
+                        <thead class="text-grey fs-4">
+                            <tr>
+                                <th class="border-bottom-0"><h6 class="fw-semibold mb-0">User</h6></th>
+                                <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Symbol</h6></th>
+                                <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Charges</h6></th>
+                                <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Transaction</h6></th>
+                                <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Order ID</h6></th>
+                                <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Quantity</h6></th>
+                                <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Price</h6></th>
+                                <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Order Time</h6></th>
+                            </tr>
+                        </thead>
+                        <tbody id="ordersTableBody">
+                            {% if trade_history %}
+                                {% for trade in trade_history %}
+                                <tr>
+                                    <td class="border-bottom-0"><h6 class="fw-semibold mb-0">{{ user.username }}</h6></td>
+                                    <td class="border-bottom-0"><h6 class="fw-semibold mb-0">{{ trade.customSymbol }}</h6></td>
+                                    <td class="border-bottom-0">
+                                        {% if trade.status == 'TRADED' %}
+                                        <span class="badge bg-success rounded-3 fw-semibold">TRADED</span>
+                                        {% elif trade.status == 'CANCELLED' %}
+                                        <span class="badge bg-danger rounded-3 fw-semibold">CANCELLED</span>
+                                        {% elif trade.status == 'REJECTED' %}
+                                        <span class="badge bg-danger rounded-3 fw-semibold">REJECTED</span>
+                                        {% else %}
+                                        <span class="badge bg-primary rounded-3 fw-semibold">{{ trade.charges|floatformat:2 }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="border-bottom-0">
+                                        {% if trade.transactionType == 'BUY' %}
+                                        <span class="badge bg-success rounded-3 fw-semibold">{{ trade.transactionType }}</span>
+                                        {% else %}
+                                        <span class="badge bg-danger rounded-3 fw-semibold">{{ trade.transactionType }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="border-bottom-0"><h6 class="fw-semibold mb-0">{{ trade.orderId }}</h6></td>
+                                    <td class="border-bottom-0"><h6 class="fw-semibold mb-0">{{ trade.tradedQuantity }}</h6></td>
+                                    <td class="border-bottom-0"><h6 class="fw-semibold mb-0 fs-4">₹{{ trade.tradedPrice|floatformat:2 }}</h6></td>
+                                    <td class="border-bottom-0"><h6 class="fw-semibold mb-0">{{ trade.exchangeTime }}</h6></td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="8" class="text-center">No Data Available</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
