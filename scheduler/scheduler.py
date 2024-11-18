@@ -608,7 +608,7 @@ def check_and_update_daily_account_overview():
                             position.get('realizedProfit', 0) for position in (position_data.get('data', []) if position_data else [])
                         )
                         opening_balance = float(fund_data['data'].get('sodLimit', 0.0)) if fund_data else 0.0
-                        closing_balance = float(fund_data['data'].get('withdrawableBalance', 0.0)) if fund_data else 0.0
+                        closing_balance = float(fund_data['data'].get('availabelBalance', 0.0)) if fund_data else 0.0
                         actual_profit = total_realized_profit - total_expense
 
                         # Set day_open and day_close fields based on the time of day

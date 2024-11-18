@@ -148,7 +148,9 @@ $(function () {
 
     let chart_earning1 = chart_earning
 
-    console.log("colour_selectorcolour_selectorcolour_selectorcolour_selector", colour_selector)
+    chart_earning = chart_earning.filter(value => value !== 0);
+
+    console.log("chart_earningchart_earningchart_earningchart_earningchart_earningchart_earningchart_earningchart_earning", chart_earning)
 
     let chartColor = (colour_selector > 0) ? "#32df2d" : (colour_selector === 0 ? "#49BEFF" : "#ff2626"); 
 

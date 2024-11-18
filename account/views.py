@@ -188,7 +188,7 @@ class DashboardView(TemplateView):
         actual_profit = total_realized_profit - total_expense
         opening_balance = float(fund_data['data']['sodLimit'])
         available_balance = float(fund_data['data']['availabelBalance'])
-        actual_balance = opening_balance + actual_profit
+        actual_balance = available_balance + actual_profit
         if opening_balance >= available_balance:
             actual_bal = opening_balance
         else:
@@ -217,6 +217,8 @@ class DashboardView(TemplateView):
             breakup_series = [available_balance, total_realized_profit, total_expense ]
         else:
             breakup_series = [available_balance, total_realized_profit, total_expense ]
+
+        
         breakup_labels = ['A/C Balance', 'Profit/Loss', 'Charges']
         max_expected_loss = 0 
         max_expected_expense = 0 
@@ -237,7 +239,7 @@ class DashboardView(TemplateView):
         hourly_status_data = list(
             DailyAccountOverview.objects
             .filter(user=user)
-            .annotate(total=F('opening_balance') + F('pnl_status') - F('expenses'))  # Compute total for each record
+            .annotate(total=F('closing_balance') - F('expenses'))  # Compute total for each record
             .order_by('-updated_on')
             .values_list('total', flat=True)[:20]
         )[::-1]
