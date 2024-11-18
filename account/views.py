@@ -188,7 +188,7 @@ class DashboardView(TemplateView):
         actual_profit = total_realized_profit - total_expense
         opening_balance = float(fund_data['data']['sodLimit'])
         available_balance = float(fund_data['data']['availabelBalance'])
-        actual_balance = available_balance + actual_profit
+        actual_balance = opening_balance + actual_profit
         brokerage_only = 20
         if opening_balance >= available_balance:
             actual_bal = opening_balance
