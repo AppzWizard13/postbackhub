@@ -189,6 +189,7 @@ class DashboardView(TemplateView):
         opening_balance = float(fund_data['data']['sodLimit'])
         available_balance = float(fund_data['data']['availabelBalance'])
         actual_balance = available_balance + actual_profit
+        brokerage_only = 20
         if opening_balance >= available_balance:
             actual_bal = opening_balance
         else:
@@ -231,29 +232,17 @@ class DashboardView(TemplateView):
                 max_expected_loss = (actual_bal * exp_entry_count ) * (stoploss_parameter/100)
                 max_expected_expense = float(max_expected_loss) + day_exp_brokerge
 
-
-        # perfomance overview chart data 
-        # DailyAccountOverview.Objects.filter(user=user).orderedby('updated_on').get value 'actual_profit' as list 
         from django.db.models import F, Sum
 
         hourly_status_data = list(
             DailyAccountOverview.objects
             .filter(user=user)
-            .annotate(total=F('closing_balance') - F('expenses'))  # Compute total for each record
+            .annotate(total=F('closing_balance'))  # Compute total for each record
             .order_by('-updated_on')
             .values_list('total', flat=True)[:20]
         )[::-1]
 
-
-        print("hourly_status_datahourly_status_datahourly_status_datahourly_status_data", hourly_status_data)
-
-
         from django.db.models import Q
-
-        # daily_status_data = DailyAccountOverview.objects.filter(user=user).filter(Q(day_open=True) | Q(day_close=True)).order_by('updated_on').values_list('actual_profit', flat=True)
-
-
-
         # Add data to context
         context['open_position'] = open_position
         context['pending_sl_order'] = pending_sl_order
