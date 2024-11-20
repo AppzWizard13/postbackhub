@@ -287,6 +287,7 @@ def autoclosePositionProcess():
                         if (latest_entry['orderType'] == 'STOP_LOSS' and 
                             latest_entry['orderStatus'] == 'CANCELLED' and 
                             latest_entry['transactionType'] == 'SELL'):
+                            
                             sl_order_id = latest_entry['orderId']
                             symbol = latest_entry['tradingSymbol']
                             security_id = latest_entry['securityId']
@@ -294,6 +295,7 @@ def autoclosePositionProcess():
                             exchange_segment = latest_entry['exchangeSegment']
                             quantity = latest_entry['quantity']
                             traded_price = float(latest_entry['price'])
+                            
                             print("***************************************************************************")
                             print("LATEST CANCELLED STOPLOSS ENTRY DETECTED          : True")
                             print("QUICK EXIT : SELL ORDER PAYLOAD DATA FOR USER     :", user.username)
@@ -301,35 +303,55 @@ def autoclosePositionProcess():
                             print("CLIENT ID                                         :", client_id)
                             print("EXCHANGE SEGMENT                                  :", exchange_segment)
                             print("QUANTITY                                          :", quantity)
-                            print("TRADE PRICE                                          :", quantity)
+                            print("TRADE PRICE                                       :", traded_price)
                             print("***************************************************************************")
-                            # Place an order for NSE Futures & Options
-                            sellOrderResponse = dhan.place_order(
-                                security_id=security_id, 
-                                exchange_segment=exchange_segment,
-                                transaction_type='SELL',
-                                quantity=quantity,
-                                order_type='MARKET',
-                                product_type='INTRADAY',
-                                price=0
-                            )
-                            print("sellOrderResponsesellOrderResponsesellOrderResponse", sellOrderResponse)
-                            # Save the response in the database with a single transaction
-                            with transaction.atomic():
-                                DhanKillProcessLog.objects.create(user=user, log=sellOrderResponse, order_count=quantity)
-                                if sellOrderResponse.get('status') == 'failure':
-                                    error_message = sellOrderResponse.get('remarks', {}).get('error_message', 'Unknown error')
-                                    error_code = sellOrderResponse.get('remarks', {}).get('error_code', 'Unknown code')
-                                    DhanKillProcessLog.objects.create(
-                                        user=user,
-                                        log={"error_message": error_message, "error_code": error_code},
-                                        order_count=0
-                                    )
-                                    print("Order failed:", error_message)
+                            
+                            # Attempt to place a sell order
+                            try:
+                                sellOrderResponse = dhan.place_order(
+                                    security_id=security_id, 
+                                    exchange_segment=exchange_segment,
+                                    transaction_type='SELL',
+                                    quantity=quantity,
+                                    order_type='MARKET',
+                                    product_type='INTRADAY',
+                                    price=0
+                                )
+                                
+                                print("Sell Order Response:", sellOrderResponse)
+                                
+                                # Log the sell order response in the database with a single transaction
+                                with transaction.atomic():
+                                    DhanKillProcessLog.objects.create(user=user, log=sellOrderResponse, order_count=quantity)
+                                    
+                                    # Check for failure in the sell order response
+                                    if sellOrderResponse.get('status') == 'failure':
+                                        error_message = sellOrderResponse.get('remarks', {}).get('error_message', 'Unknown error')
+                                        error_code = sellOrderResponse.get('remarks', {}).get('error_code', 'Unknown code')
+                                        
+                                        # Log the failure message in the database
+                                        DhanKillProcessLog.objects.create(
+                                            user=user,
+                                            log={"error_message": error_message, "error_code": error_code},
+                                            order_count=0
+                                        )
+                                        
+                                        print("Order failed:", error_message)
+                                
+                                print(f"INFO: Position Closing Executed Successfully..!")
+                            
+                            except Exception as e:
+                                # Log any exceptions that occur during the sell order process
+                                DhanKillProcessLog.objects.create(
+                                    user=user,
+                                    log={"error_message": str(e), "error_code": "Exception"},
+                                    order_count=0
+                                )
+                                print("An error occurred while executing the sell order:", str(e))
 
-                            print(f"INFO: Position Closing Executed Successfully..!")
                         else:
                             print(f"INFO: No Open Order for User {user.username}")
+
                     else:
                         print(f"INFO: No Open Order for User :{user.username}")
 
@@ -438,41 +460,80 @@ def autoStopLossLotControlProcess():
                                 print(f"EXCHANGE SEGMENT                                  : {exchange_segment}")
                                 print(f"QUANTITY                                          : {quantity}")
                                 print("***************************************************************************")
-                                if pending_sl_orders and lot_control_check :
-                                    print(f"INFO: MODIFYING EXISTING STOP LOSS ORDER FOR :  {user.username}")
-                                    for order in pending_sl_orders:
-                                        exst_qty = int(order['quantity'])
-                                        addon_qty = int(quantity)
-                                        total_qty = exst_qty + addon_qty
-                                        modify_slorder_response = dhan.modify_order(
-                                                        order_id = order['orderId'], 
-                                                        quantity=total_qty,
-                                                        order_type = order['orderType'],
-                                                        leg_name = order['legName'],
-                                                        price = order['price'],
-                                                        trigger_price = order['triggerPrice'],
-                                                        validity = order['validity'],
-                                                        disclosed_quantity = order['disclosedQuantity']
-                                                        )
-
-                                    print("Stop Loss Modified Response :", modify_slorder_response)
-                                    print(f"INFO: Stop Loss Order Modified Successfully..!")
-                                elif lot_control_check:
-                                    # Place an order for NSE Futures & Options
-                                    print(f"INFO: EXECUTING NEW STOP LOSS ORDER FOR :  {user.username}")
-                                    stoploss_response = dhan.place_order(
-                                                security_id=security_id, 
-                                                exchange_segment=exchange_segment,
-                                                transaction_type='SELL',
-                                                quantity=quantity,
-                                                order_type='STOP_LOSS',
-                                                product_type='INTRADAY',
-                                                price=sl_price,
-                                                trigger_price=sl_trigger
+                                try:
+                                    if pending_sl_orders and lot_control_check:
+                                        print(f"INFO: MODIFYING EXISTING STOP LOSS ORDER FOR : {user.username}")
+                                        for order in pending_sl_orders:
+                                            exst_qty = int(order['quantity'])
+                                            addon_qty = int(quantity)
+                                            total_qty = exst_qty + addon_qty
+                                            modify_slorder_response = dhan.modify_order(
+                                                order_id=order['orderId'],
+                                                quantity=total_qty,
+                                                order_type=order['orderType'],
+                                                leg_name=order['legName'],
+                                                price=order['price'],
+                                                trigger_price=order['triggerPrice'],
+                                                validity=order['validity'],
+                                                disclosed_quantity=order['disclosedQuantity']
                                             )
-                                    print(f"INFO: STOPLOSS ORDER RESPONSE :", stoploss_response)
-                                else:
-                                    print(f"INFO: LOT CONTROL CHECK FAILED..! FOR :  {user.username}")
+
+                                            # Log the response after modifying stop loss order
+                                            DhanKillProcessLog.objects.create(
+                                                user=user,
+                                                log=modify_slorder_response,
+                                                order_count=total_qty
+                                            )
+
+                                            print("Stop Loss Modified Response:", modify_slorder_response)
+                                            print("INFO: Stop Loss Order Modified Successfully..!")
+                                    
+                                    elif lot_control_check:
+                                        # Place a new stop loss order if no existing orders
+                                        print(f"INFO: EXECUTING NEW STOP LOSS ORDER FOR : {user.username}")
+                                        stoploss_response = dhan.place_order(
+                                            security_id=security_id,
+                                            exchange_segment=exchange_segment,
+                                            transaction_type='SELL',
+                                            quantity=quantity,
+                                            order_type='STOP_LOSS',
+                                            product_type='INTRADAY',
+                                            price=sl_price,
+                                            trigger_price=sl_trigger
+                                        )
+
+                                        # Log the response after placing stop loss order
+                                        DhanKillProcessLog.objects.create(
+                                            user=user,
+                                            log=stoploss_response,
+                                            order_count=quantity
+                                        )
+
+                                        # Check for failure in response and save the error message if present
+                                        if stoploss_response.get('status') == 'failure':
+                                            error_message = stoploss_response.get('remarks', {}).get('error_message', 'Unknown error')
+                                            error_code = stoploss_response.get('remarks', {}).get('error_code', 'Unknown code')
+                                            DhanKillProcessLog.objects.create(
+                                                user=user,
+                                                log={"error_message": error_message, "error_code": error_code},
+                                                order_count=0
+                                            )
+                                            print("Stop Loss Order failed:", error_message)
+                                        
+                                        print("INFO: STOPLOSS ORDER RESPONSE:", stoploss_response)
+                                    
+                                    else:
+                                        print(f"INFO: LOT CONTROL CHECK FAILED..! FOR : {user.username}")
+
+                                except Exception as e:
+                                    # Log any exceptions that occur during the stop loss order process
+                                    DhanKillProcessLog.objects.create(
+                                        user=user,
+                                        log={"error_message": str(e), "error_code": "Exception"},
+                                        order_count=0
+                                    )
+                                    print("An error occurred while processing the stop loss order:", str(e))
+
 
                             else:
                                 print(f"INFO: No Recent BUY  Order found for User {user.username}")
@@ -597,7 +658,7 @@ def check_and_update_daily_account_overview():
                 if actual_order_count and actual_order_count % 2 == 0:
                     latest_entry = order_list['data'][0]
                     if ((latest_entry['orderStatus'] == 'TRADED' or latest_entry['orderStatus'] == 'REJECTED') and latest_entry['transactionType'] == 'SELL'): 
-                        time.sleep(10)
+                        time.sleep(30)
                         # Fetch funds and positions data
                         fund_data = dhan.get_fund_limits()
                         position_data = dhan.get_positions()
@@ -763,7 +824,8 @@ def start_scheduler():
     scheduler.add_job(autoclosePositionProcess, IntervalTrigger(seconds=1), max_instances=3, replace_existing=True)
 
     #  AUTO STOPLOSS FEATURE TESTED OK
-    scheduler.add_job(autoStopLossLotControlProcess, IntervalTrigger(seconds=1), max_instances=3, replace_existing=True)
+    # scheduler.add_job(autoStopLossLotControlProcess, IntervalTrigger(seconds=1), max_instances=3, replace_existing=True)
+    scheduler.add_job(autoStopLossLotControlProcess, IntervalTrigger(seconds=1.5), max_instances=2, replace_existing=True)
 
     #  AUTO ADMIN SWITCHING PROCESS TESTED OK 
     scheduler.add_job(autoAdminSwitchingProcess, IntervalTrigger(hours=1))

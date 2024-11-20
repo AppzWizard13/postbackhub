@@ -241,6 +241,16 @@ class DashboardView(TemplateView):
             .order_by('-updated_on')
             .values_list('total', flat=True)[:20]
         )[::-1]
+        
+        remaining_orders = peak_order_limit - order_count
+        if remaining_orders == 0 :
+            remaining_order_param = 1
+        else:
+            remaining_order_param = remaining_orders
+        progress_percentage = ( remaining_order_param / peak_order_limit) * 100
+        # order_count = 7
+        # remaining_orders = 3
+        # progress_percentage = 60
 
         from django.db.models import Q
         # Add data to context
@@ -271,6 +281,11 @@ class DashboardView(TemplateView):
         context['orderlistdata'] = orderlistdata
         context['actual_profit'] = actual_profit
         context['actual_balance'] = actual_balance
+
+        context['remaining_orders'] = remaining_orders
+        context['progress_percentage'] = progress_percentage
+
+
 
         # Add the slug to the context if needed
         context['slug'] = self.slug
