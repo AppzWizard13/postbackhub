@@ -590,11 +590,12 @@
                         <div class="custom-progress-container">
                           <!-- Progress bar and percentage -->
                           <div class="progress">
-                            <div class="progress-value" style="width: {{ progress_percentage }}%"></div>
+                            <div class="progress-value" style="width: {{ progress_percentage }}%; background-color: {{ progress_color }}"></div>
                             <span class="progress-text">{{ remaining_orders }} / {{ peak_order_limit }} Orders</span>
                           </div>
-                          {% comment %} <span class="remaining-orders">Traded : {{ order_count }}</span> {% endcomment %}
+                          <span class="remaining-orders">Remaining Orders: {{ remaining_orders }}</span>
                         </div>
+                        
                         
                         <style>
                           /* Scoped styles for the progress bar */
@@ -612,7 +613,8 @@
                             font-size: 18px;
                           }
                         
-                          .custom-progress-container .progress {
+                          /* Container for the progress bar and the order count */
+                          .progress {
                             background: rgb(10 10 10);
                             justify-content: space-between;
                             border-radius: 5px;
@@ -626,24 +628,28 @@
                             margin-bottom: 10px;
                           }
                         
-                          .custom-progress-container .progress-value {
+                          /* Progress bar value (dynamic background color) */
+                          .progress-value {
                             box-shadow: 0 10px 40px -10px #fff;
                             border-radius: 5px;
-                            background: #1a6b18;
                             height: 35px;
                             width: 0;
+                            transition: background-color 0.3s ease; /* Smooth color transition */
                           }
                         
+                          /* Text for order count (will be aligned right) */
                           .progress-text {
                             margin-inline: 10px;
                             color: white;
                           }
                         
+                          /* Remaining orders text */
                           .remaining-orders {
                             color: #fff;
                             font-size: 14px;
                           }
-                        </style>                    
+                        </style>
+                        
                       </div> 
                     </div>
 

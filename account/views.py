@@ -248,12 +248,19 @@ class DashboardView(TemplateView):
         else:
             remaining_order_param = remaining_orders
         progress_percentage = ( remaining_order_param / peak_order_limit) * 100
-        # order_count = 7
-        # remaining_orders = 3
-        # progress_percentage = 60
+        # Determine the progress bar color
+        if progress_percentage >= 60:
+            progress_color = 'green'
+        elif progress_percentage >= 40:
+            progress_color = 'yellow'
+        elif progress_percentage >= 20:
+            progress_color = 'orange'
+        else:
+            progress_color = 'red'
 
         from django.db.models import Q
         # Add data to context
+        context['progress_color'] = progress_color
         context['open_position'] = open_position
         context['pending_sl_order'] = pending_sl_order
         context['breakup_series'] = breakup_series
