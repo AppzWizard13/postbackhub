@@ -808,31 +808,31 @@ def start_scheduler():
     scheduler = BackgroundScheduler()
     ist = pytz.timezone('Asia/Kolkata')
 
-    # # SELF PING TESTED OK
-    # scheduler.add_job(self_ping, IntervalTrigger(seconds=180))
+    # SELF PING TESTED OK
+    scheduler.add_job(self_ping, IntervalTrigger(seconds=180))
 
-    # #  RESTORE KILL SWITCH BY 9 AM AND 4 PM TESTED OK
-    # scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=9, minute=0,  timezone=ist))
-    # scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=16, minute=0,  timezone=ist))
+    #  RESTORE KILL SWITCH BY 9 AM AND 4 PM TESTED OK
+    scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=9, minute=0,  timezone=ist))
+    scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=16, minute=0,  timezone=ist))
 
-    # #  ORDER COUNT-KILL FEATURE TESTED OK 
-    # scheduler.add_job(auto_order_count_monitoring_process, IntervalTrigger(seconds=2), max_instances=3, replace_existing=True)
+    #  ORDER COUNT-KILL FEATURE TESTED OK 
+    scheduler.add_job(auto_order_count_monitoring_process, IntervalTrigger(seconds=2), max_instances=3, replace_existing=True)
 
-    # #  QUICK EXIT FEATURE TESTED OK 
-    # scheduler.add_job(autoclosePositionProcess, IntervalTrigger(seconds=1), max_instances=3, replace_existing=True)
+    #  QUICK EXIT FEATURE TESTED OK 
+    scheduler.add_job(autoclosePositionProcess, IntervalTrigger(seconds=1), max_instances=3, replace_existing=True)
 
-    # #  AUTO STOPLOSS FEATURE TESTED OK
-    # # scheduler.add_job(autoStopLossLotControlProcess, IntervalTrigger(seconds=1), max_instances=3, replace_existing=True)
-    # scheduler.add_job(autoStopLossLotControlProcess, IntervalTrigger(seconds=1.5), max_instances=2, replace_existing=True)
+    #  AUTO STOPLOSS FEATURE TESTED OK
+    # scheduler.add_job(autoStopLossLotControlProcess, IntervalTrigger(seconds=1), max_instances=3, replace_existing=True)
+    scheduler.add_job(autoStopLossLotControlProcess, IntervalTrigger(seconds=1.5), max_instances=2, replace_existing=True)
 
-    # #  AUTO ADMIN SWITCHING PROCESS TESTED OK 
-    # scheduler.add_job(autoAdminSwitchingProcess, IntervalTrigger(hours=1))
+    #  AUTO ADMIN SWITCHING PROCESS TESTED OK 
+    scheduler.add_job(autoAdminSwitchingProcess, IntervalTrigger(hours=1))
 
-    # #  HOURLY DATA LOG MONITORING TESTED OK
-    # scheduler.add_job( check_and_update_daily_account_overview, IntervalTrigger(seconds=15), max_instances=10, replace_existing=True)
+    #  HOURLY DATA LOG MONITORING TESTED OK
+    scheduler.add_job( check_and_update_daily_account_overview, IntervalTrigger(seconds=15), max_instances=10, replace_existing=True)
 
-    # #  ORDER DATA  LOG MONITORING TESTED OK
-    # scheduler.add_job( update_order_history, CronTrigger(day_of_week='mon-fri', hour=15, minute=30,  timezone=ist))
+    #  ORDER DATA  LOG MONITORING TESTED OK
+    scheduler.add_job( update_order_history, CronTrigger(day_of_week='mon-fri', hour=15, minute=30,  timezone=ist))
     
     
 

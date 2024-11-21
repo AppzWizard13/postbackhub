@@ -18,6 +18,7 @@ import os
 LIVE_MODE=True  
 
 
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 if LIVE_MODE:
     from decouple import config
@@ -106,7 +107,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'trade_wiz.wsgi.application'
 AUTH_USER_MODEL = 'account.User'
 
-# LIVEDB = True
+LIVEDB = True
 
 if LIVEDB == True:
     DB_NAME='tradewizdblive'
