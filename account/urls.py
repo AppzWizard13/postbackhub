@@ -38,6 +38,8 @@ urlpatterns = [
     path('order-history/', views.orderHistoryListView.as_view(), name='order_history'),
     path('trade-history/', views.TradeHistoryListView.as_view(), name='trade_history'),
 
+    path('daily-self-analysis/', views.daily_self_analysis_view, name='daily_self_analysis'),
+
 
 
 
@@ -45,6 +47,9 @@ urlpatterns = [
     path('check-log-status/', views.check_log_status, name='check_log_status'),  # Add the URL for the status check
 
     path('activate_kill_switch/', views.activate_kill_switch, name='activate_kill_switch'),
+
+
+    
 
 
 

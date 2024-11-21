@@ -139,3 +139,24 @@ class ControlForm(forms.ModelForm):
         for field_name, field in self.fields.items():
             field.widget.attrs['class'] = 'form-control m-2'
             field.help_text = None  # Remove help texts if needed
+
+from django import forms
+from .models import DailySelfAnalysis
+
+class DailySelfAnalysisForm(forms.ModelForm):
+    class Meta:
+        model = DailySelfAnalysis
+        fields = [
+            'health_check', 
+            'mind_check', 
+            'expectation_level', 
+            'patience_level', 
+            'previous_day_self_analysis', 
+        ]
+        widgets = {
+            'health_check': forms.NumberInput(attrs={'min': 0, 'max': 100}),
+            'mind_check': forms.NumberInput(attrs={'min': 0, 'max': 100}),
+            'expectation_level': forms.NumberInput(attrs={'min': 0, 'max': 100}),
+            'patience_level': forms.NumberInput(attrs={'min': 0, 'max': 100}),
+            'previous_day_self_analysis': forms.NumberInput(attrs={'min': 0, 'max': 100}),
+        }

@@ -843,3 +843,211 @@ def activate_kill_switch(request):
     
     return JsonResponse(result)
 
+from django.shortcuts import render, redirect
+from .forms import DailySelfAnalysisForm
+from django.contrib import messages
+import random
+
+
+# Revised ADVICE_POOL with Professional Trading Concepts and Core Psychology
+
+ADVICE_POOL = {
+    "health_check": {
+        "0-20": [
+            ("Physical condition is low, which can negatively impact decision-making and emotional control.",
+             "Tip: Avoid trading until your physical state improves. Focus on recovery activities like rest, hydration, and nutrition. A fatigued body leads to impaired cognitive performance."),
+        ],
+        "21-40": [
+            ("Your energy levels are below optimal. Avoid making major decisions or handling complex trades.",
+             "Tip: Engage in mindfulness or relaxation techniques to reset and recharge. Trading when physically drained can lead to overtrading or poor decision-making."),
+        ],
+        "41-60": [
+            ("Your energy is moderate. You may experience periods of fatigue, affecting concentration and emotional regulation.",
+             "Tip: Incorporate short breaks and maintain consistent hydration to keep your energy stable. Avoid emotional decision-making and stick to a strategy."),
+        ],
+        "61-80": [
+            ("Good physical state, allowing you to handle stressful situations with composure.",
+             "Tip: Leverage your energy levels to stay focused and keep your risk management strategies in place. Remain alert, especially during high-volatility periods."),
+        ],
+        "81-100": [
+            ("Peak physical condition. You’re prepared to make high-stakes, strategic trades.",
+             "Tip: Use this energy wisely, maintaining a disciplined approach to trading. Avoid impulsive trades and focus on your long-term strategy and risk tolerance."),
+        ],
+    },
+    "mind_check": {
+        "0-20": [
+            ("Your mental clarity is significantly low, which can impair your ability to analyze data and make rational decisions.",
+             "Tip: Take time off from the markets. Engage in activities like meditation, light exercise, or a short walk to reset your mental state."),
+        ],
+        "21-40": [
+            ("Mental clarity is suboptimal. Avoid making any major trading decisions as it may lead to mistakes.",
+             "Tip: Use relaxation techniques to calm your mind. Mental fatigue can lead to emotional overreaction and a loss of focus."),
+        ],
+        "41-60": [
+            ("Your mental state is steady, though you may encounter moments of distraction or emotional bias.",
+             "Tip: Stay grounded with mindfulness practices, and always follow your pre-established trading plan to avoid letting emotions drive decisions."),
+        ],
+        "61-80": [
+            ("Your mind is sharp and focused. You’re ready to assess market data effectively and execute trades with precision.",
+             "Tip: Use this clarity to identify market trends, but stay cautious. Overconfidence can lead to risk-taking behaviors that deviate from your strategy."),
+        ],
+        "81-100": [
+            ("You’re in an optimal mental state, able to think critically and analytically under pressure.",
+             "Tip: Maintain discipline and stick to your risk management plan. You are capable of handling complex strategies and unpredictable market shifts."),
+        ],
+    },
+    "expectation_level": {
+        "0-20": [
+            ("Expectations are too low. Avoid trading if you’re feeling defeated or discouraged.",
+             "Tip: Focus on building your confidence with smaller, risk-managed trades or consider reviewing educational content before re-engaging."),
+        ],
+        "21-40": [
+            ("Expectations are cautious but grounded. You are preparing for moderate trades that match your current mindset.",
+             "Tip: Ensure that your trades align with your current market outlook. Don’t rush decisions based on a fear of missing out (FOMO)."),
+        ],
+        "41-60": [
+            ("Expectations are balanced. You are in a state to trade with a calm and calculated mindset.",
+             "Tip: Trust your process and remain patient. Avoid chasing the market; let your strategy come to you."),
+        ],
+        "61-80": [
+            ("Expectations are high. Use this confidence to execute your strategy effectively, but don’t become overconfident.",
+             "Tip: Don’t ignore risk management, and stay disciplined in your decision-making. Avoid emotional reactions if trades don’t go your way."),
+        ],
+        "81-100": [
+            ("Your expectations are very high. It’s important to manage this enthusiasm by keeping an eye on market risk and uncertainty.",
+             "Tip: While confidence can be an asset, overconfidence can lead to reckless behavior. Stay grounded and use data to drive your decisions."),
+        ],
+    },
+    "patience_level": {
+        "0-20": [
+            ("Patience is low, which could result in impulsive decisions and overtrading.",
+             "Tip: Step away from the markets to reset. Impulsive trades often result in poor outcomes. Revisit your strategy after a short break."),
+        ],
+        "21-40": [
+            ("Patience is below average. You may feel the urge to enter trades too early or take profits prematurely.",
+             "Tip: Practice mindfulness or deep breathing before making trades. Use alerts and automated orders to manage impatience."),
+        ],
+        "41-60": [
+            ("You have moderate patience. Resist the urge to act on every market movement. Good patience allows you to wait for favorable setups.",
+             "Tip: Stick to your strategy and avoid chasing the market. Slow and steady wins the race."),
+        ],
+        "61-80": [
+            ("Patience is good. You are able to wait for the right setups and take a more measured approach to risk.",
+             "Tip: Continue exercising patience, and be ready to capitalize on opportunities when they align with your plan."),
+        ],
+        "81-100": [
+            ("Patience is at its peak. You are in the optimal state for waiting for high-confidence, low-risk trades.",
+             "Tip: Use this patience to stay disciplined even during periods of market volatility. Execute your trades with precision."),
+        ],
+    },
+    "previous_day_self_analysis": {
+        "0-20": [
+            ("Your reflection on yesterday’s trades shows a lack of awareness or understanding of your mistakes.",
+             "Tip: Take time to review the lessons from your past trades. Learning from mistakes is crucial for improving your trading psychology."),
+        ],
+        "21-40": [
+            ("You have some awareness of past errors but may not fully understand their root causes.",
+             "Tip: Focus on improving your self-awareness and identifying specific areas where your trading plan went off track."),
+        ],
+        "41-60": [
+            ("Your analysis of the previous day’s trades is balanced, with recognition of both strengths and weaknesses.",
+             "Tip: Incorporate the insights from yesterday into your strategy today. Self-reflection is vital for growth in trading."),
+        ],
+        "61-80": [
+            ("You’ve successfully identified key areas for improvement and strengths from your previous trades.",
+             "Tip: Use these insights to refine your strategy and make informed decisions going forward."),
+        ],
+        "81-100": [
+            ("Your self-analysis is sharp and constructive. You’ve used your past experiences to fine-tune your approach.",
+             "Tip: Keep a trading journal to document your learnings and review regularly. This will continuously strengthen your approach."),
+        ],
+    },
+    "overall": {
+        "0-20": [ (
+            "It may not be a good day to trade. Prioritize improving your mental and physical state before re-engaging in the markets.",
+            "Tip: Take a break from trading and focus on self-care. A clear mind and good health are essential for making sound decisions in the markets."
+        )],
+        "21-40": [ (
+            "Today calls for a cautious approach. Focus on lower-risk strategies and avoid the temptation to engage in high-stakes trading.",
+            "Tip: Stick to a conservative strategy and avoid impulsive decisions. It's important to prioritize safety over aggressive trading."
+        )],
+        "41-60": [ (
+            "You’re in a reasonable state for trading today. Stick to a well-structured plan and remain disciplined throughout.",
+            "Tip: Trust your strategy and maintain discipline. Avoid reacting emotionally to market fluctuations."
+        )],
+        "61-80": [ (
+            "You’re in a good place to trade with a balanced mindset and solid strategy. Keep emotions in check and focus on your risk management.",
+            "Tip: Stay mindful of your emotions and stick to your risk management rules. It’s crucial to keep your trading consistent."
+        )],
+        "81-100": [ (
+            "You’re in an optimal state to take on the markets. Execute your trades confidently but stay disciplined and mindful of risks.",
+            "Tip: Take advantage of your optimal state by executing trades with confidence, but remember to stay disciplined and manage your risk."
+        )]
+    }
+
+}
+
+def get_advice(score, category):
+    """Generate advice and tips based on score intervals for each category."""
+    if score <= 20:
+        advice = random.choice(ADVICE_POOL[category]["0-20"])
+    elif 21 <= score <= 40:
+        advice = random.choice(ADVICE_POOL[category]["21-40"])
+    elif 41 <= score <= 60:
+        advice = random.choice(ADVICE_POOL[category]["41-60"])
+    elif 61 <= score <= 80:
+        advice = random.choice(ADVICE_POOL[category]["61-80"])
+    else:
+        advice = random.choice(ADVICE_POOL[category]["81-100"])
+    return advice
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+
+def daily_self_analysis_view(request):
+    if request.method == 'POST':
+        form = DailySelfAnalysisForm(request.POST)
+        if form.is_valid():
+            # Associate the logged-in user with the form before saving
+            analysis = form.save(commit=False)
+            analysis.user = request.user  # Set the logged-in user as the user for this analysis
+            analysis.save()
+
+            # Retrieve scores
+            health_score = analysis.health_check
+            mind_score = analysis.mind_check
+            expectation_score = analysis.expectation_level
+            patience_score = analysis.patience_level
+            previous_day_score = analysis.previous_day_self_analysis
+
+            # Calculate overall score
+            overall_score = (health_score + mind_score + expectation_score + patience_score + previous_day_score) // 5
+
+            # Generate advice and tips based on the scores
+            advice_health = get_advice(health_score, "health_check")
+            advice_mind = get_advice(mind_score, "mind_check")
+            advice_expectation = get_advice(expectation_score, "expectation_level")
+            advice_patience = get_advice(patience_score, "patience_level")
+            advice_prev_day = get_advice(previous_day_score, "previous_day_self_analysis")
+            advice_overall = get_advice(overall_score, "overall")
+
+            # Compile advice into a list
+            advice_list = [advice_health, advice_mind, advice_expectation, advice_patience, advice_prev_day, advice_overall]
+
+            # Store advice in session to persist data across the redirect
+            request.session['advice_list'] = advice_list
+
+            # Display success message
+            messages.success(request, "Your self-analysis was submitted successfully.")
+
+            # Redirect to the same page to avoid resubmission on refresh
+            return redirect('daily_self_analysis')
+        else:
+            messages.error(request, "There was an error with your submission.")
+    else:
+        form = DailySelfAnalysisForm()
+
+    # Retrieve advice list from session if it exists
+    advice_list = request.session.pop('advice_list', None)
+
+    return render(request, 'dashboard/daily_selfanalysis.html', {'form': form, 'advice_list': advice_list})

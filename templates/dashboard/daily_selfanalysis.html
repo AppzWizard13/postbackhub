@@ -1,0 +1,120 @@
+{% extends 'dashboard/index.html' %}
+{% load static %}
+{% block content %}
+<style>
+    .form-check-input {
+        width: 2em;
+        height: 1.2em;
+    }
+    .form-check-label {
+        font-size: 1.1em;
+    }
+    .container-fluid {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: start;
+        align-items: start;
+    }
+    .slider-label {
+        font-weight: bold;
+    }
+    .slider-value {
+        font-size: 1.1em;
+        margin-left: 10px;
+        font-weight: bold;
+    }
+</style>
+
+<div class="container-fluid" style="max-width:none">
+    <div class="card w-100">
+        <div class="card-body">
+            <h5 class="card-title fw-semibold mb-5">Daily Self Analysis</h5>
+            <form method="POST">
+                {% csrf_token %}
+
+                <!-- Health Check -->
+                <div class="mb-3">
+                    <label for="id_health_check" class="form-label slider-label">Health Check</label>
+                    <input type="range" id="id_health_check" name="health_check" min="0" max="100" value="{{ form.health_check.value|default_if_none:50 }}" class="form-range" oninput="document.getElementById('health_check_value').textContent = this.value">
+                    <span id="health_check_value" class="slider-value">{{ form.health_check.value|default_if_none:50 }}</span>
+                </div>
+
+                <!-- Mind Check -->
+                <div class="mb-3">
+                    <label for="id_mind_check" class="form-label slider-label">Mind Check</label>
+                    <input type="range" id="id_mind_check" name="mind_check" min="0" max="100" value="{{ form.mind_check.value|default_if_none:50 }}" class="form-range" oninput="document.getElementById('mind_check_value').textContent = this.value">
+                    <span id="mind_check_value" class="slider-value">{{ form.mind_check.value|default_if_none:50 }}</span>
+                </div>
+
+                <!-- Expectation Level -->
+                <div class="mb-3">
+                    <label for="id_expectation_level" class="form-label slider-label">Expectation Level</label>
+                    <input type="range" id="id_expectation_level" name="expectation_level" min="0" max="100" value="{{ form.expectation_level.value|default_if_none:50 }}" class="form-range" oninput="document.getElementById('expectation_level_value').textContent = this.value">
+                    <span id="expectation_level_value" class="slider-value">{{ form.expectation_level.value|default_if_none:50 }}</span>
+                </div>
+
+                <!-- Patience Level -->
+                <div class="mb-3">
+                    <label for="id_patience_level" class="form-label slider-label">Patience Level</label>
+                    <input type="range" id="id_patience_level" name="patience_level" min="0" max="100" value="{{ form.patience_level.value|default_if_none:50 }}" class="form-range" oninput="document.getElementById('patience_level_value').textContent = this.value">
+                    <span id="patience_level_value" class="slider-value">{{ form.patience_level.value|default_if_none:50 }}</span>
+                </div>
+
+                <!-- Previous Day Self Analysis -->
+                <div class="mb-3">
+                    <label for="id_previous_day_self_analysis" class="form-label slider-label">Previous Day Self Analysis</label>
+                    <input type="range" id="id_previous_day_self_analysis" name="previous_day_self_analysis" min="0" max="100" value="{{ form.previous_day_self_analysis.value|default_if_none:50 }}" class="form-range" oninput="document.getElementById('previous_day_self_analysis_value').textContent = this.value">
+                    <span id="previous_day_self_analysis_value" class="slider-value">{{ form.previous_day_self_analysis.value|default_if_none:50 }}</span>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-primary">Generate Score</button>
+            </form>
+        </div>
+    </div>
+
+    {% if advice_list %}
+    <div class="mt-4">
+        <h5>Your Personalized Trading Advice and Tips:</h5>
+        
+        <!-- Displaying Overall Tips -->
+        {% if overall_tips %}
+            <div class="card mb-4" style="background-color: #1c1c1e; color: white;">
+                <div class="card-body">
+                    <h6 class="card-title text-primary">Overall Tips</h6>
+                    <p class="card-text">{{ overall_tips }}</p>
+                </div>
+            </div>
+        {% endif %}
+        
+        <!-- Displaying Individual Advice and Tips -->
+        <div class="row">
+            {% for item in advice_list %}
+                <div class="col-md-6 mb-4">
+                    <div class="card" style="background-color: #2c2c2e; color: white;">
+                        <div class="card-body">
+                            <h6 class="card-title text-primary" style="font-size: 1.25rem;">Advice</h6>
+                            {% if item.1 %}
+                                <p class="card-text" style="font-size: 1.1rem; margin-bottom: 0.5rem;">{{ item.0 }}</p>
+                                <hr style="border-top: 1px solid #444;">
+                                <h6 class="card-subtitle text-secondary" style="font-size: 1.1rem;">Tip</h6>
+                                <p class="card-text" style="font-size: 1.1rem;">{{ item.1 }}</p>
+                            {% else %}
+                                <p class="card-text" style="font-size: 1.1rem;">{{ item }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}
+
+
+    
+    
+    
+</div>
+
+{% endblock %}

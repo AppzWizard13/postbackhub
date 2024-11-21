@@ -172,3 +172,20 @@ class OrderHistoryLog(models.Model):
     class Meta:
         ordering = ['-date']
 
+from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
+
+class DailySelfAnalysis(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    health_check = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)], help_text="Rate from 0 to 100")
+    mind_check = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)], help_text="Rate from 0 to 100")
+    expectation_level = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)], help_text="Rate from 0 to 100")
+    patience_level = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)], help_text="Rate from 0 to 100")
+    previous_day_self_analysis = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)], help_text="Rate from 0 to 100")
+    pnl_status = models.CharField(max_length=100, null=True, blank=True, help_text="Profit and Loss Status of the day")
+    order_count = models.IntegerField(null=True, blank=True, help_text="Total number of orders of the day")
+    date_time = models.DateTimeField(auto_now_add=True, help_text="The date and time when the self-analysis was created")
+
+    def __str__(self):
+        return f"Self Analysis on {self.id} by {self.user.username} at {self.date_time}"
+

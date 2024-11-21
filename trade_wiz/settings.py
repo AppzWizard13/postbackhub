@@ -15,7 +15,7 @@ import os
 
 
 # Set LIVE_MODE as a variable in your code
-LIVE_MODE=False  
+LIVE_MODE=True  
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -137,6 +137,7 @@ else:
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
+
 
 
 print("---------------------------------------------")
