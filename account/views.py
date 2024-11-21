@@ -243,11 +243,7 @@ class DashboardView(TemplateView):
         )[::-1]
         
         remaining_orders = peak_order_limit - order_count
-        if remaining_orders == 0 :
-            remaining_order_param = 1
-        else:
-            remaining_order_param = remaining_orders
-        progress_percentage = ( remaining_order_param / peak_order_limit) * 100
+        progress_percentage = ( remaining_orders / peak_order_limit) * 100
         # Determine the progress bar color
         if progress_percentage >= 60:
             progress_color = 'green'
@@ -290,6 +286,7 @@ class DashboardView(TemplateView):
         context['actual_balance'] = actual_balance
 
         context['remaining_orders'] = remaining_orders
+        context['remaining_trades'] = remaining_orders // 2 
         context['progress_percentage'] = progress_percentage
 
 

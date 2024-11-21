@@ -149,6 +149,7 @@ $(function () {
     let chart_earning1 = chart_earning
 
     chart_earning = chart_earning.filter(value => value !== 0);
+    chart_earning.unshift(0);
 
     console.log("chart_earningchart_earningchart_earningchart_earningchart_earningchart_earningchart_earningchart_earning", chart_earning)
 
@@ -165,8 +166,8 @@ $(function () {
     // =====================================
     var chartOptions = {
         series: [
-            { name: "Profit of Position:", data: earnings },
-            { name: "Loss of Position:", data: expenses },
+            { name: "Profit of Position", data: earnings },
+            { name: "Loss of Position", data: expenses },
         ],
 
         chart: {
