@@ -180,7 +180,7 @@
                         </div>
                         <a class="text-primary fw-bolder" href="./index.html">Forgot Password?</a>
                       </div>
-                      <button type="submit" class="btn btn-success w-100 py-8 fs-4 mb-4 rounded-2" style="background:green; border-color:green;">Sign In</button>
+                      <button  id="signInButton"  type="submit" class="btn btn-success w-100 py-8 fs-4 mb-4 rounded-2" style="background:green; border-color:green;">Sign In</button>
                     </form>
                   </div>
                 </div>
@@ -195,14 +195,28 @@
   <script src="{% static 'dashboard/assets/libs/jquery/dist/jquery.min.js' %}"></script>
   <script src="{% static 'dashboard/assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script>
   <script>
-    // Initialize all toasts
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
+      // Initialize all toasts
       var toastElements = document.querySelectorAll('.toast');
-      toastElements.forEach(function(toastEl) {
+      toastElements.forEach(function (toastEl) {
         var toast = new bootstrap.Toast(toastEl);
         toast.show();
       });
+    
+      // Add submit event listener to the form
+      const form = document.querySelector('form'); // Assuming there's only one form in the DOM
+      const signInButton = document.getElementById('signInButton');
+    
+      form.addEventListener('submit', function (e) {
+        // Show loading spinner and disable button
+        signInButton.disabled = true;
+        signInButton.innerHTML = `
+          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+          Signing In...
+        `;
+      });
     });
+    
   </script>
 </body>
 
