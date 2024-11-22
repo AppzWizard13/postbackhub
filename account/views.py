@@ -128,7 +128,7 @@ class DashboardView(TemplateView):
     def dispatch(self, request, *args, **kwargs):
         # Fetch slug from the URL if present, or default to using request.user
         self.slug = kwargs.get('slug')
-        self.users = User.objects.filter(is_active=True, status=True)  # Query the active users
+        self.users = User.objects.filter(is_active=True)  # Query the active users
         self.allusers = User.objects.filter(is_active=True)  # Query the active users
         self.dashboard_view = True
 
@@ -138,6 +138,7 @@ class DashboardView(TemplateView):
     def get_context_data(self, **kwargs):
         # Get the existing context
         context = super().get_context_data(**kwargs)
+        today = now().date()  
 
         # If slug is present, use it to fetch the user associated with that slug
         if self.slug:
@@ -207,6 +208,7 @@ class DashboardView(TemplateView):
         else:
             peak_order_limit = 0
             stoploss_type =""
+        
         day_exp_brokerge = float(peak_order_limit) * float(settings.BROKERAGE_PARAMETER)
         exp_entry_count = peak_order_limit // 2 
         actual_entry_count = order_count // 2 
@@ -256,6 +258,45 @@ class DashboardView(TemplateView):
 
         from django.db.models import Q
         # Add data to context
+
+        import re
+
+        # Fetch the existing analysis for the user
+        existing_analysis = DailySelfAnalysis.objects.filter(
+            user=user, 
+            date_time__date=today
+        ).first()
+
+        # Log the raw overall_advice for debugging
+        if existing_analysis:
+            print("Raw overall_advice:", existing_analysis.overall_advice)
+
+        # Process overall_advice to create a dictionary
+        if existing_analysis and existing_analysis.overall_advice:
+            # Remove parentheses and unnecessary spaces
+            cleaned_advice = re.sub(r"[()]", "", existing_analysis.overall_advice)
+
+            # Split the cleaned advice into individual pieces
+            advice_items = cleaned_advice.split("', '")
+
+            # Create a dictionary from the advice items
+            advice_dict = {}
+            for i in range(0, len(advice_items), 2):  # Iterate in pairs (advice, tip)
+                if i + 1 < len(advice_items):
+                    key = advice_items[i].strip().strip("'")
+                    value = advice_items[i + 1].strip().strip("'")
+                    advice_dict[key] = value
+        else:
+            # If no analysis or advice found, initialize an empty dictionary
+            advice_dict = {}
+
+        print("Processed advice_dict:", advice_dict)
+
+
+        print("existing_analysisexisting_analysisexisting_analysis", advice_dict) 
+
+
+
         context['progress_color'] = progress_color
         context['open_position'] = open_position
         context['pending_sl_order'] = pending_sl_order
@@ -271,8 +312,9 @@ class DashboardView(TemplateView):
         context['order_limit'] = order_limit
         context['peak_order_limit'] = peak_order_limit
         context['user'] = user
+        context['advice_dict'] = advice_dict
         context['stoploss_parameter'] = stoploss_parameter
-        context['stoploss_type'] = stoploss_type.upper()
+        context['stoploss_type'] = stoploss_type[:4].upper()
         context['hourly_status_data'] = hourly_status_data
         context['orderlistdata'] = traded_orders
         context['position_data'] = position_data
@@ -1003,15 +1045,27 @@ def get_advice(score, category):
 
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.utils.timezone import now
+from . models import DailySelfAnalysis
 
 def daily_self_analysis_view(request):
     if request.method == 'POST':
         form = DailySelfAnalysisForm(request.POST)
         if form.is_valid():
+            # Check if a record already exists for today
+            today = now().date()  # Get the current date
+            existing_analysis = DailySelfAnalysis.objects.filter(
+                user=request.user, 
+                date_time__date=today
+            ).first()  # Filter by user and date (date portion of date_time field)
+
+            if existing_analysis:
+                messages.error(request, "You have already submitted your self-analysis for today.")
+                return redirect('daily_self_analysis')
+
             # Associate the logged-in user with the form before saving
             analysis = form.save(commit=False)
             analysis.user = request.user  # Set the logged-in user as the user for this analysis
-            analysis.save()
 
             # Retrieve scores
             health_score = analysis.health_check
@@ -1034,8 +1088,14 @@ def daily_self_analysis_view(request):
             # Compile advice into a list
             advice_list = [advice_health, advice_mind, advice_expectation, advice_patience, advice_prev_day, advice_overall]
 
-            # Store advice in session to persist data across the redirect
             request.session['advice_list'] = advice_list
+
+            # Save advice_list as a string in the overall_advice field
+            analysis.overall_advice = ', '.join(str(advice) for advice in advice_list)
+
+
+            # Save the analysis instance
+            analysis.save()
 
             # Display success message
             messages.success(request, "Your self-analysis was submitted successfully.")
@@ -1046,8 +1106,7 @@ def daily_self_analysis_view(request):
             messages.error(request, "There was an error with your submission.")
     else:
         form = DailySelfAnalysisForm()
-
-    # Retrieve advice list from session if it exists
-    advice_list = request.session.pop('advice_list', None)
+        # Retrieve advice list from session if it exists
+        advice_list = request.session.pop('advice_list', None)
 
     return render(request, 'dashboard/daily_selfanalysis.html', {'form': form, 'advice_list': advice_list})

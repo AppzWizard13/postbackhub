@@ -509,6 +509,10 @@
           margin-inline:5px;
           font-weight: 1000;
         }
+        
+        
+
+
       </style>
       <script>
         function updateClock() {
@@ -564,6 +568,57 @@
         <div class="container-fluid" style="max-width: none;">
           <!--  Row 1 -->
           <div class="row">
+            <div class="col-lg-12 d-flex align-items-stretch">
+              <div class="card w-100 position-relative">
+                <div class="card-body">
+                  <div class="d-sm-flex d-block align-items-center justify-content-between mb-4">
+                    <h5 class="card-title fw-semibold">Daily Tips</h5>
+                  </div>
+            
+                  {% if advice_dict %}
+                    <!-- Carousel Slider -->
+                    <div id="adviceCarousel" class="carousel slide" data-bs-ride="carousel">
+                      <div class="carousel-inner" style="min-height: 100px;"> <!-- Set a fixed minimum height -->
+                        {% for advice, tip in advice_dict.items %}
+                          <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                            <div class="advice-content d-flex flex-column justify-content-center align-items-center h-100">
+                              <p class="text-center fs-3 fw-bold">{{ advice }}</p>
+                              <p class="text-center fs-3 text-muted">{{ tip }}</p>
+                            </div>
+                          </div>
+                        {% endfor %}
+                      </div>
+                    </div>
+            
+                    <!-- Pagination Dots at the Bottom of the Card -->
+                    <div style="left: 35% !important; margin-top:20px;"  class="carousel-indicators position-absolute start-50 translate-middle-x bottom-0 mb-4">
+                      {% for advice, tip in advice_dict.items %}
+                        <button type="button" 
+                                data-bs-target="#adviceCarousel" 
+                                data-bs-slide-to="{{ forloop.counter0 }}" 
+                                class="{% if forloop.first %}active{% endif %}" 
+                                aria-current="{% if forloop.first %}true{% endif %}" 
+                                aria-label="Slide {{ forloop.counter }}"></button>
+                      {% endfor %}
+                    </div>
+                  {% else %}
+                    <!-- Show button if no advice found -->
+                    <div class="d-flex align-items-center justify-content-center mt-4">
+                      <button class="btn btn-primary btn-lg w-100 rounded-pill shadow-sm" onclick="window.location.href='{% url 'daily_self_analysis' %}'">
+                        <i class="ti ti-test-x"></i> Please Attend Daily Self Analysis Test
+                      </button>
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            
+            
+            
+            
+            
+            
+            
             <div class="col-lg-8 d-flex align-items-strech">
               <div class="card w-100">
                 <div class="card-body">
@@ -758,7 +813,7 @@
                         </div>
                       </div>
                     </div>
-                    <div id="earning"></div>
+                    <div class="mt-5" id="earning"></div>
                   </div>
                 </div>
               </div>
@@ -797,14 +852,14 @@
                               <span>
                                   <i class="fs-5 dark ti ti-coin-rupee text-success mx-2"></i>
                               </span>
-                              <p class="text-grey me-1 fs-3 mb-0">Max Loss (Trade):</p>
-                              <p class="fs-2 mb-0" id="order-details">{{stoploss_parameter|floatformat:2}} : {{stoploss_type}}</p>
+                              <p class="text-grey me-1 fs-3 mb-0">Risk / Trade:</p>
+                              <p class="fs-2 mb-0" id="order-details">{{stoploss_parameter|floatformat:2}}  {{stoploss_type}}</p>
                           </div>
                             <div class="d-flex align-items-center mb-3">
                                 <span>
                                     <i class="fs-5 dark ti ti-coin-rupee text-success mx-2"></i>
                                 </span>
-                                <p class="text-grey me-1 fs-3 mb-0">Max Loss (Day):</p>
+                                <p class="text-grey me-1 fs-3 mb-0">Risk / Day:</p>
                                 <p class="fs-2 mb-0" id="order-details">{{max_expected_loss|floatformat:2}}</p>
                             </div>
                             <div class="d-flex align-items-center mb-3">
@@ -822,7 +877,7 @@
                                   <button class="btn btn-success mx-3 fs-3 fw-bold d-block" 
                                           style="border-width: 1px; border-style: solid;" 
                                           id="activateKillButton"  value="{{user.username}}">
-                                      Activate Kill<br><span id="action-button" value="{{user.username}}"></span>
+                                      Kill Switch<br><span id="action-button" value="{{user.username}}"></span>
                                   </button>
                               </div>
                           </div>
@@ -863,7 +918,7 @@
                         <span >
                             <i class="fs-5 dark ti ti-power text-danger mx-2"></i>
                         </span>
-                        <p class="text-grey mx-1 fs-3 mb-0 fw-bold flex-shrink-0" style="width: 150px;">Kill Status:</p>
+                        <p class="text-grey fs-3 mb-0 fw-bold flex-shrink-0" style="width: 150px;">Kill Status:</p>
                         <div class="ms-auto">
                             {% if user.kill_switch_1 and not user.kill_switch_2 %}
                                 <span class="badge bg-warning text-grey fs-3">Kill 1</span>
@@ -898,9 +953,9 @@
                        
                         <div class="ms-auto">
                             {% if user.auto_stop_loss %}
-                                <span class="badge bg-success fs-3">Enabled</span>
+                                <span class="badge bg-success fs-3">Active</span>
                             {% else %}
-                                <span class="badge bg-warning fs-3">Disabled</span>
+                                <span class="badge bg-warning fs-3">Inactive</span>
                             {% endif %}
                         </div>
                         {% endif %}
@@ -929,7 +984,7 @@
                   <div class="row align-items-start">
                     <div class="col-8">
                       <h5 class="card-title mb-9 fw-semibold">Today Expense</h5>
-                      <h4 class="fw-semibold mb-3">₹ {{total_expense|floatformat:2}}</h4>
+                      <h4 class="fw-semibold mb-2">₹ {{total_expense|floatformat:2}}</h4>
                       <div class="d-flex align-items-center mb-3">
                         <span >
                           <i class="fs-5 dark ti ti-clock text-danger mx-2"></i>
@@ -949,7 +1004,7 @@
                       <div class="d-flex justify-content-end">
                         <div class="mb-3 mb-sm-0 pr-5">
                           <a class="btn btn-primary mx-3 fs-3 fw-bold d-block" style="border-width: 3px; border-style: solid;">
-                           Orders: {{order_count}} </br>({{ actual_entry_count }})
+                           Orders: {{order_count}} - {{ actual_entry_count }}
                           </a>
                           {% comment %} <div class="custom-progress-container">
                             <!-- Progress bar and percentage -->
@@ -966,7 +1021,7 @@
                 </div>
               </div>
             </div>
-          </div>
+          
 
           <div class="row">
             <div class="col-lg-7 d-flex align-items-stretch">
@@ -1083,6 +1138,7 @@
                           <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Kill Status 1</h6></th>
                           <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Kill Status 2</h6></th>
                           <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Auto SL</h6></th>
+                          <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Quick Exit</h6></th>
                         </tr>
                       </thead>
                       <tbody id="positionsTableBody">
@@ -1092,7 +1148,7 @@
                             <h6 class="fw-semibold mb-0">{{ user.username }}</h6>
                           </td>
                           <td class="border-bottom-0">
-                            <span class="badge {% if user.status %}bg-success{% else %}bg-warning{% endif %} rounded-3 fw-semibold">
+                            <span class="badge {% if user.status %}bg-success{% else %}bg-danger{% endif %} rounded-3 fw-semibold">
                               {% if user.status %}Active{% else %}Inactive{% endif %}
                             </span>
                           </td>
@@ -1109,6 +1165,11 @@
                           <td class="border-bottom-0">
                             <span class="badge {% if user.auto_stop_loss %}bg-success{% else %}bg-danger{% endif %} rounded-3 fw-semibold">
                               {% if user.auto_stop_loss %}Enabled{% else %}Disabled{% endif %}
+                            </span>
+                          </td>
+                          <td class="border-bottom-0">
+                            <span class="badge {% if user.quick_exit %}bg-success{% else %}bg-danger{% endif %} rounded-3 fw-semibold">
+                              {% if user.quick_exit %}Enabled{% else %}Disabled{% endif %}
                             </span>
                           </td>
                         </tr>
