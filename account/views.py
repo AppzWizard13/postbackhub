@@ -314,7 +314,7 @@ class DashboardView(TemplateView):
         context['user'] = user
         context['advice_dict'] = advice_dict
         context['stoploss_parameter'] = stoploss_parameter
-        context['stoploss_type'] = stoploss_type[:4].upper()
+        context['stoploss_type'] = stoploss_type[:7].upper()
         context['hourly_status_data'] = hourly_status_data
         context['orderlistdata'] = traded_orders
         context['position_data'] = position_data
