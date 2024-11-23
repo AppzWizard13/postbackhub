@@ -959,7 +959,7 @@
                         </span>
                         <p class="text-grey fs-3 mb-0 fw-bold flex-shrink-0" style="width: 150px;">Risk / Day:</p>
                         <div class="ms-auto">
-                          <span class="badge badgclr fs-3">{{ max_expected_loss|floatformat:2 }} INR</span>
+                          <span class="badge badgclr fs-3">₹ &nbsp;&nbsp; {{ max_expected_loss|floatformat:2 }}</span>
                         </div>
                       </div>
                       
@@ -970,7 +970,7 @@
                         </span>
                         <p class="text-grey fs-3 mb-0 fw-bold flex-shrink-0" style="width: 150px;">Max Expense:</p>
                         <div class="ms-auto">
-                          <span class="badge badgclr fs-3">{{ max_expected_expense|floatformat:2 }} INR </span>
+                          <span class="badge badgclr fs-3">₹ &nbsp; {{ max_expected_expense|floatformat:2 }} </span>
                         </div>
                       </div>
                     </div>
@@ -1020,50 +1020,60 @@
                   <div class="row align-items-start">
                     <div class="col-8">
                       <h5 class="card-title fw-semibold" style="margin-bottom: 30px !important;">Service Status</h5>
-
                       <div class="d-flex align-items-center mt-4">
-                        <span >
-                            <i class="fs-5 dark ti ti-power text-danger mx-2"></i>
+                        <span>
+                          <i class="fs-5 dark ti ti-power mx-2" 
+                             style="color: 
+                               {% if user.kill_switch_1 and not user.kill_switch_2 %}
+                                 orange
+                               {% elif not user.kill_switch_1 and not user.kill_switch_2 %}
+                                 green
+                               {% elif user.kill_switch_1 and user.kill_switch_2 %}
+                                 red
+                               {% endif %};"></i>
                         </span>
                         <p class="text-grey fs-3 mb-0 fw-bold flex-shrink-0" style="width: 150px;">Kill Status:</p>
                         <div class="ms-auto">
-                            {% if user.kill_switch_1 and not user.kill_switch_2 %}
-                                <span class="badge bg-warning text-grey fs-3">Activated</span>
-                            {% elif not user.kill_switch_1 and not user.kill_switch_2 %}
-                                <span class="badge bg-success fs-3">Monitoring</span>
-                            {% elif user.kill_switch_1 and user.kill_switch_2 %}
-                                <span class="badge bg-danger fs-3">Activated</span>
-                            {% endif %}
+                          {% if user.kill_switch_1 and not user.kill_switch_2 %}
+                            <span class="badge bg-warning text-grey fs-3">Activated</span>
+                          {% elif not user.kill_switch_1 and not user.kill_switch_2 %}
+                            <span class="badge bg-success fs-3">Monitoring</span>
+                          {% elif user.kill_switch_1 and user.kill_switch_2 %}
+                            <span class="badge bg-danger fs-3">Activated</span>
+                          {% endif %}
                         </div>
-                    </div>
+                      </div>
+                      
                     
                     <div class="d-flex align-items-center mt-3">
-                        <span >
-                            <i class="fs-5 dark ti ti-power text-warning mx-2"></i>
-                        </span>
-                        <p class="text-grey mx-1 fs-3 mb-0 fw-bold flex-shrink-0" style="width: 150px;">Auto Kill:</p>
-                        <div class="ms-auto">
-                            {% if user.is_active %}
-                                <span class="badge bg-success fs-3">Active</span>
-                            {% else %}
-                                <span class="badge bg-warning fs-3">Inactive</span>
-                            {% endif %}
-                        </div>
+                      <span>
+                        <i class="fs-5 dark ti ti-power mx-2" 
+                           style="color: {% if user.is_active %}green{% else %}orange{% endif %};"></i>
+                      </span>
+                      <p class="text-grey mx-1 fs-3 mb-0 fw-bold flex-shrink-0" style="width: 150px;">Auto Kill:</p>
+                      <div class="ms-auto">
+                        {% if user.is_active %}
+                          <span class="badge bg-success fs-3">Active</span>
+                        {% else %}
+                          <span class="badge bg-warning fs-3">Inactive</span>
+                        {% endif %}
+                      </div>
                     </div>
+                    
                    
                     <div class="d-flex align-items-center mt-3">
                       {% if request.user.is_superuser %}
-                        <span >
-                            <i class="fs-5 dark ti ti-stairs-down text-danger mx-2"></i>
+                        <span>
+                          <i class="fs-5 dark ti ti-stairs-down mx-2"
+                            style="color: {% if user.auto_stop_loss %}green{% else %}orange{% endif %};"></i>
                         </span>
                         <p class="text-grey mx-1 fs-3 mb-0 fw-bold flex-shrink-0" style="width: 150px;">Auto SL:</p>
-                       
                         <div class="ms-auto">
-                            {% if user.auto_stop_loss %}
-                                <span class="badge bg-success fs-3">Active</span>
-                            {% else %}
-                                <span class="badge bg-warning fs-3">Inactive</span>
-                            {% endif %}
+                          {% if user.auto_stop_loss %}
+                            <span class="badge bg-success fs-3">Active</span>
+                          {% else %}
+                            <span class="badge bg-warning fs-3">Inactive</span>
+                          {% endif %}
                         </div>
                         {% else %}
 
@@ -1115,7 +1125,7 @@
                         </span>
                         <p class="text-grey fs-3 mb-0 fw-bold flex-shrink-0" style="width: 150px;">Order Limit:</p>
                         <div class="ms-auto">
-                          <span class="badge badgclr fs-3">{{ order_limit }} to {{ peak_order_limit }}</span>
+                          <span class="badge badgclr fs-3">{{ order_limit }} &nbsp;&nbsp; - &nbsp;&nbsp; {{ peak_order_limit }}</span>
                         </div>
                       </div>
             
@@ -1270,27 +1280,27 @@
                             <h6 class="fw-semibold mb-0">{{ user.username }}</h6>
                           </td>
                           <td class="border-bottom-0">
-                            <span class="badge {% if user.status %}bg-success{% else %}bg-danger{% endif %} rounded-3 fw-semibold">
+                            <span class="badge {% if user.status %}bg-success{% else %}badgclr{% endif %} rounded-3 fw-semibold">
                               {% if user.status %}Active{% else %}Inactive{% endif %}
                             </span>
                           </td>
                           <td class="border-bottom-0">
-                            <span class="badge {% if user.kill_switch_1 %}bg-danger{% else %}bg-primary{% endif %} rounded-3 fw-semibold">
-                              {% if user.kill_switch_1 %}Enabled{% else %}Disabled{% endif %}
+                            <span class="badge {% if user.kill_switch_1 %}bg-danger{% else %}bg-success{% endif %} rounded-3 fw-semibold">
+                              {% if user.kill_switch_1 %}Activated{% else %}Monitoring{% endif %}
                             </span>
                           </td>
                           <td class="border-bottom-0">
-                            <span class="badge {% if user.kill_switch_2 %}bg-danger{% else %}bg-primary{% endif %} rounded-3 fw-semibold">
-                              {% if user.kill_switch_2 %}Enabled{% else %}Disabled{% endif %}
+                            <span class="badge {% if user.kill_switch_2 %}bg-danger{% else %}bg-success{% endif %} rounded-3 fw-semibold">
+                              {% if user.kill_switch_2 %}Activated{% else %}Monitoring{% endif %}
                             </span>
                           </td>
                           <td class="border-bottom-0">
-                            <span class="badge {% if user.auto_stop_loss %}bg-success{% else %}bg-danger{% endif %} rounded-3 fw-semibold">
+                            <span class="badge {% if user.auto_stop_loss %}bg-success{% else %}badgclr{% endif %} rounded-3 fw-semibold">
                               {% if user.auto_stop_loss %}Enabled{% else %}Disabled{% endif %}
                             </span>
                           </td>
                           <td class="border-bottom-0">
-                            <span class="badge {% if user.quick_exit %}bg-success{% else %}bg-danger{% endif %} rounded-3 fw-semibold">
+                            <span class="badge {% if user.quick_exit %}bg-success{% else %}badgclr{% endif %} rounded-3 fw-semibold">
                               {% if user.quick_exit %}Enabled{% else %}Disabled{% endif %}
                             </span>
                           </td>

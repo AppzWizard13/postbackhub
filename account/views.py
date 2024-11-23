@@ -200,6 +200,8 @@ class DashboardView(TemplateView):
             pnl_percentage = (actual_profit / actual_bal) * 100
         else:
             pnl_percentage = 0
+
+        order_limit = 0
         if control_data:
             order_limit = control_data.max_order_limit
             peak_order_limit = control_data.peak_order_limit
@@ -225,7 +227,7 @@ class DashboardView(TemplateView):
         breakup_labels = ['A/C Balance', 'Profit/Loss', 'Charges']
         max_expected_loss = 0 
         max_expected_expense = 0 
-        order_limit = 0
+        
         if control_data:
             if control_data.stoploss_type ==  "price" :
                 max_expected_loss = exp_entry_count  * stoploss_parameter
