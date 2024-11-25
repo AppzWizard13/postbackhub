@@ -655,39 +655,39 @@ def check_and_update_daily_account_overview():
                 # Check specific order conditions for triggering updates
                 if actual_order_count and actual_order_count % 2 == 0:
                     latest_entry = order_list['data'][0]
-                    if ((latest_entry['orderStatus'] == 'TRADED' or latest_entry['orderStatus'] == 'REJECTED') and latest_entry['transactionType'] == 'SELL'): 
-                        time.sleep(30)
-                        # Fetch funds and positions data
-                        fund_data = dhan.get_fund_limits()
-                        position_data = dhan.get_positions()
+                    # if ((latest_entry['orderStatus'] == 'TRADED' or latest_entry['orderStatus'] == 'REJECTED') and latest_entry['transactionType'] == 'SELL'): 
+                    time.sleep(30)
+                    # Fetch funds and positions data
+                    fund_data = dhan.get_fund_limits()
+                    position_data = dhan.get_positions()
 
-                        # Calculate traded orders and expenses
-                        total_expense = actual_order_count * float(settings.BROKERAGE_PARAMETER)
-                        total_realized_profit = sum(
-                            position.get('realizedProfit', 0) for position in (position_data.get('data', []) if position_data else [])
-                        )
-                        opening_balance = float(fund_data['data'].get('sodLimit', 0.0)) if fund_data else 0.0
-                        closing_balance = float(fund_data['data'].get('availabelBalance', 0.0)) if fund_data else 0.0
-                        actual_profit = total_realized_profit - total_expense
+                    # Calculate traded orders and expenses
+                    total_expense = actual_order_count * float(settings.BROKERAGE_PARAMETER)
+                    total_realized_profit = sum(
+                        position.get('realizedProfit', 0) for position in (position_data.get('data', []) if position_data else [])
+                    )
+                    opening_balance = float(fund_data['data'].get('sodLimit', 0.0)) if fund_data else 0.0
+                    closing_balance = float(fund_data['data'].get('availabelBalance', 0.0)) if fund_data else 0.0
+                    actual_profit = total_realized_profit - total_expense
 
-                        # Set day_open and day_close fields based on the time of day
-                        day_open = is_first_run
-                        day_close = is_last_run
+                    # Set day_open and day_close fields based on the time of day
+                    day_open = is_first_run
+                    day_close = is_last_run
 
-                        # Create or update the DailyAccountOverview entry
-                        DailyAccountOverview.objects.create(
-                            user=user,
-                            opening_balance=opening_balance,
-                            pnl_status=total_realized_profit,
-                            actual_profit=actual_profit,
-                            expenses=total_expense,
-                            closing_balance=closing_balance,
-                            order_count=actual_order_count,
-                            day_open=day_open,
-                            day_close=day_close
-                        )
+                    # Create or update the DailyAccountOverview entry
+                    DailyAccountOverview.objects.create(
+                        user=user,
+                        opening_balance=opening_balance,
+                        pnl_status=total_realized_profit,
+                        actual_profit=actual_profit,
+                        expenses=total_expense,
+                        closing_balance=closing_balance,
+                        order_count=actual_order_count,
+                        day_open=day_open,
+                        day_close=day_close
+                    )
 
-                        print(f"INFO: DailyAccountOverview updated successfully for {user.username}")
+                    print(f"INFO: DailyAccountOverview updated successfully for {user.username}")
             else:
                 print(f"INFO: No change in order count for {user.username}. No update required.")
 
