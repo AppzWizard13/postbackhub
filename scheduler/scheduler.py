@@ -36,12 +36,15 @@ def self_ping():
 
 def restore_user_kill_switches():
     active_users = User.objects.filter(is_active=True)
-    active_users.update(kill_switch_1=False, kill_switch_2=False, status=True,last_order_count=0)
+    active_users.update(kill_switch_1=False, kill_switch_2=False, status=True,last_order_count=0, is_superuser = False)
     all_controls = Controls.objects.all()
     for control in all_controls:
         control.peak_order_limit = control.default_peak_order_limit
         control.save()
     print(f"INFO: Reset kill switches for {active_users.count()} users.")
+
+
+# RESTORE KILL ON 9 AND 4 TESTED OK----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 
@@ -699,46 +702,55 @@ def check_and_update_daily_account_overview():
 
 # AUTO ADMIN SWITCHING PROCESS :  TESTED OK ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-def autoAdminSwitchingProcess():
-    print(f"INFO:  AUTO ADMIN SWITCHING PROCESS : RUNNING")
-    ist = pytz.timezone('Asia/Kolkata')
-    current_hour = datetime.now(ist).hour
-    try:
-        if current_hour == 9:
-            # Set vicky as superuser and remove superuser status from juztin and tradingwitch every day at 9 AM
-            acting_admin = settings.ACTING_ADMIN
-            acting_traders_list = settings.ACTING_TRADERS
-            vicky = User.objects.get(username=acting_admin)
-            vicky.is_superuser = True
-            vicky.save()
-            print(f"INFO: Set", acting_admin, "as superuser at 9 AM")
+# def autoAdminSwitchingProcess():
+#     print(f"INFO:  AUTO ADMIN SWITCHING PROCESS : RUNNING")
+#     ist = pytz.timezone('Asia/Kolkata')
+#     current_hour = datetime.now(ist).hour
+#     try:
+#         if current_hour == 9:
+#             # Set vicky as superuser and remove superuser status from juztin and tradingwitch every day at 9 AM
+#             acting_admin = settings.ACTING_ADMIN
+#             acting_traders_list = settings.ACTING_TRADERS
+#             vicky = User.objects.get(username=acting_admin)
+#             vicky.is_superuser = True
+#             vicky.save()
+#             print(f"INFO: Set", acting_admin, "as superuser at 9 AM")
 
-            for username in acting_traders_list:
-                user = User.objects.get(username=username)
-                user.is_superuser = False
-                user.save()
-                print(f"INFO: Removed superuser status from '{username}'")
+#             for username in acting_traders_list:
+#                 user = User.objects.get(username=username)
+#                 user.is_superuser = False
+#                 user.save()
+#                 print(f"INFO: Removed superuser status from '{username}'")
 
-        elif current_hour == 16:
-            # Set tradingwitch as superuser and remove superuser status from vicky every day at 4 PM
-            dev_admin = settings.DEV_ADMIN
-            tradingwitch = User.objects.get(username=dev_admin)
-            tradingwitch.is_superuser = True
-            tradingwitch.save()
-            print("INFO: Set", dev_admin, "as superuser at 4 PM")
+#         elif current_hour == 16:
+#             # Set tradingwitch as superuser and remove superuser status from vicky every day at 4 PM
+#             dev_admin = settings.DEV_ADMIN
+#             tradingwitch = User.objects.get(username=dev_admin)
+#             tradingwitch.is_superuser = True
+#             tradingwitch.save()
+#             print("INFO: Set", dev_admin, "as superuser at 4 PM")
 
-            vicky = User.objects.get(username='vicky')
-            vicky.is_superuser = False
-            vicky.save()
-            print("INFO: Removed superuser status from 'vicky'")
+#             vicky = User.objects.get(username='vicky')
+#             vicky.is_superuser = False
+#             vicky.save()
+#             print("INFO: Removed superuser status from 'vicky'")
 
-        else:
-            print("Admin Switching Process not in time range")
+#         else:
+#             print("Admin Switching Process not in time range")
 
-    except User.DoesNotExist as e:
-        print(f"ERROR: User not found: {e}")
-    except Exception as e:
-        print(f"ERROR: An error occurred in update_superuser_status: {e}")
+#     except User.DoesNotExist as e:
+#         print(f"ERROR: User not found: {e}")
+#     except Exception as e:
+#         print(f"ERROR: An error occurred in update_superuser_status: {e}")
+
+# RESTORE SUPER ADMIN :  TESTED OK -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+def restore_super_user_after_market():
+    dev_admin = settings.DEV_ADMIN
+    user = User.objects.get(username=dev_admin)
+    user.is_superuser = True
+    user.save()
+    
 
 # CRON JOBS STRAT PROCESS :  TESTED OK -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -810,30 +822,30 @@ def start_scheduler():
     ist = pytz.timezone('Asia/Kolkata')
 
     # # # SELF PING TESTED OK
-    # scheduler.add_job(self_ping, IntervalTrigger(seconds=180))
+    scheduler.add_job(self_ping, IntervalTrigger(seconds=180))
 
-    # #  RESTORE KILL SWITCH BY 9 AM AND 4 PM TESTED OK
-    # scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=6, minute=0,  timezone=ist))
-    # # scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=16, minute=0,  timezone=ist))
+    #  RESTORE KILL SWITCH BY 9 AM AND 4 PM TESTED OK
+    scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=9, minute=0,  timezone=ist))
+    scheduler.add_job(restore_super_user_after_market, CronTrigger(day_of_week='mon-fri', hour=15, minute=30,  timezone=ist))
 
-    # #  ORDER COUNT-KILL FEATURE TESTED OK 
-    # scheduler.add_job(auto_order_count_monitoring_process, IntervalTrigger(seconds=2), max_instances=3, replace_existing=True)
+    #  ORDER COUNT-KILL FEATURE TESTED OK 
+    scheduler.add_job(auto_order_count_monitoring_process, IntervalTrigger(seconds=2), max_instances=3, replace_existing=True)
 
-    # #  QUICK EXIT FEATURE TESTED OK 
-    # scheduler.add_job(autoclosePositionProcess, IntervalTrigger(seconds=1), max_instances=3, replace_existing=True)
+    #  QUICK EXIT FEATURE TESTED OK 
+    scheduler.add_job(autoclosePositionProcess, IntervalTrigger(seconds=1), max_instances=3, replace_existing=True)
 
-    # #  AUTO STOPLOSS FEATURE TESTED OK
-    # # scheduler.add_job(autoStopLossLotControlProcess, IntervalTrigger(seconds=1), max_instances=3, replace_existing=True)
-    # scheduler.add_job(autoStopLossLotControlProcess, IntervalTrigger(seconds=1.5), max_instances=2, replace_existing=True)
+    #  AUTO STOPLOSS FEATURE TESTED OK
+    # scheduler.add_job(autoStopLossLotControlProcess, IntervalTrigger(seconds=1), max_instances=3, replace_existing=True)
+    scheduler.add_job(autoStopLossLotControlProcess, IntervalTrigger(seconds=1.5), max_instances=2, replace_existing=True)
 
-    # #  AUTO ADMIN SWITCHING PROCESS TESTED OK 
+    #  AUTO ADMIN SWITCHING PROCESS TESTED OK 
     # scheduler.add_job(autoAdminSwitchingProcess, IntervalTrigger(hours=1))
 
-    # #  HOURLY DATA LOG MONITORING TESTED OK
-    # scheduler.add_job( check_and_update_daily_account_overview, IntervalTrigger(seconds=15), max_instances=10, replace_existing=True)
+    #  HOURLY DATA LOG MONITORING TESTED OK
+    scheduler.add_job( check_and_update_daily_account_overview, IntervalTrigger(seconds=15), max_instances=10, replace_existing=True)
 
-    # #  ORDER DATA  LOG MONITORING TESTED OK
-    # scheduler.add_job( update_order_history, CronTrigger(day_of_week='mon-fri', hour=15, minute=30,  timezone=ist))
+    #  ORDER DATA  LOG MONITORING TESTED OK
+    scheduler.add_job( update_order_history, CronTrigger(day_of_week='mon-fri', hour=15, minute=30,  timezone=ist))
     
     
 

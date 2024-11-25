@@ -489,7 +489,7 @@
               <div class="mb-3 mb-sm-0 pr-5">
                 <a  class="btn btn-outline-primary mx-3  d-block">Dashboard : {{user.username}}</a>
               </div>
-              {% if dashboard_view and request.user.is_superuser %}
+              {% if dashboard_view and request.user.is_staff %}
               <div>
                   <select class="form-select bg-dark text-white border-dark" id="userSelect" style="background-color: #333; color: #fff; border-color: #555;">
                       <option value="" selected disabled style="background-color: #333; color: #bbb;">Select a user</option>
@@ -1066,7 +1066,7 @@
                     
                    
                     <div class="d-flex align-items-center mt-3">
-                      {% if request.user.is_superuser %}
+                      {% if request.user.is_staff %}
                         <span>
                           <i class="fs-5 dark ti ti-stairs-down mx-2"
                             style="color: {% if user.auto_stop_loss %}green{% else %}orange{% endif %};"></i>
@@ -1293,7 +1293,7 @@
 
 
 
-           {% if request.user.is_superuser %}
+           {% if request.user.is_staff %}
             <div class="col-lg-5 d-flex align-items-stretch" >
               <div class="card w-100">
                 <div class="card-body p-4">
