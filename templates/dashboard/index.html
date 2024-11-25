@@ -676,7 +676,7 @@
                   <div id="chart"></div>
                     <div class="d-flex justify-content-between" style="margin-top: 25px;">
                       <div class="mb-3 mb-sm-0">
-                        <span class="open_pos_label">Trade Open: </span> 
+                        <span class="open_pos_label">Trade Open</span> 
                         {% if open_position %}
                           <!-- Button with trading symbol, enabled and green if position data exists -->
                           <button style="height: 40px; margin-top: 10px;"class="btn btn-success d-block" onclick="openPositionPopup('{{ open_position.0.securityId }}')">
@@ -685,7 +685,7 @@
                         {% else %}
                           <!-- Button text "No Positions," blue, and disabled if no position data exists -->
                           <button style="height: 40px; margin-top: 10px;"class="btn badgclr d-block disabled" tabindex="-1" aria-disabled="true">
-                            Open Position  :  No Positions
+                            N/A
                           </button>
                         {% endif %}
                       </div>
@@ -701,65 +701,64 @@
                           
                         </div>
                         
-                        
-                        <style>
-                          /* Scoped styles for the progress bar */
-                          .custom-progress-container {
-                            font-weight: 600;
-                            display: flex;
-                            flex-direction: column;
-                            justify-content: center;
-                            align-items: center;
-                            height: 100%;
-                            background: transparent;
-                            padding: 0;
-                            margin: 0;
-                            margin-right: 23px;
-                            font-size: 18px;
-                          }
-                        
-                          /* Container for the progress bar and the order count */
-                          .progress {
-                            background: rgb(10 10 10);
-                            justify-content: space-between;
-                            border-radius: 5px;
-                            align-items: center;
-                            position: relative;
-                            padding: 0 5px;
-                            display: flex;
-                            height: 40px;
-                            width: 300px; /* Make it responsive to parent container */
-                            max-width: 400px; /* Optional max-width for better design */
-                            margin-bottom: 10px;
-                          }
-                        
-                          /* Progress bar value (dynamic background color) */
-                          .progress-value {
-                            box-shadow: 0 10px 40px -10px #fff;
-                            border-radius: 5px;
-                            height: 35px;
-                            width: 0;
-                            transition: background-color 0.3s ease; /* Smooth color transition */
-                          }
-                        
-                          /* Text for order count (will be aligned right) */
-                          .progress-text {
-                            margin-inline: 10px;
-                            color: white;
-                          }
-                        
-                          /* Remaining orders text */
-                          .remaining-orders {
-                            color: #fff;
-                            font-size: 14px;
-                          } 
-                          .badgclr{
-                            background: #3c3c3c
-                          }
-                        </style>
-                        
                       </div> 
                     </div>
+
+                    <style>
+                      /* Scoped styles for the progress bar */
+                      .custom-progress-container {
+                        font-weight: 600;
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: center;
+                        align-items: center;
+                        height: 100%;
+                        background: transparent;
+                        padding: 0;
+                        margin: 0;
+                        margin-right: 23px;
+                        font-size: 18px;
+                      }
+                    
+                      /* Container for the progress bar and the order count */
+                      .progress {
+                        background: rgb(10 10 10);
+                        justify-content: space-between;
+                        border-radius: 5px;
+                        align-items: center;
+                        position: relative;
+                        padding: 0 5px;
+                        display: flex;
+                        height: 40px;
+                        width: 300px; /* Make it responsive to parent container */
+                        max-width: 400px; /* Optional max-width for better design */
+                        margin-bottom: 10px;
+                      }
+                    
+                      /* Progress bar value (dynamic background color) */
+                      .progress-value {
+                        box-shadow: 0 10px 40px -10px #fff;
+                        border-radius: 5px;
+                        height: 35px;
+                        width: 0;
+                        transition: background-color 0.3s ease; /* Smooth color transition */
+                      }
+                    
+                      /* Text for order count (will be aligned right) */
+                      .progress-text {
+                        margin-inline: 10px;
+                        color: white;
+                      }
+                    
+                      /* Remaining orders text */
+                      .remaining-orders {
+                        color: #fff;
+                        font-size: 14px;
+                      } 
+                      .badgclr{
+                        background: #3c3c3c
+                      }
+                    </style>
 
                     <script>
                       function openPositionPopup(securityId) {
