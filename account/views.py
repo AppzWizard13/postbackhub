@@ -181,15 +181,31 @@ class DashboardView(TemplateView):
         position_data_json = json.dumps(position_data['data'])
         all_positions = position_data['data']
         open_position = [
-                {'tradingSymbol': position['tradingSymbol'], 'securityId': position['securityId']}
-                for position in all_positions
-                if position['positionType'] != 'CLOSED'
-            ]
+            {'tradingSymbol': position['tradingSymbol'], 'securityId': position['securityId']}
+            for position in all_positions
+            if isinstance(position, dict) and position.get('positionType') != 'CLOSED'
+        ]
 
         actual_profit = total_realized_profit - total_expense
-        opening_balance = float(fund_data['data']['sodLimit'])
-        available_balance = float(fund_data['data']['availabelBalance'])
+
+        # Validate fund_data structure and types
+        if (
+            isinstance(fund_data, dict) and
+            'data' in fund_data and
+            isinstance(fund_data['data'], dict)
+        ):
+            # Extract and validate 'sodLimit'
+            opening_balance = float(fund_data['data'].get('sodLimit', 0))  # Default to 0 if missing or invalid
+            # Extract and validate 'availabelBalance'
+            available_balance = float(fund_data['data'].get('availabelBalance', 0))  # Default to 0 if missing or invalid
+        else:
+            # Handle invalid fund_data structure
+            opening_balance = 0.0
+            available_balance = 0.0
+
+        # Calculate actual balance
         actual_balance = opening_balance + actual_profit
+
         brokerage_only = 20
         if opening_balance >= available_balance:
             actual_bal = opening_balance
@@ -808,17 +824,23 @@ def close_all_positions(request):
 
 
 
-def get_pending_order_filter_dhan(response): 
-    # Check if the response contains 'data'
-    if 'data' not in response:
+def get_pending_order_filter_dhan(response):
+    # Check if the response contains 'data' and if it's a list
+    if 'data' not in response or not isinstance(response['data'], list):
         return False
+    
     pending_sl_orders = [
         order for order in response['data']
-        if order.get('orderStatus') == 'PENDING' and order.get('transactionType') == 'SELL'
+        if isinstance(order, dict) and
+           order.get('orderStatus') == 'PENDING' and
+           order.get('transactionType') == 'SELL'
     ]
+    
     if not pending_sl_orders:
         return False  
+    
     return pending_sl_orders
+
 
 
 def get_latest_buy_order_dhan(response):
@@ -1112,3 +1134,72 @@ def daily_self_analysis_view(request):
         advice_list = request.session.pop('advice_list', None)
 
     return render(request, 'dashboard/daily_selfanalysis.html', {'form': form, 'advice_list': advice_list})
+
+from .models import UserRTCUsage
+import json
+
+@login_required
+@require_POST
+@csrf_exempt
+def use_rtc_action(request):
+    try:
+        # Parse the JSON data from the request body
+        data = json.loads(request.body)
+        username = data.get('username')
+
+        # Fetch the user with the provided username
+        user = User.objects.get(is_active=True, username=username)
+
+        # Check if reserved_trade_count is 0
+        if user.reserved_trade_count == 0:
+            return JsonResponse({
+                "status": "error",
+                "message": "Your RTC is used completely. Wait till next week's starting."
+            }, status=400)
+
+        # Fetch the Control data for the user
+        control_data = Control.objects.filter(user=user).first()
+        if not control_data:
+            return JsonResponse({
+                "status": "error",
+                "message": f"No control data found for user {username}."
+            }, status=400)
+
+        # Get or create a UserRTCUsage record for today
+        today_usage, created = UserRTCUsage.objects.get_or_create(user=user, date=date.today())
+
+        # Check if the user has already used RTC twice today
+        if today_usage.usage_count >= 2:
+            return JsonResponse({
+                "status": "error",
+                "message": "You have already used RTC twice today. Please wait until tomorrow."
+            }, status=400)
+
+        # Update peak_order_limit
+        control_data.peak_order_limit += 2
+        control_data.save()
+
+        # Reduce reserved_trade_count
+        user.reserved_trade_count -= 1
+        user.save()
+
+        # Increment the RTC usage count for today
+        today_usage.usage_count += 1
+        today_usage.save()
+
+        # Return success message
+        return JsonResponse({
+            "status": "success",
+            "message": f"Peak order limit updated to {control_data.peak_order_limit}. Reserved trade count reduced to {user.reserved_trade_count}. RTC used {today_usage.usage_count} times today."
+        })
+
+    except User.DoesNotExist:
+        return JsonResponse({
+            "status": "error",
+            "message": f"User {username} not found or inactive."
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            "status": "error",
+            "message": str(e)
+        }, status=500)

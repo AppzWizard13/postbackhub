@@ -18,6 +18,8 @@ class User(AbstractUser):
     quick_exit = models.BooleanField(default=False)
     sl_control_mode = models.BooleanField(default=False)
     last_order_count = models.IntegerField(default=0)
+    reserved_trade_count = models.IntegerField(default=0)
+
 
     # Adding related_name to prevent reverse accessor clashes
     groups = models.ManyToManyField(
@@ -190,68 +192,11 @@ class DailySelfAnalysis(models.Model):
     def __str__(self):
         return f"Self Analysis on {self.id} by {self.user.username} at {self.date_time}"
 
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from django.utils.timezone import now
-from . models import DailySelfAnalysis
+from datetime import date
+class UserRTCUsage(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    date = models.DateField(default=date.today)
+    usage_count = models.IntegerField(default=0)
 
-def daily_self_analysis_view(request):
-    if request.method == 'POST':
-        form = DailySelfAnalysisForm(request.POST)
-        if form.is_valid():
-            # Check if a record already exists for today
-            today = now().date()  # Get the current date
-            existing_analysis = DailySelfAnalysis.objects.filter(
-                user=request.user, 
-                date_time__date=today
-            ).first()  # Filter by user and date (date portion of date_time field)
-
-            if existing_analysis:
-                messages.error(request, "You have already submitted your self-analysis for today.")
-                return redirect('daily_self_analysis')
-
-            # Associate the logged-in user with the form before saving
-            analysis = form.save(commit=False)
-            analysis.user = request.user  # Set the logged-in user as the user for this analysis
-
-            # Retrieve scores
-            health_score = analysis.health_check
-            mind_score = analysis.mind_check
-            expectation_score = analysis.expectation_level
-            patience_score = analysis.patience_level
-            previous_day_score = analysis.previous_day_self_analysis
-
-            # Calculate overall score
-            overall_score = (health_score + mind_score + expectation_score + patience_score + previous_day_score) // 5
-
-            # Generate advice and tips based on the scores
-            advice_health = get_advice(health_score, "health_check")
-            advice_mind = get_advice(mind_score, "mind_check")
-            advice_expectation = get_advice(expectation_score, "expectation_level")
-            advice_patience = get_advice(patience_score, "patience_level")
-            advice_prev_day = get_advice(previous_day_score, "previous_day_self_analysis")
-            advice_overall = get_advice(overall_score, "overall")
-
-            # Compile advice into a list
-            advice_list = [advice_health, advice_mind, advice_expectation, advice_patience, advice_prev_day, advice_overall]
-
-            request.session['advice_list'] = advice_list
-
-            # Save advice_list as a string in the overall_advice field
-            analysis.overall_advice = ', '.join(str(advice) for advice in advice_list)
-
-
-            # Save the analysis instance
-            analysis.save()
-
-            # Display success message
-            messages.success(request, "Your self-analysis was submitted successfully.")
-
-            # Redirect to the same page to avoid resubmission on refresh
-            return redirect('daily_self_analysis')
-        else:
-            messages.error(request, "There was an error with your submission.")
-    else:
-        form = DailySelfAnalysisForm()
-
-    return render(request, 'dashboard/daily_selfanalysis.html', {'form': form, 'advice_list': advice_list})
+    def __str__(self):
+        return f"{self.user.username} - {self.date}"

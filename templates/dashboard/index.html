@@ -1146,7 +1146,7 @@
                     </div>
             
                     <!-- Orders Button -->
-                    <div class="col-4">
+                    {% comment %} <div class="col-4">
                       <div class="d-flex justify-content-end">
                         <div class="mb-3 mb-sm-0 pr-5">
                           <a class="btn btn-primary mx-2 fs-3 fw-bold d-block"
@@ -1155,7 +1155,41 @@
                           </a>
                         </div>
                       </div>
+                    </div> {% endcomment %}
+                  <!-- UseRTC Button -->
+                  <div class="col-4">
+                    <div class="d-flex justify-content-end">
+                      <div class="mb-3 mb-sm-0 pr-5">
+                        <button class="btn btn-primary mx-2 fs-3 fw-bold d-block" 
+                                style="border-width: 1px; border-style: solid; cursor: pointer;" 
+                                id="useRTCButton" value="{{ user.username }}" 
+                                data-bs-toggle="modal" data-bs-target="#useRTCModal">
+                                Use&nbsp;RTC<br>
+                          <span id="action-button" value="{{ user.username }}"></span>
+                        </button>
+                      </div>
                     </div>
+                  </div>
+
+                  <!-- UseRTC Confirmation Modal -->
+                  <div class="modal fade" id="useRTCModal" tabindex="-1" aria-labelledby="useRTCModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <h5 class="modal-title" id="useRTCModalLabel">Confirm Action</h5>
+                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body fs-4">
+                          Are you sure you want to proceed with the UseRTC action?
+                        </div>
+                        <div class="modal-footer">
+                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                          <button type="button" class="btn btn-primary" id="confirmUseRTC">Confirm</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                   </div>
                 </div>
               </div>
@@ -1271,6 +1305,7 @@
                         <tr>
                           <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Username</h6></th>
                           <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Status</h6></th>
+                          <th class="border-bottom-0"><h6 class="fw-semibold mb-0">R T C</h6></th>
                           <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Kill Status 1</h6></th>
                           <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Kill Status 2</h6></th>
                           <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Auto SL</h6></th>
@@ -1289,6 +1324,11 @@
                             </span>
                           </td>
                           <td class="border-bottom-0">
+                            <span class="badge bg-primary rounded-3 fw-semibold">
+                              {{ user.reserved_trade_count }}
+                            </span>
+                          </td>
+                          <td class="border-bottom-0">
                             <span class="badge {% if user.kill_switch_1 %}bg-danger{% else %}bg-success{% endif %} rounded-3 fw-semibold">
                               {% if user.kill_switch_1 %}Activated{% else %}Monitoring{% endif %}
                             </span>
@@ -1298,6 +1338,7 @@
                               {% if user.kill_switch_2 %}Activated{% else %}Monitoring{% endif %}
                             </span>
                           </td>
+
                           <td class="border-bottom-0">
                             <span class="badge {% if user.auto_stop_loss %}bg-success{% else %}badgclr{% endif %} rounded-3 fw-semibold">
                               {% if user.auto_stop_loss %}Enabled{% else %}Disabled{% endif %}
@@ -1746,6 +1787,96 @@
           });
       }
   </script>
+
+  <script>
+  // Function to handle UseRTC action
+  function useRTCAction() {
+    // Get the username from the button's value attribute
+    const username = document.getElementById('useRTCButton').value;
+
+    fetch('/use_rtc_action/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ username: username })
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Create a toast element for success or error message
+        const toastContainer = document.querySelector('.toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast align-items-center text-bg-${data.message ? 'success' : 'danger'} border-0`;
+        toast.role = 'alert';
+        toast.ariaLive = 'assertive';
+        toast.ariaAtomic = 'true';
+        toast.dataset.bsDelay = '3000';
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">
+                    ${data.message ? data.message : 'Error: ' + data.error}
+                </div>
+                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        `;
+
+        // Append the toast to the toast container
+        toastContainer.appendChild(toast);
+
+        // Show the toast
+        const toastInstance = new bootstrap.Toast(toast);
+        toastInstance.show();
+
+        // If the action was successful, reload the page
+        if (data.status === "success") {
+            setTimeout(() => location.reload(), 2000);  // Reload page after 2 seconds
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+
+        // Handle error toast
+        const toastContainer = document.querySelector('.toast-container');
+        const toast = document.createElement('div');
+        toast.className = 'toast align-items-center text-bg-danger border-0';
+        toast.role = 'alert';
+        toast.ariaLive = 'assertive';
+        toast.ariaAtomic = 'true';
+        toast.dataset.bsDelay = '3000';
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">
+                    Error: ${error.message}
+                </div>
+                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        `;
+
+        // Append the error toast to the toast container
+        toastContainer.appendChild(toast);
+
+        // Show the error toast
+        const toastInstance = new bootstrap.Toast(toast);
+        toastInstance.show();
+    });
+
+    // Close the modal after the action (confirm or cancel)
+      const modal = new bootstrap.Modal(document.getElementById('useRTCModal'));
+      modal.hide();  // This will hide the modal
+    }
+
+      // Attach the event listener for the confirmation button in the modal
+      document.getElementById('confirmUseRTC').addEventListener('click', useRTCAction);
+
+      // Also close the modal on cancel (button with data-bs-dismiss="modal")
+      document.querySelector('.btn-secondary[data-bs-dismiss="modal"]').addEventListener('click', () => {
+        const modal = new bootstrap.Modal(document.getElementById('useRTCModal'));
+        modal.hide();  // This will hide the modal on cancel
+  });
+
+  </script>
+  
+  
 
 
     

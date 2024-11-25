@@ -47,6 +47,8 @@ urlpatterns = [
     path('check-log-status/', views.check_log_status, name='check_log_status'),  # Add the URL for the status check
 
     path('activate_kill_switch/', views.activate_kill_switch, name='activate_kill_switch'),
+    path('use_rtc_action/', views.use_rtc_action, name='use_rtc_action'),
+
 
 
     

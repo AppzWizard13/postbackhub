@@ -57,7 +57,7 @@ class UserprofileUpdate(forms.ModelForm):
     # specify the name of model to use
     class Meta:
         model = User
-        fields = ["first_name", "last_name", "username" , "email", "dhan_client_id", "dhan_access_token" ]
+        fields = ["first_name", "last_name", "username" , "email", "dhan_client_id", "dhan_access_token" , "reserved_trade_count"]
 
     def __init__(self, *args, **kwargs):
         super(UserprofileUpdate, self).__init__(*args, **kwargs)
@@ -89,7 +89,8 @@ class UserForm(forms.ModelForm):
             'kill_switch_1',
             'kill_switch_2',
             'quick_exit',
-            'sl_control_mode'
+            'sl_control_mode',
+            'reserved_trade_count'
             # 'profile_image',  # Optional field
         ]
         widgets = {
