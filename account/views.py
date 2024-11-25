@@ -310,11 +310,37 @@ class DashboardView(TemplateView):
 
         print("Processed advice_dict:", advice_dict)
 
-
         print("existing_analysisexisting_analysisexisting_analysis", advice_dict) 
 
+        print("hourly_status_datahourly_status_data", hourly_status_data)
+
+        from django.db.models import F
+
+        # Fetch the data with a renamed annotation to avoid conflict with the existing model field
+        data = list(
+            DailyAccountOverview.objects
+            .filter(user=user)
+            .annotate(
+                annotated_pnl_status=F('pnl_status')  # Rename annotation to avoid conflict with model field
+            )
+            .order_by('-updated_on')
+            .values('annotated_pnl_status')[:20]
+        )[::-1]  # Reverse the order to get the latest records first
+
+        # Count how many annotated_pnl_status values are positive
+        positive_pnl_count = sum(1 for entry in data if entry['annotated_pnl_status'] > 0)
+        # Calculate the accuracy as a percentage
+        total_entries = len(data)
+        accuracy = (positive_pnl_count / total_entries) * 100 if total_entries > 0 else 0
+
+        # Print or store the accuracy and count for further use
+        print(f"Accuracy: {accuracy}%")
+        print(f"Positive PnL count: {positive_pnl_count}")
+        print(f"Total Entries: {total_entries}")
 
 
+
+        context['accuracy'] = accuracy
         context['progress_color'] = progress_color
         context['open_position'] = open_position
         context['pending_sl_order'] = pending_sl_order
