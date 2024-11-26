@@ -747,10 +747,13 @@ def check_and_update_daily_account_overview():
 
 def restore_super_user_after_market():
     dev_admin = settings.DEV_ADMIN
-    user = User.objects.get(username=dev_admin)
-    user.is_superuser = True
-    user.save()
-    
+    user = User.objects.filter(username=dev_admin).first()
+    if user:
+        user.is_superuser = True
+        user.save()
+    else:
+        print("Developer admin user not found.")
+
 
 # CRON JOBS STRAT PROCESS :  TESTED OK -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
