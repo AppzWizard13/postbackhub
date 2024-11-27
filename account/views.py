@@ -233,7 +233,8 @@ class DashboardView(TemplateView):
 
         exp_entry_count = peak_order_limit // 2 
         actual_entry_count = order_count // 2 
-        remaining_orders = (peak_order_limit - order_count) // 2
+        remaining_trades = (peak_order_limit - order_count) // 2
+        
         # data for chart - break up 
         if total_realized_profit > 0 :
             breakup_series = [opening_balance, total_realized_profit, total_expense ]
@@ -249,10 +250,10 @@ class DashboardView(TemplateView):
         
         if control_data:
             if control_data.stoploss_type ==  "price" :
-                max_expected_loss = remaining_orders  * stoploss_parameter
+                max_expected_loss = remaining_trades  * stoploss_parameter
                 max_expected_expense = float(max_expected_loss) + day_exp_brokerge
             else:
-                max_expected_loss = (actual_bal * remaining_orders ) * (stoploss_parameter/100)
+                max_expected_loss = (actual_bal * remaining_trades ) * (stoploss_parameter/100)
                 max_expected_expense = float(max_expected_loss) + day_exp_brokerge
 
         from django.db.models import F, Sum
@@ -340,14 +341,17 @@ class DashboardView(TemplateView):
         print(f"Total Entries: {total_entries}")
 
         charge_per_trade = 2 * float(settings.BROKERAGE_PARAMETER)
-
-        if stoploss_type == 'price':
+        max_reamining_expense = charge_per_trade * (remaining_orders // 2 )
+        print("max_reamining_expensemax_reamining_expense", max_reamining_expense)
+        print("available_balanceavailable_balanceavailable_balance", available_balance)
+        print("max_reamining_expensemax_reamining_expense", max_reamining_expense)
+        if stoploss_type == 'price' and remaining_orders > 0 :
             forecast_balance = available_balance - stoploss_parameter - charge_per_trade
-            day_risk_forecast = available_balance - max_expected_expense
+            day_risk_forecast = available_balance - max_reamining_expense
 
         else :
             forecast_balance = "0.00"
-            day_risk_forecast = available_balance - max_expected_expense
+            day_risk_forecast = available_balance - max_reamining_expense
 
         context['accuracy'] = accuracy
         context['progress_color'] = progress_color
