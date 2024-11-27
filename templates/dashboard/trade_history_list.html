@@ -24,7 +24,7 @@
 
                 <!-- Filter Form -->
                 <form method="get" class="row g-3 mb-4">
-                    {% if request.user.is_superuser %}
+                    {% if request.user.is_staff %}
                     <div class="col-md-3">
                         <label for="user_id" class="form-label">User</label>
                         <select name="user_id" id="user_id" class="form-select">
