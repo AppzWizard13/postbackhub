@@ -347,8 +347,7 @@ class DashboardView(TemplateView):
         print("max_reamining_expensemax_reamining_expense", max_reamining_expense)
         if stoploss_type == 'price' and remaining_orders > 0 :
             forecast_balance = available_balance - stoploss_parameter - charge_per_trade
-            forecast_balance = available_balance - (stoploss_parameter * remaining_trades ) - charge_per_trade
-            day_risk_forecast = available_balance - max_reamining_expense
+            day_risk_forecast = available_balance - (stoploss_parameter * remaining_trades ) - max_reamining_expense
 
         else :
             forecast_balance = "0.00"
