@@ -46,7 +46,7 @@ else:
 
 ALLOWED_HOSTS = ['*']
 
-CSRF_TRUSTED_ORIGINS = ['https://https://postback-hub.onrender.com', "http://localhost:8001", "http://127.0.0.1:8001","https://tradewiz.onrender.com"]
+CSRF_TRUSTED_ORIGINS = ['https://tradewiz-2kym.onrender.com', "http://localhost:8001", "http://127.0.0.1:8001","https://tradewiz.onrender.com"]
 
 # Application definition
 INSTALLED_APPS = [
