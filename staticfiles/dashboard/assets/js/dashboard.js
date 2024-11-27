@@ -172,7 +172,7 @@ $(function () {
 
         chart: {
             type: "bar",
-            height: 550,
+            height: 500,
             offsetX: -15,
             toolbar: { show: true },
             foreColor: "#000000d9",
