@@ -824,7 +824,7 @@ def start_scheduler():
     scheduler = BackgroundScheduler()
     ist = pytz.timezone('Asia/Kolkata')
 
-    # # # SELF PING TESTED OK
+    # SELF PING TESTED OK
     scheduler.add_job(self_ping, IntervalTrigger(seconds=180))
 
     #  RESTORE KILL SWITCH BY 9 AM AND 4 PM TESTED OK

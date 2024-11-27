@@ -17,8 +17,8 @@ $(function () {
       var breakup_series = parsedSeriesData.map(num => Math.round(num));
     
       var colors = [
-        "#3267ff", // First color - Blue (default)
-        breakup_series[1] > 0 ? "#32df2d" : (breakup_series[1] < 0 ? "#fa2d2d" : "#3569ff"), // Green if positive, Red if negative, Blue if zero
+        "#0d41d9", // First color - Blue (default)
+        breakup_series[1] > 0 ? "#32df2d" : (breakup_series[1] < 0 ? "#ff0000" : "#3569ff"), // Green if positive, Red if negative, Blue if zero
         "#fff47d" // Third color - Orange (default)
       ];
       console.log("colorscolorscolorscolorscolors", colors)
@@ -59,7 +59,7 @@ $(function () {
     } catch (e) {
       console.error("Failed to parse breakup_seriesdata as JSON:", e);
       var breakup_series = [0, 0, 0]; // Default values if parsing fails
-      var colors = ["#3267ff", "#fa2d2d", "#fff47d"]; // Default color scheme
+      var colors = ["#0d41d9", "#ff0000", "#fff47d"]; // Default color scheme
     }
     
 
@@ -172,7 +172,7 @@ $(function () {
 
         chart: {
             type: "bar",
-            height: 345,
+            height: 500,
             offsetX: -15,
             toolbar: { show: true },
             foreColor: "#000000d9",

@@ -26,8 +26,6 @@
     #sidebar.collapsed + .main-content {
         margin-left: 60px; /* Adjust margin for main content when sidebar is collapsed */
     }
-  </style>
-  <style>
     /* Video background style */
     #background-video {
       position: absolute;
@@ -65,7 +63,7 @@
   
     .card {
       background-color: rgba(0, 0, 0, 0.7); /* Darker card background */
-      border: 1px solid #333;
+      border: 1px solid rgba(0, 0, 0, 0.7);
     }
     .app-header{
       background-color: #141414;
@@ -187,10 +185,42 @@
     .bg-primary{
       background: #0d41d9 !important;
     }
+    /* Hides the sidebar completely */
+    .hidden-sidebar {
+        display: none;
+    }
+    
+    /* Optional: Add transitions for a smooth effect */
+    #sidebar {
+        transition: all 0.3s ease;
+    }
+    
+    .hidden-sidebar {
+        opacity: 0;
+        transform: translateX(-100%); /* Pushes the sidebar off-screen */
+        pointer-events: none; /* Prevent interactions */
+    }
 
+    /* Hide the sidebarCollapse button and show menuIcon on screens below 1200px */
+    @media (max-width: 1200px) {
+        #sidebarCollapse {
+            display: none; /* Hide close button */
+        }
 
+        #menuIcon {
+            display: block; /* Show menu button */
+        }
+    }
+
+    /* Ensure menuIcon is hidden on larger screens */
+    @media (min-width: 1201px) {
+        #menuIcon {
+            display: show; /* Hide menu button */
+        }
+    }
+
+    
   </style>
-  
 </head>
 
 <body>
@@ -219,8 +249,8 @@
                 <a href="{% url 'dashboard' %}" class="text-nowrap logo-img" style="margin-left: 20px; margin-top: 25px;">
                     <img src="{% static 'dashboard/assets/images/logos/tradewizlogo.png' %}" width="180" alt="" />
                 </a>
-                <div class="close-btn d-xl-none d-block sidebartoggler cursor-pointer" id="sidebarCollapse">
-                    <i class="dark ti ti-x fs-8"></i>
+                <div class="close-btn mx-5 mt-4  sidebartoggler cursor-pointer" id="sidebarCollapse">
+                    <i class="dark ti ti-square-arrow-left fs-8"></i>
                 </div>
             </div>
             <!-- Sidebar navigation-->
@@ -464,11 +494,12 @@
       <header class="app-header">
         <nav class="navbar navbar-expand-lg navbar-light">
           <ul class="navbar-nav">
-            <li class="nav-item d-block d-xl-none">
-              <a class="nav-link sidebartoggler nav-icon-hover" id="headerCollapse" href="javascript:void(0)">
+          <!-- Toggle Menu Icon -->
+          <li class="nav-item d-block d-none" id="menuIcon">
+            <a class="nav-link sidebartoggler nav-icon-hover" id="headerCollapse" href="javascript:void(0)">
                 <i class="dark ti ti-menu-2"></i>
-              </a>
-            </li>
+            </a>
+          </li>
             <li class="nav-item">
               <a class="nav-link nav-icon-hover" href="javascript:void(0)">
                 {% if user.kill_switch_1 and not user.kill_switch_2 %}
@@ -606,6 +637,62 @@
       // Initial call to display the clock immediately
       updateClock();
       </script>
+
+      <script>
+
+        document.addEventListener('DOMContentLoaded', function () {
+          const sidebarCollapse = document.getElementById('sidebarCollapse'); // Sidebar close button
+          const menuIcon = document.getElementById('menuIcon'); // Menu icon button
+      
+          // Function to toggle visibility based on screen width
+          function handleResponsiveToggle() {
+              if (window.innerWidth < 1200) {
+                  sidebarCollapse.style.display = 'none'; // Hide close button
+                  menuIcon.style.display = 'block'; // Show menu icon
+              } else {
+                  sidebarCollapse.style.display = 'block'; // Show close button
+                  menuIcon.style.display = 'none'; // Hide menu icon
+              }
+          }
+      
+          // Run on page load
+          handleResponsiveToggle();
+      
+            // Listen for window resize to adjust dynamically
+            window.addEventListener('resize', handleResponsiveToggle);
+        });
+
+
+        document.addEventListener('DOMContentLoaded', function () {
+          document.getElementById('sidebarCollapse').addEventListener('click', function () {
+              const sidebar = document.getElementById('sidebar');
+              const menuIcon = document.getElementById('menuIcon');
+              sidebar.classList.toggle('hidden-sidebar'); // Toggles the class
+                menuIcon.classList.remove('d-none');
+                console.log("Sidebar toggle clicked");
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+          const sidebar = document.getElementById('sidebar');
+          const sidebarCollapse = document.getElementById('sidebarCollapse');
+          const menuIcon = document.getElementById('menuIcon');
+          const headerCollapse = document.getElementById('headerCollapse');
+      
+          // Hide sidebar and show menu icon
+          sidebarCollapse.addEventListener('click', function () {
+              sidebar.classList.add('hidden-sidebar'); // Hide sidebar
+              menuIcon.style.display = 'block'; // Show menu icon
+          });
+      
+          // Show sidebar and hide menu icon
+          headerCollapse.addEventListener('click', function () {
+              sidebar.classList.remove('hidden-sidebar'); // Show sidebar
+              menuIcon.style.display = 'none'; // Hide menu icon
+              menuIcon.classList.add('d-none');
+          });
+      });
+    </script>
       {% block content %}
         <div class="container-fluid" style="max-width: none;">
           <!--  Row 1 -->
@@ -860,7 +947,86 @@
                         </div>
                       </div>
                     </div>
-                    <div class="mt-5" id="earning"></div>
+                    <div class="mt-1" id="earning"></div>
+                  </div>
+                </div>
+                <div class="col-lg-12">
+                  <!-- RISK FORCAST -->
+                  <div class="card">
+                    <div class="card-body">
+                      <div class="row align-items-start">
+                        <div class="col-8">
+                          <h5 class="card-title fw-semibold" style="margin-bottom: 30px !important;">Risk Forecast</h5>
+                          
+                          <!-- Risk / Trade -->
+                          <div class="d-flex align-items-center mt-4">
+                            <span>
+                              <i class="fs-5 dark ti ti-coin-rupee text-success mx-2"></i>
+                            </span>
+                            <p class="text-grey fs-3 mb-0 fw-bold flex-shrink-0" style="width: 150px;">A / C Balance:</p>
+                            <div class="ms-auto">
+                              <span class="badge bg-primary text fs-3"> ₹ &nbsp; {{ available_balance|floatformat:2 }}</span>
+                            </div>
+                          </div>
+                          
+                          <!-- Risk / Day -->
+                          <div class="d-flex align-items-center mt-3">
+                            <span>
+                              <i class="fs-5 dark ti ti-coin-rupee text-warning mx-2"></i>
+                            </span>
+                            <p class="text-grey fs-3 mb-0 fw-bold flex-shrink-0" style="width: 150px;">Trade Risk Forecast :</p>
+                            <div class="ms-auto">
+                              <span class="badge bg-danger fs-3">₹ &nbsp;&nbsp; {{ forecast_balance|floatformat:2 }}</span>
+                            </div>
+                          </div>
+                          
+                          <!-- Max Expense -->
+                          <div class="d-flex align-items-center mt-3">
+                            <span>
+                              <i class="fs-5 dark ti ti-coin-rupee text-info mx-2"></i>
+                            </span>
+                            <p class="text-grey fs-3 mb-0 fw-bold flex-shrink-0" style="width: 150px;">Day Risk Forecast:</p>
+                            <div class="ms-auto">
+                              <span class="badge badgclr fs-3">₹ &nbsp; {{ day_risk_forecast|floatformat:2 }} </span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <!-- Activate Kill Button -->
+                        <div class="col-4">
+                          <div class="d-flex justify-content-end">
+                            <div class="mb-3 mb-sm-0 pr-5">
+                              <button class="btn btn-success mx-2 fs-3 fw-bold d-block" 
+                                      style="border-width: 1px; border-style: solid; cursor: pointer;" 
+                                      id="activateKillButton" value="{{ user.username }}">
+                                      Terminate<br>
+                                <span id="action-button" value="{{ user.username }}"></span>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <!-- Confirmation Modal -->
+                        <div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+                          <div class="modal-dialog">
+                            <div class="modal-content">
+                              <div class="modal-header">
+                                <h5 class="modal-title" id="confirmationModalLabel">Confirm Action</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                              </div>
+                              <div class="modal-body fs-4">
+                                Are you sure you want to activate the kill switch?
+                              </div>
+                              <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-danger" id="confirmAction">Activate Kill</button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1100,9 +1266,9 @@
                       <div class="d-flex justify-content-end">
                         <div class="mb-3 mb-sm-0 pr-5">
                           <a id="smartExitButton" data-username="{{ user.username }}" 
-                             class="btn btn-danger mx-2 fs-3 fw-bold  d-block" 
+                             class="btn btn-primary mx-2 fs-3 fw-bold  d-block" 
                              style="border-width: 1px; border-style: solid; cursor: pointer;">
-                            Quick&nbsp;Exit </br>
+                             Quick&nbsp;Exit </br>
                           </a>
                         </div>
                       </div>

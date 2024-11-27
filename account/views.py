@@ -228,9 +228,12 @@ class DashboardView(TemplateView):
             stoploss_type =""
         
         day_exp_brokerge = float(peak_order_limit) * float(settings.BROKERAGE_PARAMETER)
+
+
+
         exp_entry_count = peak_order_limit // 2 
         actual_entry_count = order_count // 2 
-
+        remaining_orders = (peak_order_limit - order_count) // 2
         # data for chart - break up 
         if total_realized_profit > 0 :
             breakup_series = [opening_balance, total_realized_profit, total_expense ]
@@ -246,10 +249,10 @@ class DashboardView(TemplateView):
         
         if control_data:
             if control_data.stoploss_type ==  "price" :
-                max_expected_loss = exp_entry_count  * stoploss_parameter
+                max_expected_loss = remaining_orders  * stoploss_parameter
                 max_expected_expense = float(max_expected_loss) + day_exp_brokerge
             else:
-                max_expected_loss = (actual_bal * exp_entry_count ) * (stoploss_parameter/100)
+                max_expected_loss = (actual_bal * remaining_orders ) * (stoploss_parameter/100)
                 max_expected_expense = float(max_expected_loss) + day_exp_brokerge
 
         from django.db.models import F, Sum
@@ -275,8 +278,6 @@ class DashboardView(TemplateView):
             progress_color = 'red'
 
         from django.db.models import Q
-        # Add data to context
-
         import re
 
         # Fetch the existing analysis for the user
@@ -338,7 +339,15 @@ class DashboardView(TemplateView):
         print(f"Positive PnL count: {positive_pnl_count}")
         print(f"Total Entries: {total_entries}")
 
+        charge_per_trade = 2 * float(settings.BROKERAGE_PARAMETER)
 
+        if stoploss_type == 'price':
+            forecast_balance = available_balance - stoploss_parameter - charge_per_trade
+            day_risk_forecast = available_balance - max_expected_expense
+
+        else :
+            forecast_balance = "0.00"
+            day_risk_forecast = available_balance - max_expected_expense
 
         context['accuracy'] = accuracy
         context['progress_color'] = progress_color
@@ -374,6 +383,10 @@ class DashboardView(TemplateView):
         context['remaining_orders'] = remaining_orders
         context['remaining_trades'] = remaining_orders // 2 
         context['progress_percentage'] = progress_percentage
+        context['forecast_balance'] = forecast_balance
+        context['available_balance'] = available_balance
+        context['day_risk_forecast'] = day_risk_forecast
+
 
 
 
@@ -448,6 +461,9 @@ def clear_kill_log(request):
     
     return redirect('dhan-kill-log-list')  # 
 
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+
 def check_log_status(request):
     # Get the username from the request
     username = request.GET.get('username')
@@ -457,24 +473,31 @@ def check_log_status(request):
     dhan_client_id = user.dhan_client_id
     dhan_access_token = user.dhan_access_token
     
-    # Retrieve order count stored in session
-    session_key = f"{username}_order_count"
-    session_order_count = request.session.get(session_key, 0)
+    # Retrieve kill switch values and order count from the session
+    kill_switch_key = f"{username}_kill_switch"
+    session_kill_switch = request.session.get(kill_switch_key, {"kill_switch_1": None, "kill_switch_2": None})
+    session_order_count_key = f"{username}_order_count"
+    session_order_count = request.session.get(session_order_count_key, 0)
+    
+    # Fetch current kill switch values
+    current_kill_switch = {"kill_switch_1": user.kill_switch_1, "kill_switch_2": user.kill_switch_2}
     
     # Fetch order count from DHAN API
     dhan = dhanhq(dhan_client_id, dhan_access_token)
     orderlistdata = dhan.get_order_list()
     actual_order_count = get_traded_order_count(orderlistdata)
     
-    # Check if the order count has changed
-    if session_order_count != actual_order_count:
-        # Update session with new order count
-        request.session[session_key] = actual_order_count
+    # Check if there are changes in order count or kill switch values
+    if (session_order_count != actual_order_count) or (session_kill_switch != current_kill_switch):
+        # Update session with new values
+        request.session[session_order_count_key] = actual_order_count
+        request.session[kill_switch_key] = current_kill_switch
         # Respond with an indication to reload the page
         return JsonResponse({'status': 'reload'})
     
-    # If no change, respond with a status indicating no reload is needed
+    # If no changes, respond with a status indicating no reload is needed
     return JsonResponse({'status': 'no_change'})
+
 
 # Manage Users: View and edit details of a specific user
 class UserDetailView(UpdateView):
