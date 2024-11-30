@@ -1256,3 +1256,23 @@ def use_rtc_action(request):
             "status": "error",
             "message": str(e)
         }, status=500)
+
+
+
+from django.views.generic.edit import FormView
+from .forms import TradingPlanForm
+from .models import TradingPlan
+
+class CreateTradePlanView(FormView):
+    template_name = "dashboard/trade_planner.html"
+    form_class = TradingPlanForm
+    success_url = '/success/'  # Redirect to a success page after successful form submission
+
+    def form_valid(self, form):
+        # Save the form data
+        trading_plan = form.save(commit=False)
+        trading_plan.user = self.request.user  # Assuming the user is logged in
+        trading_plan.save()
+
+        # Redirect to the success URL or another page
+        return super().form_valid(form)

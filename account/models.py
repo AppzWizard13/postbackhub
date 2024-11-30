@@ -201,3 +201,17 @@ class UserRTCUsage(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.date}"
+
+
+class TradingPlan(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="trading_plans")
+    plan_name = models.CharField(max_length=255)
+    initial_capital = models.DecimalField(max_digits=12, decimal_places=2)
+    expected_growth = models.DecimalField(max_digits=5, decimal_places=2, help_text="Expected growth as a percentage (e.g., 15.5 for 15.5%)")
+    no_of_weeks = models.PositiveIntegerField()
+    average_weekly_gain = models.DecimalField(max_digits=5, decimal_places=2, help_text="Average weekly gain as a percentage (e.g., 2.5 for 2.5%)")
+    start_date = models.DateField()
+    end_date = models.DateField()
+
+    def __str__(self):
+        return f"{self.plan_name} - {self.user.username}"

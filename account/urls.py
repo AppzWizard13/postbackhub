@@ -40,8 +40,7 @@ urlpatterns = [
 
     path('daily-self-analysis/', views.daily_self_analysis_view, name='daily_self_analysis'),
 
-
-
+    path('create-trade-plan/', views.CreateTradePlanView.as_view(), name='create_trade_plan'),
 
 
     path('check-log-status/', views.check_log_status, name='check_log_status'),  # Add the URL for the status check

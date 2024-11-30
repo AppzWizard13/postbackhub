@@ -1,0 +1,259 @@
+{% extends 'dashboard/index.html' %}
+{% load static %}
+{% block content %}
+<style>
+    /* Dark Mode Styling */
+    body {
+        background-color: #121212;
+        color: white;
+    }
+    .container-fluid {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: start;
+        align-items: start;
+    }
+    .card {
+        background-color: #1f1f1f;
+        color: white;
+        border: 1px solid #333;
+    }
+    .form-label, .form-control {
+        color: white;
+        border-color: #555;
+    }
+    .form-control:focus {
+        background-color: #444;
+        border-color: #666;
+        color: white;
+    }
+    .result-box {
+        margin-top: 30px;
+        padding: 10px;
+        border: 1px solid #444;
+        background-color: #2c2c2c;
+    }
+
+    /* Table Styling for Dark Mode */
+    table {
+        width: 100%;
+        margin-top: 20px;
+        border-collapse: collapse;
+    }
+    table, th, td {
+        border: 1px solid #555;
+    }
+    th, td {
+        padding: 10px;
+        text-align: center;
+    }
+    th {
+        background-color: #333;
+        color: white;
+    }
+    td {
+        background-color: #444;
+        color: white;
+    }
+    td, th {
+        font-size: 1em;
+    }
+
+    /* Alternate row color styling for daily growth table */
+    .daily-row-even {
+        background-color: #333;
+    }
+
+    .daily-row-odd {
+        background-color: #555;
+    }
+</style>
+
+<div class="container-fluid" style="max-width:none">
+    <div class="card w-100">
+        <div class="card-body">
+            <h5 class="card-title fw-semibold mb-5">Create Trade Plan</h5>
+            <form id="trade-plan-form" method="POST">
+                {% csrf_token %}
+                <!-- Plan Name -->
+                <div class="mb-3">
+                    <label for="id_plan_name" class="form-label">Plan Name</label>
+                    <input type="text" id="id_plan_name" name="plan_name" value="{{ form.plan_name.value|default_if_none:'' }}" class="form-control">
+                </div>
+
+                <!-- Initial Capital -->
+                <div class="mb-3">
+                    <label for="id_initial_capital" class="form-label">Initial Capital</label>
+                    <input type="number" id="id_initial_capital" name="initial_capital" value="{{ form.initial_capital.value|default_if_none:'' }}" class="form-control" step="0.01">
+                </div>
+
+                <!-- Number of Weeks -->
+                <div class="mb-3">
+                    <label for="id_no_of_weeks" class="form-label">Number of Weeks</label>
+                    <input type="number" id="id_no_of_weeks" name="no_of_weeks" value="{{ form.no_of_weeks.value|default_if_none:'' }}" class="form-control">
+                </div>
+
+                <!-- Average Weekly Gain -->
+                <div class="mb-3">
+                    <label for="id_average_weekly_gain" class="form-label">Average Weekly Gain (%)</label>
+                    <input type="number" id="id_average_weekly_gain" name="average_weekly_gain" value="{{ form.average_weekly_gain.value|default_if_none:'' }}" class="form-control" step="0.01">
+                </div>
+
+                <!-- Start Date Filter -->
+                <div class="mb-3">
+                    <label for="start_date" class="form-label">Start Date</label>
+                    <input type="date" name="start_date" id="start_date" class="form-control" value="{{ selected_start_date|date:'Y-m-d' }}">
+                </div>
+
+                <!-- Calculate Button -->
+                <button type="button" class="btn btn-primary my-3 mx-3" onclick="calculateCompounding()">Calculate</button>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-primary my-3">Generate Plan</button>
+            </form>
+
+            <!-- Results Display -->
+            <div id="results" class="result-box" style="display: none;">
+                <h6>Results:</h6>
+                <p id="final-capital"></p>
+                <p id="daily-gain"></p>
+                <p id="weekly-gain"></p>
+
+                <!-- Table of Weekly Growth -->
+                <h6>Weekly Growth Table:</h6>
+                <table id="growth-table">
+                    <thead>
+                        <tr>
+                            <th>Week</th>
+                            <th>Week Dates</th>
+                            <th>Accumulated Capital</th>
+                            <th>Weekly Gain (INR )</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Rows will be inserted here dynamically -->
+                    </tbody>
+                </table>
+
+                <!-- Table of Daily Growth -->
+                <h6 class="my-3 ">Daily Growth Table:</h6>
+                <table id="daily-growth-table">
+                    <thead>
+                        <tr>
+                            <th>Day</th>
+                            <th>Date</th>
+                            <th>Accumulated Capital</th>
+                            <th>Daily Gain (INR )</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Rows will be inserted here dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function calculateCompounding() {
+        const initialCapital = parseFloat(document.getElementById('id_initial_capital').value);
+        const averageWeeklyGain = parseFloat(document.getElementById('id_average_weekly_gain').value);
+        const noOfWeeks = parseInt(document.getElementById('id_no_of_weeks').value);
+    
+        // Handle start date only
+        const startDate = new Date(document.getElementById('start_date').value);
+    
+        if (isNaN(initialCapital) || isNaN(averageWeeklyGain) || isNaN(noOfWeeks)) {
+            alert("Please enter valid values.");
+            return;
+        }
+    
+        // Weekly Growth Rate Calculation
+        const weeksGrowthRate = 1 + averageWeeklyGain / 100;
+        let totalAmount = initialCapital * Math.pow(weeksGrowthRate, noOfWeeks);
+    
+        // Display results
+        document.getElementById('final-capital').innerText = `Final Capital (after ${noOfWeeks} weeks): INR : ₹  ${totalAmount.toFixed(2)}`;
+        document.getElementById('daily-gain').innerText = `Daily Gain (from weekly %): INR : ₹  ${(averageWeeklyGain / 7).toFixed(2)}%`;
+        document.getElementById('weekly-gain').innerText = `Weekly Gain: INR : ₹  ${averageWeeklyGain.toFixed(2)}%`;
+    
+        // Show results div
+        document.getElementById('results').style.display = 'block';
+    
+        // Populate the weekly growth table
+        let weeklyTableBody = document.getElementById('growth-table').getElementsByTagName('tbody')[0];
+        weeklyTableBody.innerHTML = ''; // Clear previous rows
+    
+        let dailyTableBody = document.getElementById('daily-growth-table').getElementsByTagName('tbody')[0];
+        dailyTableBody.innerHTML = ''; // Clear previous rows
+    
+        let accumulatedCapital = initialCapital;
+        let currentDate = new Date(startDate);
+        let dayCount = 1; // Global day count to avoid resetting for each week
+    
+        for (let week = 1; week <= noOfWeeks; week++) {
+            // Ensure the current date starts on Monday
+            while (currentDate.getDay() !== 1) {
+                currentDate.setDate(currentDate.getDate() + 1); // Move to the next Monday
+            }
+    
+            // Calculate week dates (Monday to Friday)
+            let mondayDate = new Date(currentDate);
+            let fridayDate = new Date(currentDate);
+            fridayDate.setDate(mondayDate.getDate() + 4); // Friday is 4 days after Monday
+    
+            accumulatedCapital *= weeksGrowthRate;
+    
+            // Calculate weekly gain in money (not percentage)
+            const weeklyGainMoney = accumulatedCapital - (initialCapital * Math.pow(weeksGrowthRate, week - 1));
+    
+            // Insert row into the weekly growth table
+            let weeklyRow = weeklyTableBody.insertRow();
+            let cell1 = weeklyRow.insertCell(0);
+            let cell2 = weeklyRow.insertCell(1);
+            let cell3 = weeklyRow.insertCell(2);
+            let cell4 = weeklyRow.insertCell(3);
+    
+            cell1.innerHTML = week;
+            cell2.innerHTML = `${mondayDate.toLocaleDateString()} - ${fridayDate.toLocaleDateString()}`;
+            cell3.innerHTML = `₹  ${accumulatedCapital.toFixed(2)}`;
+            cell4.innerHTML = `₹  ${weeklyGainMoney.toFixed(2)}`;
+    
+            // Populate the daily growth table
+            let weeklyDailyGain = weeklyGainMoney / 5; // Dividing weekly gain by 5 for daily gain
+            for (let day = 0; day < 5; day++) {
+                let currentDayDate = new Date(mondayDate);
+                currentDayDate.setDate(mondayDate.getDate() + day); // Correct day within the week
+    
+                // Accumulate capital for each day
+                let dailyAccumulatedCapital = accumulatedCapital;
+    
+                // Insert row into the daily growth table with alternating row color
+                let dailyRow = dailyTableBody.insertRow();
+                let rowClass = (dayCount % 2 === 0) ? 'daily-row-even' : 'daily-row-odd';
+                dailyRow.classList.add(rowClass);
+    
+                let cell1d = dailyRow.insertCell(0);
+                let cell2d = dailyRow.insertCell(1);
+                let cell3d = dailyRow.insertCell(2);
+                let cell4d = dailyRow.insertCell(3);
+    
+                cell1d.innerHTML = `Day ${dayCount}`;
+                cell2d.innerHTML = currentDayDate.toLocaleDateString();
+                cell3d.innerHTML = `₹  ${dailyAccumulatedCapital.toFixed(2)}`;
+                cell4d.innerHTML = `₹  ${weeklyDailyGain.toFixed(2)}`;
+    
+                // Increment the global day count
+                dayCount++;
+            }
+    
+            // Move to next week's Monday
+            currentDate.setDate(currentDate.getDate() + 7);
+        }
+    }
+    
+</script>
+
+{% endblock %}
