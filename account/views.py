@@ -119,7 +119,7 @@ class ControlCreateView(CreateView):
         messages.error(self.request, "There was an error creating the control. Please check the form and try again.")
         return super().form_invalid(form)
 
-
+import pytz
 @method_decorator(login_required(login_url='/'), name='dispatch')
 class DashboardView(TemplateView):
     template_name = "dashboard/index.html"
@@ -137,7 +137,17 @@ class DashboardView(TemplateView):
     def get_context_data(self, **kwargs):
         # Get the existing context
         context = super().get_context_data(**kwargs)
-        today = now().date()  
+        import pytz
+        from datetime import datetime
+
+        # Get the Asia/Kolkata timezone
+        ist = pytz.timezone('Asia/Kolkata')
+
+        # Get the current time in the specified timezone
+        now = datetime.now(ist)
+
+        # Get today's date
+        today = now.date()
 
         # If slug is present, use it to fetch the user associated with that slug
         if self.slug:
@@ -352,6 +362,17 @@ class DashboardView(TemplateView):
             forecast_balance = "0.00"
             day_risk_forecast = available_balance - max_reamining_expense
 
+        from django.core.exceptions import ObjectDoesNotExist
+
+        # Assuming 'user' and 'today' are already defined
+        try:
+            daily_goal_data = DailyGoalReport.objects.filter(user=user, date=today).get()
+            print("Daily Goal Data:", daily_goal_data)
+        except DailyGoalReport.DoesNotExist:
+            print(f"No daily goal found for user {user} on {today}")
+            # You can assign a default value or handle accordingly
+            daily_goal_data = None  # or create a new entry if needed
+
         context['accuracy'] = accuracy
         context['progress_color'] = progress_color
         context['open_position'] = open_position
@@ -382,7 +403,8 @@ class DashboardView(TemplateView):
         context['orderlistdata'] = orderlistdata
         context['actual_profit'] = actual_profit
         context['actual_balance'] = actual_balance
-
+        context['daily_goal_data'] = daily_goal_data
+        # context['weekly_goal_data'] = weekly_goal_data
         context['remaining_orders'] = remaining_orders
         context['remaining_trades'] = remaining_orders // 2 
         context['progress_percentage'] = progress_percentage
@@ -1541,3 +1563,36 @@ def generate_trading_plan(request, plan_id):
     trading_plan.save()
 
     return HttpResponse(f"Trading plan '{trading_plan.plan_name}' successfully processed and reports generated.")
+
+
+from django.shortcuts import render, get_object_or_404
+from .models import TradingPlan, WeeklyGoalReport, DailyGoalReport
+
+def view_trade_plan(request, pk):
+    """
+    View to display the details of a specific trading plan along with its weekly and daily goals.
+    """
+    # Fetch the trading plan using the primary key
+    trading_plan = get_object_or_404(TradingPlan, pk=pk)
+
+    # Fetch related weekly and daily goals
+    weekly_goals = WeeklyGoalReport.objects.filter(plan_id=pk).order_by('week_number')
+    daily_goals = DailyGoalReport.objects.filter(weekly_goal__plan_id=pk).order_by('date')
+
+    for goal in daily_goals:
+        if goal.progress != 0:
+            goal.progress_percentage = (goal.progress / goal.gained_amount) * 100
+        else:
+            goal.progress_percentage = 0  # avoid division by zero
+
+\
+
+
+    # Context for rendering
+    context = {
+        'trading_plan': trading_plan,
+        'weekly_goals': weekly_goals,
+        'daily_goals': daily_goals,
+    }
+
+    return render(request, 'dashboard/view_trade_plan.html', context)

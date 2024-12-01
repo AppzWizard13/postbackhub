@@ -631,6 +631,7 @@ def check_and_update_daily_account_overview():
     # Set timezone and flags for opening and closing runs
     ist = pytz.timezone('Asia/Kolkata')
     current_time = datetime.now(ist)
+    today = current_time.date()
     current_hour = current_time.hour
     is_first_run = current_hour == 9
     is_last_run = current_hour == 15
@@ -690,6 +691,19 @@ def check_and_update_daily_account_overview():
                         day_open=day_open,
                         day_close=day_close
                     )
+                    # Get the first matching record (if any)
+                    daily_goal_data = DailyGoalReport.objects.filter(user=user, date=today).first()
+
+                    if daily_goal_data:
+                        # Assign the actual profit to the progress field (make sure 'actual_profit' is defined)
+                        daily_goal_data.progress = actual_profit
+                        if daily_goal_data.gained_amount <= actual_profit:
+                            daily_goal_data.is_achieved=True
+                        # Save the updated record
+                        daily_goal_data.save()
+                        print(f"INFO: DailyGoalReport updated successfully for {user.username}")
+                    else:
+                        print(f"INFO:No DailyGoalReport found for the given user and date.")
 
                     print(f"INFO: DailyAccountOverview updated successfully for {user.username}")
             else:
@@ -839,7 +853,7 @@ def start_scheduler():
 
     #  AUTO STOPLOSS FEATURE TESTED OK
     # scheduler.add_job(autoStopLossLotControlProcess, IntervalTrigger(seconds=1), max_instances=3, replace_existing=True)
-    scheduler.add_job(autoStopLossLotControlProcess, IntervalTrigger(seconds=1.5), max_instances=2, replace_existing=True)
+    scheduler.add_job(autoStopLossLotControlProcess, IntervalTrigger(seconds=2), max_instances=2, replace_existing=True)
 
     #  AUTO ADMIN SWITCHING PROCESS TESTED OK 
     # scheduler.add_job(autoAdminSwitchingProcess, IntervalTrigger(hours=1))

@@ -1,0 +1,241 @@
+{% extends 'dashboard/index.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    /* Dark Mode Styling */
+    .card {
+        background-color: #1f1f1f;
+        color: white;
+        border: 1px solid #333;
+        height: 100%;
+    }
+
+    .table, th, td {
+        border: 1px solid #555;
+    }
+
+    th {
+        background-color: #333;
+    }
+
+    td {
+        background-color: #444;
+    }
+
+    /* Calendar Styling */
+    .calendar {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 15px;
+        overflow-y: auto; /* Ensures content doesn't overflow */
+    }
+
+    .weekcalendar {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        overflow-y: auto; /* Ensures content doesn't overflow */
+    }
+
+    .day-card, .week-card {
+        background-color: #1f1f1f;
+        padding: 15px;
+        border: 1px solid #444;
+        border-radius: 8px;
+        margin-bottom: 15px; /* Adds space between cards */
+    }
+
+    .day-header, .week-card .day-header {
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        font-weight: bold;
+    }
+
+    .gain-positive {
+        color: #28a745;
+    }
+
+    .gain-negative {
+        color: #dc3545;
+    }
+
+    /* Tab Styling */
+    .nav-tabs {
+        background-color: #212121; /* Dark background for the tabs container */
+        border-bottom: 2px solid #444; /* Subtle border for separation */
+        margin-bottom: 20px; /* Adds space below the tabs */
+    }
+
+    .nav-tabs .nav-link {
+        color: #aaa; /* Lighter grey text for unselected tabs */
+        background-color: #333; /* Dark background for tabs */
+        border: 1px solid #444; /* Subtle border for tabs */
+        border-radius: 8px 8px 0 0; /* Rounded corners for tabs */
+        transition: all 0.3s ease; /* Smooth transition on hover */
+        padding: 12px 18px; /* Padding for more spacing */
+        font-size: 1.2rem;
+    }
+
+    /* Styling for active tab */
+    .nav-tabs .nav-link.active {
+        background-color: #1f1f1f; /* Darker background for the active tab */
+        color: #fff; /* White text for active tab */
+        border-color: #555; /* Slightly darker border for active tab */
+    }
+
+    /* Hover effect for tabs */
+    .nav-tabs .nav-link:hover {
+        background-color: #444; /* Lighter background on hover */
+        color: #fff; /* White text on hover */
+        border-color: #666; /* Darker border on hover */
+    }
+
+    /* Adjusting the tab content container */
+    .tab-content {
+        padding: 20px;
+        max-height: calc(100vh - 350px); /* Adjust to prevent overflow */
+        overflow-y: auto;
+    }
+
+    /* Info row styling */
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+
+    .info-row p {
+        margin: 0;
+        color: #ddd;
+    }
+</style>
+
+<div class="container-fluid" style="max-width:none">
+    <div class="col-lg-12 d-flex align-items-stretch">
+        <div class="card w-100">
+            <div class="card-body p-4" style="height:100vh;">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="card-title fw-semibold">Trade History</h5>
+                </div>
+
+                <div class="d-flex flex-wrap justify-content-between mb-4">
+                    <div class="info-row fs-4 fw-bold">
+                        <strong>Initial Capital:</strong>
+                        <p>₹{{ trading_plan.initial_capital }}</p>
+                    </div>
+                    <div class="info-row fs-4 fw-bold">
+                        <strong>Average Weekly Gain:</strong>
+                        <p>{{ trading_plan.average_weekly_gain }}%</p>
+                    </div>
+                    <div class="info-row fs-4 fw-bold">
+                        <strong>Start Date:</strong>
+                        <p>{{ trading_plan.start_date }}</p>
+                    </div>
+                    <div class="info-row fs-4 fw-bold">
+                        <strong>End Date:</strong>
+                        <p>{{ trading_plan.end_date }}</p>
+                    </div>
+                    <div class="info-row fs-4 fw-bold">
+                        <strong>Number of Weeks:</strong>
+                        <p>{{ trading_plan.no_of_weeks }}</p>
+                    </div>
+                    <div class="info-row fs-4 fw-bold">
+                        <strong>Expected Growth:</strong>
+                        <p>₹{{ trading_plan.expected_growth }}</p>
+                    </div>
+                </div>
+
+                <!-- Tabs for Weekly and Daily Goals -->
+                <ul class="nav nav-tabs mb-3" id="goalTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link active fs-4 fw-bolder text-light" id="weekly-goals-tab" data-bs-toggle="tab" href="#weekly-goals" role="tab" aria-controls="weekly-goals" aria-selected="true">Weekly Goals</a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link fs-4 fw-bolder text-light" id="daily-goals-tab" data-bs-toggle="tab" href="#daily-goals" role="tab" aria-controls="daily-goals" aria-selected="false">Daily Goals</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="goalTabsContent">
+                    <!-- Weekly Goals Tab -->
+                    <div class="tab-pane fade show active" id="weekly-goals" role="tabpanel" aria-labelledby="weekly-goals-tab">
+                        <div class="weekcalendar">
+                            {% for weekly_goal in weekly_goals %}
+                                <div class="week-card">
+                                    <div class="day-header">
+                                        <h5>Week {{ weekly_goal.week_number }}</h5>
+                                        <p>{{ weekly_goal.start_date }} - {{ weekly_goal.end_date }}</p>
+                                    </div>
+                                    <div class="day-body">
+                                        <p><strong>Capital:</strong> ₹{{ weekly_goal.accumulated_capital }}</p>
+                                        <p><strong>Gain:</strong>
+                                            <span class="{% if weekly_goal.gained_amount >= 0 %}gain-positive{% else %}gain-negative{% endif %}">
+                                                ₹{{ weekly_goal.gained_amount }}
+                                            </span>
+                                        </p>
+                                        <p><strong>Progress:</strong> {{ weekly_goal.progress }}%</p>
+                                        <p class="status">{{ weekly_goal.is_achieved|yesno:"Achieved,Not Achieved" }}</p>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Daily Goals Tab -->
+                    <div class="tab-pane fade" id="daily-goals" role="tabpanel" aria-labelledby="daily-goals-tab">
+                        <div class="calendar">
+                            {% for daily_goal in daily_goals %}
+                                <div class="day-card">
+                                    <div class="day-header mb-3">
+                                        <span>Day {{ daily_goal.day_number }}</span>
+                                        <span>{{ daily_goal.date }}</span>
+                                    </div>
+                                    <div>
+                                        <p>Capital: ₹{{ daily_goal.capital }}</p>
+                                        <p class="{% if daily_goal.gained_amount >= 0 %}gain-positive{% else %}gain-negative{% endif %}">
+                                            Gain: ₹{{ daily_goal.gained_amount }}
+                                        </p>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-value" style="width: {{ daily_goal.progress_percentage }}% !important;"></div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+
+      .progress {
+        background:  light-grey;
+        justify-content: flex-start;
+        border-radius: 100px;
+        align-items: center;
+        position: relative;
+        padding: 0 0px;
+        display: flex;
+        height: 10px;
+        width: 200px;
+      }
+      
+      .progress-value {
+        animation: load 3s normal forwards;
+        box-shadow: 0 10px 40px -10px #fff;
+        border-radius: 100px;
+        background:green ;
+        height: 30px;
+        width: 0;
+      }
+      
+      @keyframes load {
+        0% { width: 0; }
+        100% { width: 0%; }
+      }
+</style>
+{% endblock %}
