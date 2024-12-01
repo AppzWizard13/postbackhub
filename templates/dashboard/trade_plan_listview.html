@@ -1,0 +1,134 @@
+{% extends 'dashboard/index.html' %}
+{% load static %}
+{% block content %}
+
+<div class="container-fluid" style="max-width:none">
+    <div class="col-lg-12 d-flex align-items-stretch">
+        <div class="card w-100">
+            <div class="card-body p-4" style="height:100vh">
+                <h5 class="card-title fw-semibold mb-4">Trading Plans List View</h5>
+                <div class="table-responsive">
+                    <table class="table text-nowrap mb-0 align-middle">
+                        <thead class="text-dark fs-4">
+                            <tr>
+                                <th class="border-bottom-0">
+                                    <h6 class="fw-semibold mb-0">ID</h6>
+                                </th>
+                                <th class="border-bottom-0">
+                                    <h6 class="fw-semibold mb-0">Plan Name</h6>
+                                </th>
+                                <th class="border-bottom-0">
+                                    <h6 class="fw-semibold mb-0">User</h6>
+                                </th>
+                                <th class="border-bottom-0">
+                                    <h6 class="fw-semibold mb-0">Initial Capital</h6>
+                                </th>
+                                <th class="border-bottom-0">
+                                    <h6 class="fw-semibold mb-0">Expected Growth (%)</h6>
+                                </th>
+                                <th class="border-bottom-0">
+                                    <h6 class="fw-semibold mb-0">No. of Weeks</h6>
+                                </th>
+                                <th class="border-bottom-0">
+                                    <h6 class="fw-semibold mb-0">Avg. Weekly Gain (%)</h6>
+                                </th>
+                                <th class="border-bottom-0">
+                                    <h6 class="fw-semibold mb-0">Start Date</h6>
+                                </th>
+                                <th class="border-bottom-0">
+                                    <h6 class="fw-semibold mb-0">End Date</h6>
+                                </th>
+                                <th class="border-bottom-0">
+                                    <h6 class="fw-semibold mb-0">Active</h6>
+                                </th>
+                                <th class="border-bottom-0">
+                                    <h6 class="fw-semibold mb-0">Actions</h6>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for plan in trading_plans %}
+                            <tr>
+                                <td class="border-bottom-0"><h6 class="fw-semibold mb-0">{{ plan.id }}</h6></td>
+                                <td class="border-bottom-0"><p class="mb-0 fw-normal">{{ plan.plan_name }}</p></td>
+                                <td class="border-bottom-0"><p class="mb-0 fw-normal">{{ plan.user.username }}</p></td>
+                                <td class="border-bottom-0"><p class="mb-0 fw-normal">₹{{ plan.initial_capital }}</p></td>
+                                <td class="border-bottom-0"><p class="mb-0 fw-normal">{{ plan.expected_growth }}</p></td>
+                                <td class="border-bottom-0"><p class="mb-0 fw-normal">{{ plan.no_of_weeks }}</p></td>
+                                <td class="border-bottom-0"><p class="mb-0 fw-normal">{{ plan.average_weekly_gain }}</p></td>
+                                <td class="border-bottom-0"><p class="mb-0 fw-normal">{{ plan.start_date }}</p></td>
+                                <td class="border-bottom-0"><p class="mb-0 fw-normal">{{ plan.end_date }}</p></td>
+                                <td class="border-bottom-0"><p class="mb-0 fw-normal">{{ plan.is_active|yesno:"Yes,No" }}</p></td>
+                                <td class="border-bottom-0">
+                                    <button 
+                                        class="btn btn-sm btn-outline-primary generate-plan-btn" 
+                                        data-plan-id="{{ plan.pk }}">
+                                        <i class="ti ti-pencil"></i>
+                                    </button>
+                                </td>
+                                <!-- Spinner, initially hidden -->
+                                <div id="loading-spinner" style="display: none;">
+                                    <i class="fa fa-spinner fa-spin"></i> Loading...
+                                </div>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="11" class="text-center">No trading plans found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block optional_js %}
+<script src="{% static 'dashboard/assets/libs/jquery/dist/jquery.min.js' %}"></script>
+<!-- Include Toastr CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
+
+<!-- Include jQuery (if not already included) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Include Toastr JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+
+<script>
+    $(document).on('click', '.generate-plan-btn', function () {
+        const planId = $(this).data('plan-id');
+
+        // Show the loading spinner
+        $('#loading-spinner').show();
+
+        $.ajax({
+            url: `/generate-trading-plan/${planId}/`,
+            type: 'POST', // Use 'POST' if your endpoint requires it
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}', // Include CSRF token if using POST
+            },
+            success: function (response) {
+                toastr.success(response.message || "Trading plan generated successfully!", "", {
+                    timeOut: 6000  // Set the timeOut to 6000 milliseconds (6 seconds)
+                });
+            
+                // Optionally, refresh part of the page
+                location.reload(); // Or update a specific section dynamically
+            },
+            error: function (xhr) {
+                toastr.error(xhr.responseJSON.error || "Something went wrong!");
+            },
+            complete: function () {
+                // Hide the loading spinner after the request is complete
+                $('#loading-spinner').hide();
+            }
+            
+        });
+    });
+</script>
+{% endblock %}
+
+
+
+{% endblock %}

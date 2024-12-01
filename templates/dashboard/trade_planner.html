@@ -35,7 +35,7 @@
         background-color: #2c2c2c;
     }
 
-    /* Table Styling for Dark Mode */
+    /* Table Styling for Weekly Growth */
     table {
         width: 100%;
         margin-top: 20px;
@@ -60,15 +60,71 @@
         font-size: 1em;
     }
 
-    /* Alternate row color styling for daily growth table */
-    .daily-row-even {
-        background-color: #333;
+    /* Calendar View Styling */
+    .calendar {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 15px;
+        margin-top: 30px;
+    }
+    .day-card {
+        background-color: #1f1f1f;
+        color: white;
+        padding: 15px;
+        border: 1px solid #444;
+        text-align: left;
+        border-radius: 8px;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .day-card:hover {
+        transform: scale(1.05);
+        box-shadow: 0px 6px 8px rgba(0, 0, 0, 0.4);
+    }
+    .day-card .day-header {
+        font-weight: bold;
+        font-size: 1.2em;
+        margin-bottom: 8px;
+        display: flex;
+        justify-content: space-between;
+    }
+    .day-card .day-body {
+        font-size: 0.9em;
+    }
+    .day-card .day-body span {
+        display: block;
+        margin: 4px 0;
+    }
+    .day-card .gain-positive {
+        color: #28a745; /* Green for positive gains */
+    }
+    .day-card .gain-negative {
+        color: #dc3545; /* Red for negative gains */
     }
 
-    .daily-row-odd {
-        background-color: #555;
-    }
 </style>
+
+
+{% if message %}
+    <div aria-live="polite" aria-atomic="true" class="position-fixed top-0 end-0 p-3" style="z-index: 1050;">
+        <div id="toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <strong class="me-auto" id="toast-title">{{ message_type|title }}</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div id="toast-body" class="toast-body">
+                {{ message }}
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var toastElement = document.getElementById('toast');
+            var bsToast = new bootstrap.Toast(toastElement);
+            bsToast.show();
+        });
+    </script>
+{% endif %}
 
 <div class="container-fluid" style="max-width:none">
     <div class="card w-100">
@@ -76,6 +132,8 @@
             <h5 class="card-title fw-semibold mb-5">Create Trade Plan</h5>
             <form id="trade-plan-form" method="POST">
                 {% csrf_token %}
+
+                <input type="hidden" name="user" id="id_user" value="{{ request.user.id }}">
                 <!-- Plan Name -->
                 <div class="mb-3">
                     <label for="id_plan_name" class="form-label">Plan Name</label>
@@ -106,12 +164,44 @@
                     <input type="date" name="start_date" id="start_date" class="form-control" value="{{ selected_start_date|date:'Y-m-d' }}">
                 </div>
 
+                <!-- Expected Growth Field -->
+                <div class="mb-3">
+                    <label for="id_expected_growth" class="form-label">Expected Growth (%)</label>
+                    <input type="number" id="id_expected_growth" name="expected_growth" class="form-control" placeholder="Expected Growth" readonly>
+                </div>
+
+                <!-- End Date Field -->
+                <div class="mb-3">
+                    <label for="id_end_date" class="form-label">End Date</label>
+                    <input type="date" id="id_end_date" name="end_date" class="form-control" placeholder="End Date" readonly>
+                </div>
+                
+                <script>
+                    // Set today's date as the default value
+                    document.addEventListener("DOMContentLoaded", function () {
+                        const startDateInput = document.getElementById("start_date");
+
+                        if (!startDateInput.value) {
+                            const today = new Date();
+                            const formattedDate = today.toISOString().split("T")[0];
+                            startDateInput.value = formattedDate;
+                        }
+                    });
+                </script>
+
                 <!-- Calculate Button -->
                 <button type="button" class="btn btn-primary my-3 mx-3" onclick="calculateCompounding()">Calculate</button>
 
                 <!-- Submit Button -->
-                <button type="submit" class="btn btn-primary my-3">Generate Plan</button>
+                <button class="btn btn-primary my-3" id="submit-plan" style="display: none;">Save Plan</button>
+
+                
+
+                {% comment %} <button type="submit" class="btn btn-primary my-3">Generate Plan</button> {% endcomment %}
             </form>
+
+
+            <button class="btn btn-primary m-4" id="execute-plan" style="display: none;">Execute Plan</button>
 
             <!-- Results Display -->
             <div id="results" class="result-box" style="display: none;">
@@ -128,132 +218,180 @@
                             <th>Week</th>
                             <th>Week Dates</th>
                             <th>Accumulated Capital</th>
-                            <th>Weekly Gain (INR )</th>
+                            <th>Weekly Gain (INR)</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Rows will be inserted here dynamically -->
+                        <!-- Rows will be inserted dynamically -->
                     </tbody>
                 </table>
 
-                <!-- Table of Daily Growth -->
-                <h6 class="my-3 ">Daily Growth Table:</h6>
-                <table id="daily-growth-table">
-                    <thead>
-                        <tr>
-                            <th>Day</th>
-                            <th>Date</th>
-                            <th>Accumulated Capital</th>
-                            <th>Daily Gain (INR )</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Rows will be inserted here dynamically -->
-                    </tbody>
-                </table>
+                <!-- Calendar of Daily Growth -->
+                <h6 class="my-3">Daily Growth Calendar:</h6>
+                <div id="daily-growth-calendar" class="calendar">
+                    <!-- Day cards will be inserted dynamically -->
+                </div>
             </div>
         </div>
     </div>
 </div>
 
+{% block optional_js %}
 <script>
     function calculateCompounding() {
         const initialCapital = parseFloat(document.getElementById('id_initial_capital').value);
         const averageWeeklyGain = parseFloat(document.getElementById('id_average_weekly_gain').value);
         const noOfWeeks = parseInt(document.getElementById('id_no_of_weeks').value);
-    
-        // Handle start date only
         const startDate = new Date(document.getElementById('start_date').value);
-    
-        if (isNaN(initialCapital) || isNaN(averageWeeklyGain) || isNaN(noOfWeeks)) {
+
+        if (isNaN(initialCapital) || isNaN(averageWeeklyGain) || isNaN(noOfWeeks) || isNaN(startDate.getTime())) {
             alert("Please enter valid values.");
             return;
         }
-    
-        // Weekly Growth Rate Calculation
+
         const weeksGrowthRate = 1 + averageWeeklyGain / 100;
+
+        // Display overall results
         let totalAmount = initialCapital * Math.pow(weeksGrowthRate, noOfWeeks);
-    
-        // Display results
-        document.getElementById('final-capital').innerText = `Final Capital (after ${noOfWeeks} weeks): INR : ₹  ${totalAmount.toFixed(2)}`;
-        document.getElementById('daily-gain').innerText = `Daily Gain (from weekly %): INR : ₹  ${(averageWeeklyGain / 7).toFixed(2)}%`;
-        document.getElementById('weekly-gain').innerText = `Weekly Gain: INR : ₹  ${averageWeeklyGain.toFixed(2)}%`;
-    
-        // Show results div
+        document.getElementById('final-capital').innerText = `Final Capital (after ${noOfWeeks} weeks): ₹ ${totalAmount.toFixed(2)}`;
+        document.getElementById('daily-gain').innerText = `Average Daily Gain: ₹ ${(averageWeeklyGain / 5).toFixed(2)}%`;
+        document.getElementById('weekly-gain').innerText = `Weekly Gain: ₹ ${averageWeeklyGain.toFixed(2)}%`;
         document.getElementById('results').style.display = 'block';
-    
-        // Populate the weekly growth table
-        let weeklyTableBody = document.getElementById('growth-table').getElementsByTagName('tbody')[0];
-        weeklyTableBody.innerHTML = ''; // Clear previous rows
-    
-        let dailyTableBody = document.getElementById('daily-growth-table').getElementsByTagName('tbody')[0];
-        dailyTableBody.innerHTML = ''; // Clear previous rows
-    
+
+        // Clear previous table and calendar data
+        const weeklyTableBody = document.getElementById('growth-table').getElementsByTagName('tbody')[0];
+        weeklyTableBody.innerHTML = '';
+        const dailyCalendar = document.getElementById('daily-growth-calendar');
+        dailyCalendar.innerHTML = '';
+
         let accumulatedCapital = initialCapital;
         let currentDate = new Date(startDate);
-        let dayCount = 1; // Global day count to avoid resetting for each week
-    
+        document.getElementById('submit-plan').style.display = 'inline-block';
+        document.getElementById("execute-plan").style.display = "inline-block";  // Show the submit button
+
+
         for (let week = 1; week <= noOfWeeks; week++) {
-            // Ensure the current date starts on Monday
+            // Adjust to Monday if not already
             while (currentDate.getDay() !== 1) {
-                currentDate.setDate(currentDate.getDate() + 1); // Move to the next Monday
+                currentDate.setDate(currentDate.getDate() + 1);
             }
-    
-            // Calculate week dates (Monday to Friday)
+
             let mondayDate = new Date(currentDate);
-            let fridayDate = new Date(currentDate);
-            fridayDate.setDate(mondayDate.getDate() + 4); // Friday is 4 days after Monday
-    
-            accumulatedCapital *= weeksGrowthRate;
-    
-            // Calculate weekly gain in money (not percentage)
-            const weeklyGainMoney = accumulatedCapital - (initialCapital * Math.pow(weeksGrowthRate, week - 1));
-    
-            // Insert row into the weekly growth table
+            let fridayDate = new Date(mondayDate);
+            fridayDate.setDate(mondayDate.getDate() + 4);
+
+            // Calculate weekly gain and distribute it equally across 5 days
+            const weeklyGainMoney = accumulatedCapital * (weeksGrowthRate - 1);
+            const dailyGain = weeklyGainMoney / 5;
+
+            // Update table (weekly growth)
+            accumulatedCapital += weeklyGainMoney;
             let weeklyRow = weeklyTableBody.insertRow();
-            let cell1 = weeklyRow.insertCell(0);
-            let cell2 = weeklyRow.insertCell(1);
-            let cell3 = weeklyRow.insertCell(2);
-            let cell4 = weeklyRow.insertCell(3);
-    
-            cell1.innerHTML = week;
-            cell2.innerHTML = `${mondayDate.toLocaleDateString()} - ${fridayDate.toLocaleDateString()}`;
-            cell3.innerHTML = `₹  ${accumulatedCapital.toFixed(2)}`;
-            cell4.innerHTML = `₹  ${weeklyGainMoney.toFixed(2)}`;
-    
-            // Populate the daily growth table
-            let weeklyDailyGain = weeklyGainMoney / 5; // Dividing weekly gain by 5 for daily gain
+            weeklyRow.insertCell(0).innerHTML = week;
+            weeklyRow.insertCell(1).innerHTML = `${mondayDate.toLocaleDateString()} - ${fridayDate.toLocaleDateString()}`;
+            weeklyRow.insertCell(2).innerHTML = `₹ ${accumulatedCapital.toFixed(2)}`;
+            weeklyRow.insertCell(3).innerHTML = `₹ ${weeklyGainMoney.toFixed(2)}`;
+
+            // Create daily cards
             for (let day = 0; day < 5; day++) {
                 let currentDayDate = new Date(mondayDate);
-                currentDayDate.setDate(mondayDate.getDate() + day); // Correct day within the week
-    
-                // Accumulate capital for each day
-                let dailyAccumulatedCapital = accumulatedCapital;
-    
-                // Insert row into the daily growth table with alternating row color
-                let dailyRow = dailyTableBody.insertRow();
-                let rowClass = (dayCount % 2 === 0) ? 'daily-row-even' : 'daily-row-odd';
-                dailyRow.classList.add(rowClass);
-    
-                let cell1d = dailyRow.insertCell(0);
-                let cell2d = dailyRow.insertCell(1);
-                let cell3d = dailyRow.insertCell(2);
-                let cell4d = dailyRow.insertCell(3);
-    
-                cell1d.innerHTML = `Day ${dayCount}`;
-                cell2d.innerHTML = currentDayDate.toLocaleDateString();
-                cell3d.innerHTML = `₹  ${dailyAccumulatedCapital.toFixed(2)}`;
-                cell4d.innerHTML = `₹  ${weeklyDailyGain.toFixed(2)}`;
-    
-                // Increment the global day count
-                dayCount++;
+                currentDayDate.setDate(mondayDate.getDate() + day);
+
+                // Display each day card with accumulated capital and daily gain
+                let dayCard = document.createElement('div');
+                dayCard.classList.add('day-card');
+                dayCard.innerHTML = `
+                    <div class="day-header">
+                        <span>Day ${(week - 1) * 5 + day + 1}</span>
+                        <span>${currentDayDate.toLocaleDateString()}</span>
+                    </div>
+                    <div class="day-body">
+                        <span>Capital: ₹${(accumulatedCapital - (5 - day) * dailyGain).toFixed(2)}</span>
+                        <span class="${dailyGain >= 0 ? 'gain-positive' : 'gain-negative'}">Gain: ₹${dailyGain.toFixed(2)}</span>
+                    </div>
+                `;
+                dailyCalendar.appendChild(dayCard);
             }
-    
-            // Move to next week's Monday
+
+            // Move to the next week
             currentDate.setDate(currentDate.getDate() + 7);
         }
+        const expectedGrowth = accumulatedCapital - initialCapital;
+        const endDate = new Date(currentDate);
+        endDate.setDate(endDate.getDate() + 1);  // End date is the day after the last week's growth.
+
+        // Update the form fields
+        document.getElementById('id_expected_growth').value = expectedGrowth.toFixed(2);
+        document.getElementById('id_end_date').value = endDate.toISOString().split('T')[0];
     }
     
+// Submit Plan
+document.getElementById("submit-plan").addEventListener("click", function () {
+    const form = document.getElementById("trade-plan-form");
+    const submitButton = document.getElementById("submit-plan"); // Get the submit button
+
+    // Disable the submit button to prevent multiple clicks
+    submitButton.disabled = true;
+
+    const formData = new FormData(form);
+
+    fetch("{% url 'create_trade_plan' %}", {
+        method: "POST",
+        body: formData,
+        headers: {
+            "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value,
+        },
+    })
+        .then((response) => response.json())
+        .then((data) => {
+            // Create the toast element
+            const toastContainer = document.querySelector(".position-fixed");
+            const toast = document.createElement("div");
+            toast.classList.add("toast");
+            toast.setAttribute("role", "alert");
+            toast.setAttribute("aria-live", "assertive");
+            toast.setAttribute("aria-atomic", "true");
+
+            const toastHeader = document.createElement("div");
+            toastHeader.classList.add("toast-header");
+
+            const toastTitle = document.createElement("strong");
+            toastTitle.classList.add("me-auto");
+            toastTitle.textContent = data.status === "success" ? "Success" : "Error";
+
+            const toastCloseButton = document.createElement("button");
+            toastCloseButton.type = "button";
+            toastCloseButton.classList.add("btn-close");
+            toastCloseButton.setAttribute("data-bs-dismiss", "toast");
+            toastCloseButton.setAttribute("aria-label", "Close");
+
+            toastHeader.appendChild(toastTitle);
+            toastHeader.appendChild(toastCloseButton);
+
+            const toastBody = document.createElement("div");
+            toastBody.classList.add("toast-body");
+            toastBody.textContent = data.message;
+
+            toast.appendChild(toastHeader);
+            toast.appendChild(toastBody);
+            toastContainer.appendChild(toast); // Append the toast to the container
+
+            // Initialize and show the toast using Bootstrap's Toast component
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+        })
+        .catch((error) => {
+            console.error("An error occurred:", error);
+        })
+        .finally(() => {
+            // Re-enable the submit button after the request is complete
+            submitButton.disabled = false;
+             });
+        });
+
+        
 </script>
+
+{% endblock %}
 
 {% endblock %}

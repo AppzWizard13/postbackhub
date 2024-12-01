@@ -401,6 +401,14 @@
                 <span class="hide-menu">Create Trading Plan</span>
               </a>
             </li>
+            <li class="sidebar-item">
+              <a class="sidebar-link" href="{% url 'trade_plan_list_view' %}" aria-expanded="false">
+                <span>
+                  <i class=" ti ti-plug-connected-x"></i>
+                </span>
+                <span class="hide-menu">Trading Plan List</span>
+              </a>
+            </li>
             <li class="nav-small-cap">
               <i  style="color: light-blue;" class="ti ti- nav-small-cap-icon fs-4"></i>
               <span class="hide-menu">ANALYSIS</span>
@@ -551,16 +559,7 @@
               </div>
               {% endif %}
               
-              <script>
-                  // Add event listener to the dropdown
-                  document.getElementById('userSelect').addEventListener('change', function() {
-                      var selectedUser = this.value;
-                      if (selectedUser) {
-                          // Redirect to the dashboard for the selected user
-                          window.location.href = "/dashboard/" + selectedUser + "/";
-                      }
-                  });
-              </script>
+
               <li class="nav-item dropdown">
                 <a class="nav-link nav-icon-hover" href="javascript:void(0)" id="drop2" data-bs-toggle="dropdown"
                   aria-expanded="false">
@@ -588,131 +587,7 @@
           </div>
         </nav>
       </header>
-      <!--  Header End -->
-        <style>
-          .clock {
-            font-size: .7rem;
-            border: 2px solid #c6c6c8;
-            padding: 9px 15px;
-            border-radius: 5px;
-            
-        }
-        #time, #remainingTime {
-          display: inline-block;
-          margin-inline:5px;
-          font-weight: 1000;
-        }
-        
-        
 
-
-      </style>
-      <script>
-        function updateClock() {
-          let currentTime = new Date();
-          let hours = currentTime.getHours();
-          let minutes = currentTime.getMinutes();
-          let seconds = currentTime.getSeconds();
-          let day = currentTime.getDay();
-          let meridiem = hours < 12 ? "AM" : "PM";
-      
-          // Convert to 12-hour format
-          hours = hours % 12;
-          hours = hours ? hours : 12;
-      
-          // Add leading zeros to minutes and seconds if less than 10
-          minutes = minutes < 10 ? "0" + minutes : minutes;
-          seconds = seconds < 10 ? "0" + seconds : seconds;
-      
-          let timeString = `${hours}:${minutes}:${seconds} ${meridiem}`;
-          document.getElementById("time").innerHTML = `<span class="time-label">TIME:</span> <span class="time-value">${timeString}</span>`;
-
-      
-          // Check if it's Monday to Friday and before 3:00 PM
-          if (day >= 1 && day <= 5 && ((currentTime.getHours() > 9 || (currentTime.getHours() === 9 && currentTime.getMinutes() >= 15)) && (currentTime.getHours() < 15 || (currentTime.getHours() === 15 && currentTime.getMinutes() <= 30)))) {
-              // Calculate time remaining until 3:00 PM
-              let endTime = new Date(currentTime);
-              endTime.setHours(15, 30, 0, 0); // Set end time to 3:00 PM
-      
-              let remainingTime = endTime - currentTime; // Calculate the difference in milliseconds
-              let remainingHours = Math.floor((remainingTime % 86400000) / 3600000); // Hours left
-              let remainingMinutes = Math.floor((remainingTime % 3600000) / 60000); // Minutes left
-              let remainingSeconds = Math.floor((remainingTime % 60000) / 1000); // Seconds left
-      
-              // Format remaining time with leading zeros
-              remainingHours = remainingHours < 10 ? "0" + remainingHours : remainingHours;
-              remainingMinutes = remainingMinutes < 10 ? "0" + remainingMinutes : remainingMinutes;
-              remainingSeconds = remainingSeconds < 10 ? "0" + remainingSeconds : remainingSeconds;
-      
-              document.getElementById("remainingTime").innerHTML =
-                  "Time Left: " + remainingHours + ":" + remainingMinutes + ":" + remainingSeconds;
-          } else {
-              // Market is closed
-              document.getElementById("remainingTime").innerHTML = "STATUS : Market Closed";
-          }
-      }        
-      // Update the clock every second
-      setInterval(updateClock, 1000);
-      
-      // Initial call to display the clock immediately
-      updateClock();
-      </script>
-
-      <script>
-
-        document.addEventListener('DOMContentLoaded', function () {
-          const sidebarCollapse = document.getElementById('sidebarCollapse'); // Sidebar close button
-          const menuIcon = document.getElementById('menuIcon'); // Menu icon button
-      
-          // Function to toggle visibility based on screen width
-          function handleResponsiveToggle() {
-              if (window.innerWidth < 1200) {
-                  sidebarCollapse.style.display = 'none'; // Hide close button
-                  menuIcon.style.display = 'block'; // Show menu icon
-              } else {
-                  sidebarCollapse.style.display = 'block'; // Show close button
-                  menuIcon.style.display = 'none'; // Hide menu icon
-              }
-          }
-      
-          // Run on page load
-          handleResponsiveToggle();
-      
-            // Listen for window resize to adjust dynamically
-            window.addEventListener('resize', handleResponsiveToggle);
-        });
-
-
-        document.addEventListener('DOMContentLoaded', function () {
-          document.getElementById('sidebarCollapse').addEventListener('click', function () {
-              const sidebar = document.getElementById('sidebar');
-              const menuIcon = document.getElementById('menuIcon');
-              sidebar.classList.toggle('hidden-sidebar'); // Toggles the class
-                menuIcon.classList.remove('d-none');
-                console.log("Sidebar toggle clicked");
-            });
-        });
-
-        document.addEventListener('DOMContentLoaded', function () {
-          const sidebar = document.getElementById('sidebar');
-          const sidebarCollapse = document.getElementById('sidebarCollapse');
-          const menuIcon = document.getElementById('menuIcon');
-          const headerCollapse = document.getElementById('headerCollapse');
-      
-          // Hide sidebar and show menu icon
-          sidebarCollapse.addEventListener('click', function () {
-              sidebar.classList.add('hidden-sidebar'); // Hide sidebar
-              menuIcon.style.display = 'block'; // Show menu icon
-          });
-      
-          // Show sidebar and hide menu icon
-          headerCollapse.addEventListener('click', function () {
-              sidebar.classList.remove('hidden-sidebar'); // Show sidebar
-              menuIcon.style.display = 'none'; // Hide menu icon
-              menuIcon.classList.add('d-none');
-          });
-      });
-    </script>
       {% block content %}
         <div class="container-fluid" style="max-width: none;">
           <!--  Row 1 -->
@@ -812,6 +687,16 @@
                     </div>
 
                     <style>
+
+                        .alert-dark-mode {
+                          background-color: #333;
+                          color: #fff;
+                          border: 1px solid #444;
+                      }
+                      
+                      .alert-dark-mode .btn-close {
+                          color: #fff;
+                      }
                       /* Scoped styles for the progress bar */
                       .custom-progress-container {
                         font-weight: 600;
@@ -1425,50 +1310,48 @@
                         </tr>
                       </thead>
                       <tbody id="positionsTableBody">
+                        {% if position_data.data.errorType %}
+                        <div class="alert alert-danger alert-dark-mode alert-dismissible text-center" role="alert">
+                          <strong>Error:</strong> {{ position_data.data.errorMessage }}
+                      </div>
+                    {% else %}
                         {% for position in position_data.data %}
-                        <tr>
-                          <td class="border-bottom-0">
-                            <button class="btn btn-success m-2 fs-2 d-block" onclick="openPopup('{{ position.securityId }}')">View</button>
-                        </td>
-                        
-                        <script>
-                            function openPopup(securityId) {
-                                const url = `https://web.dhan.co/Charts?exch=NSE&seg=D&secid=${securityId}`;
-                                window.open(url, 'ChartWindow', 'width=800,height=600');
-                            }
-                        </script>
-
-                          <td class="border-bottom-0">
-                            <h6 class="fw-semibold mb-0">{{ position.tradingSymbol }}</h6>
-                          </td>
-
-                          {% comment %} <td class="border-bottom-0">
-                            <h6 class="fw-semibold mb-0">{{ position.buyQty }}</h6>
-                          </td> {% endcomment %}
-                          {% comment %} <td class="border-bottom-0">
-                            <h6 class="fw-semibold mb-0">₹{{ position.buyAvg|floatformat:2 }}</h6>
-                          </td> {% endcomment %}
-                          <td class="border-bottom-0">
-                            {% if position.realizedProfit > 0 %}
-                            <span class="badge bg-success rounded-3 fw-semibold">₹{{ position.realizedProfit|floatformat:2 }}</span>
-                            {% elif position.realizedProfit < 0 and position.realizedProfit > -100 %}
-                            <span class="badge bg-warning rounded-3 fw-semibold">₹{{ position.realizedProfit|floatformat:2 }}</span>
-                            {% else %}
-                            <span class="badge bg-danger rounded-3 fw-semibold">₹{{ position.realizedProfit|floatformat:2 }}</span>
-                            {% endif %}
-                          </td>
-                          <td class="border-bottom-0">
-                            <span class="fw-normal">{{ position.positionType }}</span>
-                          </td>
-                          {% comment %} <td class="border-bottom-0">
-                            <h6 class="fw-semibold mb-0">₹{{ position.unrealizedProfit|floatformat:2 }}</h6>
-                          </td> {% endcomment %}
-                        </tr>
+                            <tr>
+                                <td class="border-bottom-0">
+                                    <button class="btn btn-success m-2 fs-2 d-block" onclick="openPopup('{{ position.securityId }}')">View</button>
+                                </td>
+                    
+                                <script>
+                                    function openPopup(securityId) {
+                                        const url = `https://web.dhan.co/Charts?exch=NSE&seg=D&secid=${securityId}`;
+                                        window.open(url, 'ChartWindow', 'width=800,height=600');
+                                    }
+                                </script>
+                    
+                                <td class="border-bottom-0">
+                                    <h6 class="fw-semibold mb-0">{{ position.tradingSymbol }}</h6>
+                                </td>
+                    
+                                <td class="border-bottom-0">
+                                    {% if position.realizedProfit > 0 %}
+                                        <span class="badge bg-success rounded-3 fw-semibold">₹{{ position.realizedProfit|floatformat:2 }}</span>
+                                    {% elif position.realizedProfit < 0 and position.realizedProfit > -100 %}
+                                        <span class="badge bg-warning rounded-3 fw-semibold">₹{{ position.realizedProfit|floatformat:2 }}</span>
+                                    {% else %}
+                                        <span class="badge bg-danger rounded-3 fw-semibold">₹{{ position.realizedProfit|floatformat:2 }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="border-bottom-0">
+                                    <span class="fw-normal">{{ position.positionType }}</span>
+                                </td>
+                            </tr>
                         {% empty %}
-                        <tr>
-                          <td colspan="6" class="text-center fw-semibold">No Positions Found</td>
-                        </tr>
+                            <tr>
+                                <td colspan="6" class="text-center fw-semibold">No Positions Found</td>
+                            </tr>
                         {% endfor %}
+                    {% endif %}
+                    
                       </tbody>
                     </table>
                   </div>
@@ -1577,34 +1460,45 @@
                                   </tr>
                               </thead>
                               <tbody id="ordersTableBody">
-                                  {% for order in orderlistdata.data %}
-                                  <tr>
-                                      <td class="border-bottom-0"><h6 class="fw-semibold mb-0">{{ order.tradingSymbol }}</h6></td>
-                                      <td class="border-bottom-0">
-                                          {% if order.orderStatus == 'TRADED' %}
-                                          <span class="badge bg-success rounded-3 fw-semibold">TRADED</span>
-                                          {% elif order.orderStatus == 'CANCELLED' %}
-                                          <span class="badge bg-danger rounded-3 fw-semibold">CANCELLED</span>
-                                          {% elif order.orderStatus == 'REJECTED' %}
-                                          <span class="badge bg-danger rounded-3 fw-semibold">REJECTED</span>
-                                          {% else %}
-                                          <span class="badge bg-warning rounded-3 fw-semibold">{{ order.orderStatus }}</span>
-                                          {% endif %}
-                                      </td>
-                                      
-                                      <td class="border-bottom-0">
-                                        {% if order.transactionType == 'BUY' %}
-                                          <p class="badge bg-success rounded-3 fw-semibold">{{ order.transactionType }}</p>
-                                          {% else %}
-                                          <p class="badge bg-danger rounded-3 fw-semibold">{{ order.transactionType }}</p>
-                                        {% endif %}
-                                      </td>
-                                      <td class="border-bottom-0"><h6 class="fw-semibold mb-0">{{ order.orderType }}</h6></td>
-                                      <td class="border-bottom-0"><h6 class="fw-semibold mb-0">{{ order.quantity }}</h6></td>
-                                      <td class="border-bottom-0"><h6 class="fw-semibold mb-0 fs-4">₹{{ order.price|floatformat:2 }}</h6></td>
-                                      <td class="border-bottom-0"><h6 class="fw-semibold mb-0">{{ order.createTime }}</h6></td>
-                                  </tr>
-                                  {% endfor %}
+                                {% if orderlistdata.data.errorType %}
+                                <div class="alert alert-danger alert-dark-mode alert-dismissible text-center" role="alert">
+                                  <strong>Error:</strong> {{ orderlistdata.data.errorMessage }}
+                                </div>
+                            {% else %}
+                                {% for order in orderlistdata.data %}
+                                    <tr>
+                                        <td class="border-bottom-0"><h6 class="fw-semibold mb-0">{{ order.tradingSymbol }}</h6></td>
+                                        <td class="border-bottom-0">
+                                            {% if order.orderStatus == 'TRADED' %}
+                                                <span class="badge bg-success rounded-3 fw-semibold">TRADED</span>
+                                            {% elif order.orderStatus == 'CANCELLED' %}
+                                                <span class="badge bg-danger rounded-3 fw-semibold">CANCELLED</span>
+                                            {% elif order.orderStatus == 'REJECTED' %}
+                                                <span class="badge bg-danger rounded-3 fw-semibold">REJECTED</span>
+                                            {% else %}
+                                                <span class="badge bg-warning rounded-3 fw-semibold">{{ order.orderStatus }}</span>
+                                            {% endif %}
+                                        </td>
+                            
+                                        <td class="border-bottom-0">
+                                            {% if order.transactionType == 'BUY' %}
+                                                <p class="badge bg-success rounded-3 fw-semibold">{{ order.transactionType }}</p>
+                                            {% else %}
+                                                <p class="badge bg-danger rounded-3 fw-semibold">{{ order.transactionType }}</p>
+                                            {% endif %}
+                                        </td>
+                                        <td class="border-bottom-0"><h6 class="fw-semibold mb-0">{{ order.orderType }}</h6></td>
+                                        <td class="border-bottom-0"><h6 class="fw-semibold mb-0">{{ order.quantity }}</h6></td>
+                                        <td class="border-bottom-0"><h6 class="fw-semibold mb-0 fs-4">₹{{ order.price|floatformat:2 }}</h6></td>
+                                        <td class="border-bottom-0"><h6 class="fw-semibold mb-0">{{ order.createTime }}</h6></td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="7" class="text-center fw-semibold">No Orders Found</td>
+                                    </tr>
+                                {% endfor %}
+                            {% endif %}
+                            
                               </tbody>
                           </table>
                           </table>
@@ -1620,236 +1514,7 @@
       </div>
     </div>
   </div>
-  <script>
-      // JavaScript Pagination Logic
-      document.addEventListener('DOMContentLoaded', function() {
-          const rowsPerPage = 6; // Number of rows per page
-          const tableBody = document.getElementById('ordersTableBody');
-          const rows = tableBody.getElementsByTagName('tr');
-          const totalRows = rows.length;
-          let currentPage = 1;
-          let totalPages = Math.ceil(totalRows / rowsPerPage);
-
-          // Display page info
-          const pageInfo = document.getElementById('pageInfo');
-          pageInfo.innerText = `Page ${currentPage} of ${totalPages}`;
-
-          // Function to display a specific page
-          function displayPage(page) {
-              // Hide all rows
-              for (let i = 0; i < totalRows; i++) {
-                  rows[i].style.display = 'none';
-              }
-
-              // Display the rows for the current page
-              let start = (page - 1) * rowsPerPage;
-              let end = Math.min(start + rowsPerPage, totalRows);
-              for (let i = start; i < end; i++) {
-                  rows[i].style.display = '';
-              }
-
-              // Update page info
-              pageInfo.innerText = `Page ${page} of ${totalPages}`;
-          }
-
-          // Initial display
-          displayPage(currentPage);
-
-          // Pagination controls
-          document.getElementById('prevPage').addEventListener('click', function() {
-              if (currentPage > 1) {
-                  currentPage--;
-                  displayPage(currentPage);
-              }
-          });
-
-          document.getElementById('nextPage').addEventListener('click', function() {
-              if (currentPage < totalPages) {
-                  currentPage++;
-                  displayPage(currentPage);
-              }
-          });
-      });
-
-      const rowsPerPage = 7;
-      let currentPage = 1;
-
-      const tableBody = document.getElementById('positionsTableBody');
-      const prevButton = document.getElementById('prevPagepos');
-      const nextButton = document.getElementById('nextPagepos');
-      const pageInfo = document.getElementById('pageInfopos');
-
-      function displayTable() {
-        const rows = tableBody.getElementsByTagName('tr');
-        const totalPages = Math.ceil(rows.length / rowsPerPage);
-
-        // Hide all rows initially
-        for (let i = 0; i < rows.length; i++) {
-          rows[i].style.display = 'none';
-        }
-
-        // Calculate the start and end index for the current page
-        const start = (currentPage - 1) * rowsPerPage;
-        const end = Math.min(start + rowsPerPage, rows.length);
-
-        // Display rows for the current page
-        for (let i = start; i < end; i++) {
-          rows[i].style.display = '';
-        }
-
-        {% comment %} // Update pagination controls
-        pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
-        prevButton.disabled = currentPage === 1;
-        nextButton.disabled = currentPage === totalPages || totalPages === 0; {% endcomment %}
-      }
-
-      // Event listeners for pagination buttons
-      prevButton.addEventListener('click', () => {
-        if (currentPage > 1) {
-          currentPage--;
-          displayTable();
-        }
-      });
-
-      nextButton.addEventListener('click', () => {
-        const totalRows = tableBody.getElementsByTagName('tr').length;
-        const totalPages = Math.ceil(totalRows / rowsPerPage);
-        if (currentPage < totalPages) {
-          currentPage++;
-          displayTable();
-        }
-      });
-
-      // Initial display of the table
-      displayTable();
-
-  </script>
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      // Select the "Activate Kill" button and modal confirm button
-      const activateKillButton = document.getElementById('activateKillButton');
-      const confirmActionButton = document.getElementById('confirmAction');
-      
-      // Show the confirmation modal when "Activate Kill" button is clicked
-      activateKillButton.addEventListener('click', function() {
-        const confirmationModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
-        confirmationModal.show();
-      });
-  
-      // Perform the "Activate Kill" action on confirmation
-      confirmActionButton.addEventListener('click', function() {
-        // Custom action for the "Activate Kill" button
-        console.log("Kill switch activated.");
-        activateKillSwitch(); //
-        
-        // Add further actions here, such as making an AJAX request or redirecting
-  
-        // Hide the modal after confirming
-        const confirmationModal = bootstrap.Modal.getInstance(document.getElementById('confirmationModal'));
-        confirmationModal.hide();
-      });
-    });
-  </script>
-  <script>
-
-
-
-    // JavaScript for AJAX Call
-    document.getElementById("smartExitButton").addEventListener("click", function() {
-      const username = this.getAttribute("data-username"); // Get the username from the data attribute
-      console.log("username:", username);
-  
-      // Trigger the AJAX function
-      fetch('/close-all-positions/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ username: username })
-      })
-      .then(response => response.json())
-      .then(data => {
-        // Create a toast element
-        const toastContainer = document.querySelector('.toast-container');
-        const toast = document.createElement('div');
-        toast.className = `toast align-items-center text-bg-${data.message ? 'success' : 'danger'} border-0`;
-        toast.role = 'alert';
-        toast.ariaLive = 'assertive';
-        toast.ariaAtomic = 'true';
-        toast.dataset.bsDelay = '3000';
-        toast.innerHTML = `
-          <div class="d-flex">
-            <div class="toast-body">
-              ${data.message ? data.message : 'Error: ' + data.error}
-            </div>
-            <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-          </div>
-        `;
-  
-        // Append the toast to the toast container
-        toastContainer.appendChild(toast);
-        
-        // Show the toast
-        const toastInstance = new bootstrap.Toast(toast);
-        toastInstance.show();
-  
-        console.log("Sell Order Response:", data.response);
-      })
-      .catch(error => {
-        console.error("Error:", error);
-        // Handle error toast
-        const toastContainer = document.querySelector('.toast-container');
-        const toast = document.createElement('div');
-        toast.className = 'toast align-items-center text-bg-danger border-0';
-        toast.role = 'alert';
-        toast.ariaLive = 'assertive';
-        toast.ariaAtomic = 'true';
-        toast.dataset.bsDelay = '3000';
-        toast.innerHTML = `
-          <div class="d-flex">
-            <div class="toast-body">
-              Error: ${error.message}
-            </div>
-            <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-          </div>
-        `;
-  
-        // Append the error toast to the toast container
-        toastContainer.appendChild(toast);
-        
-        // Show the error toast
-        const toastInstance = new bootstrap.Toast(toast);
-        toastInstance.show();
-      });
-    });
-
-      // Track the initial status
-      let previousStatus = null;
-  
-      function checkStatus() {
-        const username = "{{ user.username }}";  // Get the username from Django template context
-        
-        $.ajax({
-            url: "{% url 'check_log_status' %}?username=" + encodeURIComponent(username),  // Append username as a query parameter
-            type: "GET",
-            success: function(response) {
-                // Check the response status
-                if (response.status === 'reload') {
-                    location.reload();  // Reload the page if there was a change in the order count
-                } else {
-                    console.log("No change in order count, no reload needed.");
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error("Error checking status:", error);
-            }
-        });
-    }
-  
-      // Run checkStatus every 2 seconds
-      setInterval(checkStatus, 2000);
-  </script>
-
+ 
   {% comment %} <script>
       var domain =  window.location.hostname;
       var lastKeyword = '{{ user.username }}'; 
@@ -1906,12 +1571,112 @@
       }
   </script> {% endcomment %}
 
-  <script>
-    function activateKillSwitch() {
-          // Get the username from the button's value attribute
-          const username = document.getElementById('activateKillButton').value;
 
-          fetch('/activate_kill_switch/', {
+    
+  <script src="{% static 'dashboard/assets/libs/jquery/dist/jquery.min.js' %}"></script>
+  <script src="{% static 'dashboard/assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'dashboard/assets/js/sidebarmenu.js' %}"></script>
+  <script src="{% static 'dashboard/assets/js/app.min.js' %}"></script>
+  <script src="{% static 'dashboard/assets/libs/apexcharts/dist/apexcharts.min.js' %}"></script>
+    <!-- Optional JS files block -->
+    {% block optional_js %}
+
+          <!--  Header End -->
+          <style>
+            .clock {
+              font-size: .7rem;
+              border: 2px solid #c6c6c8;
+              padding: 9px 15px;
+              border-radius: 5px;
+              
+          }
+          #time, #remainingTime {
+            display: inline-block;
+            margin-inline:5px;
+            font-weight: 1000;
+          }
+          
+          
+  
+  
+        </style>
+
+        
+        <script>
+          function activateKillSwitch() {
+                // Get the username from the button's value attribute
+                const username = document.getElementById('activateKillButton').value;
+
+                fetch('/activate_kill_switch/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username: username })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Create a toast element
+                    const toastContainer = document.querySelector('.toast-container');
+                    const toast = document.createElement('div');
+                    toast.className = `toast align-items-center text-bg-${data.message ? 'success' : 'danger'} border-0`;
+                    toast.role = 'alert';
+                    toast.ariaLive = 'assertive';
+                    toast.ariaAtomic = 'true';
+                    toast.dataset.bsDelay = '3000';
+                    toast.innerHTML = `
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                ${data.message ? data.message : 'Error: ' + data.error}
+                            </div>
+                            <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                    `;
+
+                    // Append the toast to the toast container
+                    toastContainer.appendChild(toast);
+
+                    // Show the toast
+                    const toastInstance = new bootstrap.Toast(toast);
+                    toastInstance.show();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+
+                    // Handle error toast
+                    const toastContainer = document.querySelector('.toast-container');
+                    const toast = document.createElement('div');
+                    toast.className = 'toast align-items-center text-bg-danger border-0';
+                    toast.role = 'alert';
+                    toast.ariaLive = 'assertive';
+                    toast.ariaAtomic = 'true';
+                    toast.dataset.bsDelay = '3000';
+                    toast.innerHTML = `
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                Error: ${error.message}
+                            </div>
+                            <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                    `;
+
+                    // Append the error toast to the toast container
+                    toastContainer.appendChild(toast);
+
+                    // Show the error toast
+                    const toastInstance = new bootstrap.Toast(toast);
+                    toastInstance.show();
+                });
+            }
+        </script>
+
+        <script>
+        // Function to handle UseRTC action
+        function useRTCAction() {
+          // Get the username from the button's value attribute
+          const username = document.getElementById('useRTCButton').value;
+
+          fetch('/use_rtc_action/', {
               method: 'POST',
               headers: {
                   'Content-Type': 'application/json'
@@ -1920,7 +1685,7 @@
           })
           .then(response => response.json())
           .then(data => {
-              // Create a toast element
+              // Create a toast element for success or error message
               const toastContainer = document.querySelector('.toast-container');
               const toast = document.createElement('div');
               toast.className = `toast align-items-center text-bg-${data.message ? 'success' : 'danger'} border-0`;
@@ -1943,6 +1708,11 @@
               // Show the toast
               const toastInstance = new bootstrap.Toast(toast);
               toastInstance.show();
+
+              // If the action was successful, reload the page
+              if (data.status === "success") {
+                  setTimeout(() => location.reload(), 2000);  // Reload page after 2 seconds
+              }
           })
           .catch(error => {
               console.error('Error:', error);
@@ -1971,108 +1741,370 @@
               const toastInstance = new bootstrap.Toast(toast);
               toastInstance.show();
           });
-      }
-  </script>
 
-  <script>
-  // Function to handle UseRTC action
-  function useRTCAction() {
-    // Get the username from the button's value attribute
-    const username = document.getElementById('useRTCButton').value;
+          // Close the modal after the action (confirm or cancel)
+            const modal = new bootstrap.Modal(document.getElementById('useRTCModal'));
+            modal.hide();  // This will hide the modal
+          }
 
-    fetch('/use_rtc_action/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ username: username })
-    })
-    .then(response => response.json())
-    .then(data => {
-        // Create a toast element for success or error message
-        const toastContainer = document.querySelector('.toast-container');
-        const toast = document.createElement('div');
-        toast.className = `toast align-items-center text-bg-${data.message ? 'success' : 'danger'} border-0`;
-        toast.role = 'alert';
-        toast.ariaLive = 'assertive';
-        toast.ariaAtomic = 'true';
-        toast.dataset.bsDelay = '3000';
-        toast.innerHTML = `
-            <div class="d-flex">
-                <div class="toast-body">
-                    ${data.message ? data.message : 'Error: ' + data.error}
-                </div>
-                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-        `;
+            // Attach the event listener for the confirmation button in the modal
+            document.getElementById('confirmUseRTC').addEventListener('click', useRTCAction);
 
-        // Append the toast to the toast container
-        toastContainer.appendChild(toast);
+            // Also close the modal on cancel (button with data-bs-dismiss="modal")
+            document.querySelector('.btn-secondary[data-bs-dismiss="modal"]').addEventListener('click', () => {
+              const modal = new bootstrap.Modal(document.getElementById('useRTCModal'));
+              modal.hide();  // This will hide the modal on cancel
+        });
 
-        // Show the toast
-        const toastInstance = new bootstrap.Toast(toast);
-        toastInstance.show();
-
-        // If the action was successful, reload the page
-        if (data.status === "success") {
-            setTimeout(() => location.reload(), 2000);  // Reload page after 2 seconds
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-
-        // Handle error toast
-        const toastContainer = document.querySelector('.toast-container');
-        const toast = document.createElement('div');
-        toast.className = 'toast align-items-center text-bg-danger border-0';
-        toast.role = 'alert';
-        toast.ariaLive = 'assertive';
-        toast.ariaAtomic = 'true';
-        toast.dataset.bsDelay = '3000';
-        toast.innerHTML = `
-            <div class="d-flex">
-                <div class="toast-body">
-                    Error: ${error.message}
-                </div>
-                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-        `;
-
-        // Append the error toast to the toast container
-        toastContainer.appendChild(toast);
-
-        // Show the error toast
-        const toastInstance = new bootstrap.Toast(toast);
-        toastInstance.show();
-    });
-
-    // Close the modal after the action (confirm or cancel)
-      const modal = new bootstrap.Modal(document.getElementById('useRTCModal'));
-      modal.hide();  // This will hide the modal
-    }
-
-      // Attach the event listener for the confirmation button in the modal
-      document.getElementById('confirmUseRTC').addEventListener('click', useRTCAction);
-
-      // Also close the modal on cancel (button with data-bs-dismiss="modal")
-      document.querySelector('.btn-secondary[data-bs-dismiss="modal"]').addEventListener('click', () => {
-        const modal = new bootstrap.Modal(document.getElementById('useRTCModal'));
-        modal.hide();  // This will hide the modal on cancel
-  });
-
-  </script>
-  
-  
+        </script>
+        
+        
 
 
+
+        <script>
+          // JavaScript Pagination Logic
+          document.addEventListener('DOMContentLoaded', function() {
+              const rowsPerPage = 6; // Number of rows per page
+              const tableBody = document.getElementById('ordersTableBody');
+              const rows = tableBody.getElementsByTagName('tr');
+              const totalRows = rows.length;
+              let currentPage = 1;
+              let totalPages = Math.ceil(totalRows / rowsPerPage);
     
-  <script src="{% static 'dashboard/assets/libs/jquery/dist/jquery.min.js' %}"></script>
-  <script src="{% static 'dashboard/assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script>
-  <script src="{% static 'dashboard/assets/js/sidebarmenu.js' %}"></script>
-  <script src="{% static 'dashboard/assets/js/app.min.js' %}"></script>
-  <script src="{% static 'dashboard/assets/libs/apexcharts/dist/apexcharts.min.js' %}"></script>
-    <!-- Optional JS files block -->
-    {% block optional_js %}
+              // Display page info
+              const pageInfo = document.getElementById('pageInfo');
+              pageInfo.innerText = `Page ${currentPage} of ${totalPages}`;
+    
+              // Function to display a specific page
+              function displayPage(page) {
+                  // Hide all rows
+                  for (let i = 0; i < totalRows; i++) {
+                      rows[i].style.display = 'none';
+                  }
+    
+                  // Display the rows for the current page
+                  let start = (page - 1) * rowsPerPage;
+                  let end = Math.min(start + rowsPerPage, totalRows);
+                  for (let i = start; i < end; i++) {
+                      rows[i].style.display = '';
+                  }
+    
+                  // Update page info
+                  pageInfo.innerText = `Page ${page} of ${totalPages}`;
+              }
+    
+              // Initial display
+              displayPage(currentPage);
+    
+              // Pagination controls
+              document.getElementById('prevPage').addEventListener('click', function() {
+                  if (currentPage > 1) {
+                      currentPage--;
+                      displayPage(currentPage);
+                  }
+              });
+    
+              document.getElementById('nextPage').addEventListener('click', function() {
+                  if (currentPage < totalPages) {
+                      currentPage++;
+                      displayPage(currentPage);
+                  }
+              });
+          });
+    
+          const rowsPerPage = 7;
+          let currentPage = 1;
+    
+          const tableBody = document.getElementById('positionsTableBody');
+          const prevButton = document.getElementById('prevPagepos');
+          const nextButton = document.getElementById('nextPagepos');
+          const pageInfo = document.getElementById('pageInfopos');
+    
+          function displayTable() {
+            const rows = tableBody.getElementsByTagName('tr');
+            const totalPages = Math.ceil(rows.length / rowsPerPage);
+    
+            // Hide all rows initially
+            for (let i = 0; i < rows.length; i++) {
+              rows[i].style.display = 'none';
+            }
+    
+            // Calculate the start and end index for the current page
+            const start = (currentPage - 1) * rowsPerPage;
+            const end = Math.min(start + rowsPerPage, rows.length);
+    
+            // Display rows for the current page
+            for (let i = start; i < end; i++) {
+              rows[i].style.display = '';
+            }
+    
+            {% comment %} // Update pagination controls
+            pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+            prevButton.disabled = currentPage === 1;
+            nextButton.disabled = currentPage === totalPages || totalPages === 0; {% endcomment %}
+          }
+    
+          // Event listeners for pagination buttons
+          prevButton.addEventListener('click', () => {
+            if (currentPage > 1) {
+              currentPage--;
+              displayTable();
+            }
+          });
+    
+          nextButton.addEventListener('click', () => {
+            const totalRows = tableBody.getElementsByTagName('tr').length;
+            const totalPages = Math.ceil(totalRows / rowsPerPage);
+            if (currentPage < totalPages) {
+              currentPage++;
+              displayTable();
+            }
+          });
+    
+          // Initial display of the table
+          displayTable();
+    
+      </script>
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          // Select the "Activate Kill" button and modal confirm button
+          const activateKillButton = document.getElementById('activateKillButton');
+          const confirmActionButton = document.getElementById('confirmAction');
+          
+          // Show the confirmation modal when "Activate Kill" button is clicked
+          activateKillButton.addEventListener('click', function() {
+            const confirmationModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+            confirmationModal.show();
+          });
+      
+          // Perform the "Activate Kill" action on confirmation
+          confirmActionButton.addEventListener('click', function() {
+            // Custom action for the "Activate Kill" button
+            console.log("Kill switch activated.");
+            activateKillSwitch(); //
+            
+            // Add further actions here, such as making an AJAX request or redirecting
+      
+            // Hide the modal after confirming
+            const confirmationModal = bootstrap.Modal.getInstance(document.getElementById('confirmationModal'));
+            confirmationModal.hide();
+          });
+        });
+      </script>
+      <script>
+        // JavaScript for AJAX Call
+        document.getElementById("smartExitButton").addEventListener("click", function() {
+          const username = this.getAttribute("data-username"); // Get the username from the data attribute
+          console.log("username:", username);
+      
+          // Trigger the AJAX function
+          fetch('/close-all-positions/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username: username })
+          })
+          .then(response => response.json())
+          .then(data => {
+            // Create a toast element
+            const toastContainer = document.querySelector('.toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast align-items-center text-bg-${data.message ? 'success' : 'danger'} border-0`;
+            toast.role = 'alert';
+            toast.ariaLive = 'assertive';
+            toast.ariaAtomic = 'true';
+            toast.dataset.bsDelay = '3000';
+            toast.innerHTML = `
+              <div class="d-flex">
+                <div class="toast-body">
+                  ${data.message ? data.message : 'Error: ' + data.error}
+                </div>
+                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+              </div>
+            `;
+      
+            // Append the toast to the toast container
+            toastContainer.appendChild(toast);
+            
+            // Show the toast
+            const toastInstance = new bootstrap.Toast(toast);
+            toastInstance.show();
+      
+            console.log("Sell Order Response:", data.response);
+          })
+          .catch(error => {
+            console.error("Error:", error);
+            // Handle error toast
+            const toastContainer = document.querySelector('.toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast align-items-center text-bg-danger border-0';
+            toast.role = 'alert';
+            toast.ariaLive = 'assertive';
+            toast.ariaAtomic = 'true';
+            toast.dataset.bsDelay = '3000';
+            toast.innerHTML = `
+              <div class="d-flex">
+                <div class="toast-body">
+                  Error: ${error.message}
+                </div>
+                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+              </div>
+            `;
+      
+            // Append the error toast to the toast container
+            toastContainer.appendChild(toast);
+            
+            // Show the error toast
+            const toastInstance = new bootstrap.Toast(toast);
+            toastInstance.show();
+          });
+        });
+    
+          // Track the initial status
+          let previousStatus = null;
+      
+          function checkStatus() {
+            const username = "{{ user.username }}";  // Get the username from Django template context
+            
+            $.ajax({
+                url: "{% url 'check_log_status' %}?username=" + encodeURIComponent(username),  // Append username as a query parameter
+                type: "GET",
+                success: function(response) {
+                    // Check the response status
+                    if (response.status === 'reload') {
+                        location.reload();  // Reload the page if there was a change in the order count
+                    } else {
+                        console.log("No change in order count, no reload needed.");
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error checking status:", error);
+                }
+            });
+        }
+      
+          // Run checkStatus every 2 seconds
+          setInterval(checkStatus, 2000);
+      </script>
+    
+     <script>
+          function updateClock() {
+            let currentTime = new Date();
+            let hours = currentTime.getHours();
+            let minutes = currentTime.getMinutes();
+            let seconds = currentTime.getSeconds();
+            let day = currentTime.getDay();
+            let meridiem = hours < 12 ? "AM" : "PM";
+        
+            // Convert to 12-hour format
+            hours = hours % 12;
+            hours = hours ? hours : 12;
+        
+            // Add leading zeros to minutes and seconds if less than 10
+            minutes = minutes < 10 ? "0" + minutes : minutes;
+            seconds = seconds < 10 ? "0" + seconds : seconds;
+        
+            let timeString = `${hours}:${minutes}:${seconds} ${meridiem}`;
+            document.getElementById("time").innerHTML = `<span class="time-label">TIME:</span> <span class="time-value">${timeString}</span>`;
+  
+        
+            // Check if it's Monday to Friday and before 3:00 PM
+            if (day >= 1 && day <= 5 && ((currentTime.getHours() > 9 || (currentTime.getHours() === 9 && currentTime.getMinutes() >= 15)) && (currentTime.getHours() < 15 || (currentTime.getHours() === 15 && currentTime.getMinutes() <= 30)))) {
+                // Calculate time remaining until 3:00 PM
+                let endTime = new Date(currentTime);
+                endTime.setHours(15, 30, 0, 0); // Set end time to 3:00 PM
+        
+                let remainingTime = endTime - currentTime; // Calculate the difference in milliseconds
+                let remainingHours = Math.floor((remainingTime % 86400000) / 3600000); // Hours left
+                let remainingMinutes = Math.floor((remainingTime % 3600000) / 60000); // Minutes left
+                let remainingSeconds = Math.floor((remainingTime % 60000) / 1000); // Seconds left
+        
+                // Format remaining time with leading zeros
+                remainingHours = remainingHours < 10 ? "0" + remainingHours : remainingHours;
+                remainingMinutes = remainingMinutes < 10 ? "0" + remainingMinutes : remainingMinutes;
+                remainingSeconds = remainingSeconds < 10 ? "0" + remainingSeconds : remainingSeconds;
+        
+                document.getElementById("remainingTime").innerHTML =
+                    "Time Left: " + remainingHours + ":" + remainingMinutes + ":" + remainingSeconds;
+            } else {
+                // Market is closed
+                document.getElementById("remainingTime").innerHTML = "STATUS : Market Closed";
+            }
+        }        
+        // Update the clock every second
+        setInterval(updateClock, 1000);
+        
+        // Initial call to display the clock immediately
+        updateClock();
+        </script>
+  
+        <script>
+  
+          document.addEventListener('DOMContentLoaded', function () {
+            const sidebarCollapse = document.getElementById('sidebarCollapse'); // Sidebar close button
+            const menuIcon = document.getElementById('menuIcon'); // Menu icon button
+        
+            // Function to toggle visibility based on screen width
+            function handleResponsiveToggle() {
+                if (window.innerWidth < 1200) {
+                    sidebarCollapse.style.display = 'none'; // Hide close button
+                    menuIcon.style.display = 'block'; // Show menu icon
+                } else {
+                    sidebarCollapse.style.display = 'block'; // Show close button
+                    menuIcon.style.display = 'none'; // Hide menu icon
+                }
+            }
+        
+            // Run on page load
+            handleResponsiveToggle();
+        
+              // Listen for window resize to adjust dynamically
+              window.addEventListener('resize', handleResponsiveToggle);
+          });
+  
+  
+          document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('sidebarCollapse').addEventListener('click', function () {
+                const sidebar = document.getElementById('sidebar');
+                const menuIcon = document.getElementById('menuIcon');
+                sidebar.classList.toggle('hidden-sidebar'); // Toggles the class
+                  menuIcon.classList.remove('d-none');
+                  console.log("Sidebar toggle clicked");
+              });
+          });
+  
+          document.addEventListener('DOMContentLoaded', function () {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarCollapse = document.getElementById('sidebarCollapse');
+            const menuIcon = document.getElementById('menuIcon');
+            const headerCollapse = document.getElementById('headerCollapse');
+        
+            // Hide sidebar and show menu icon
+            sidebarCollapse.addEventListener('click', function () {
+                sidebar.classList.add('hidden-sidebar'); // Hide sidebar
+                menuIcon.style.display = 'block'; // Show menu icon
+            });
+        
+            // Show sidebar and hide menu icon
+            headerCollapse.addEventListener('click', function () {
+                sidebar.classList.remove('hidden-sidebar'); // Show sidebar
+                menuIcon.style.display = 'none'; // Hide menu icon
+                menuIcon.classList.add('d-none');
+            });
+        });
+      </script>
+    <script>
+      // Add event listener to the dropdown
+      document.getElementById('userSelect').addEventListener('change', function() {
+          var selectedUser = this.value;
+          if (selectedUser) {
+              // Redirect to the dashboard for the selected user
+              window.location.href = "/dashboard/" + selectedUser + "/";
+          }
+      });
+    </script>
     <script type="application/json" id="positions-data">
       {{ position_data_json|safe }}
     </script>

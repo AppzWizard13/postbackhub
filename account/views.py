@@ -107,7 +107,6 @@ class ControlCreateView(CreateView):
     model = User
     form_class = CustomControlCreationForm
     template_name = "dashboard/create_control.html"  # Create this template for the control creation page
-    success_url = reverse_lazy('login')  # Redirect to login page after successful control creation
 
     def form_valid(self, form):
         # Save the form and add a success message
@@ -1259,20 +1258,286 @@ def use_rtc_action(request):
 
 
 
-from django.views.generic.edit import FormView
+# from django.shortcuts import redirect
+# from django.contrib import messages
+# from django.views.generic.edit import CreateView
+# from django.urls import reverse_lazy
+# from .forms import TradingPlanForm
+# from .models import TradingPlan
+
+# class CreateTradePlanView(CreateView):
+#     model = TradingPlan
+#     form_class = TradingPlanForm
+#     template_name = "dashboard/trade_planner.html"  # The form view template
+
+#     def form_valid(self, form):
+#         # Save the form data and associate the user with the trading plan
+#         trading_plan = form.save(commit=False)
+#         trading_plan.user = self.request.user  # Assuming the user is logged in
+#         trading_plan.save()
+
+#         # Add a success message
+#         messages.success(self.request, "Trade plan created successfully!")
+#         return super().form_valid(form)
+
+#     def form_invalid(self, form):
+#         # Print the error details to the console
+#         print("Error creating trade plan:", form.errors)
+
+#         # Add an error message if the form is invalid
+#         messages.error(self.request, form.errors)
+#         return super().form_invalid(form)
+
+
+import json
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from .models import WeeklyGoalReport, DailyGoalReport
+
+@csrf_exempt
+def save_goal_reports(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            weekly_data = data.get("weekly_data", [])
+            daily_data = data.get("daily_data", [])
+
+            # Save weekly data
+            for week in weekly_data:
+                week_report = WeeklyGoalReport.objects.create(
+                    user=request.user,
+                    plan_name=week['plan_name'],
+                    week_number=week['week_number'],
+                    accumulated_capital=week['accumulated_capital'],
+                    gained_amount=week['gained_amount'],
+                    progress=week['progress'],
+                    is_achieved=week['is_achieved']
+                )
+
+                # Save daily data related to the weekly report
+                for daily in daily_data:
+                    if daily['plan_name'] == week['plan_name']:  # Match the plan_name
+                        DailyGoalReport.objects.create(
+                            user=request.user,
+                            weekly_goal=week_report,
+                            plan_name=daily['plan_name'],
+                            day_number=daily['day_number'],
+                            date=daily['date'],
+                            capital=daily['capital'],
+                            gained_amount=daily['gained_amount'],
+                            is_achieved=daily['is_achieved'],
+                            progress=daily['progress']
+                        )
+
+            return JsonResponse({"success": True})
+        except Exception as e:
+            return JsonResponse({"success": False, "error": str(e)})
+
+    return JsonResponse({"success": False, "error": "Invalid request"})
+
+
+
+from django.http import JsonResponse
+from django.shortcuts import render
 from .forms import TradingPlanForm
-from .models import TradingPlan
+from .models import TradingPlan  # Make sure this model is correctly imported
 
-class CreateTradePlanView(FormView):
-    template_name = "dashboard/trade_planner.html"
-    form_class = TradingPlanForm
-    success_url = '/success/'  # Redirect to a success page after successful form submission
+def create_trade_plan(request):
+    if request.method == 'POST':
+        form = TradingPlanForm(request.POST)
+        
+        if form.is_valid():
+            plan_name = form.cleaned_data['plan_name']  # Get the plan name from the cleaned data
+            
+            # Check if the plan name already exists
+            if TradingPlan.objects.filter(plan_name=plan_name).exists():
+                return JsonResponse({
+                    'status': 'error',
+                    'message': f'Trading plan with the name "{plan_name}" already exists.'
+                })
 
-    def form_valid(self, form):
-        # Save the form data
-        trading_plan = form.save(commit=False)
-        trading_plan.user = self.request.user  # Assuming the user is logged in
-        trading_plan.save()
+            try:
+                # Save the trade plan and associate it with the logged-in user
+                trade_plan = form.save(commit=False)
+                trade_plan.user = request.user
+                trade_plan.save()
 
-        # Redirect to the success URL or another page
-        return super().form_valid(form)
+                # Return success response
+                return JsonResponse({
+                    'status': 'success',
+                    'message': 'Trade plan saved successfully!'
+                })
+            except Exception as e:
+                # Log the exception if needed
+                print(f"Error saving trade plan: {e}")
+                # Return the error response
+                return JsonResponse({
+                    'status': 'error',
+                    'message': f'There was an error saving the trade plan: {e}'
+                })
+        else:
+            # Convert form errors into plain text (removing HTML tags)
+            error_messages = []
+            for field, errors in form.errors.items():
+                for error in errors:
+                    error_messages.append(error)  # Add error message as plain text
+            # If form is invalid, return form errors
+            print("form.errorsform.errorsform.errors", form.errors)
+            return JsonResponse({
+                    'status': 'error',
+                    'message': error_messages
+                })
+
+    else:
+        # If the method is GET, just return the empty form
+        form = TradingPlanForm()
+        return render(request, 'dashboard/trade_planner.html', {'form': form})
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+from .models import WeeklyGoalReport, DailyGoalReport
+from django.contrib.auth.decorators import login_required
+
+@csrf_exempt
+@login_required
+def save_goal_reports(request):
+    if request.method == "POST":
+        try:
+            # Parse the JSON data from the request
+            data = json.loads(request.body)
+            weekly_data = data.get("weekly_data", [])
+            daily_data = data.get("daily_data", [])
+            
+            # Save weekly reports
+            for week in weekly_data:
+                weekly_report, created = WeeklyGoalReport.objects.update_or_create(
+                    user=request.user,
+                    week_number=week["week_number"],
+                    plan_name=week["plan_name"],
+                    defaults={
+                        "start_date": week["start_date"],
+                        "end_date": week["end_date"],
+                        "accumulated_capital": week["accumulated_capital"],
+                        "gained_amount": week["gained_amount"],
+                        "progress": week.get("progress", None),
+                        "is_achieved": week.get("is_achieved", False),
+                    },
+                )
+
+            # Save daily reports
+            for day in daily_data:
+                weekly_goal = WeeklyGoalReport.objects.get(
+                    user=request.user,
+                    week_number=day["week_number"],
+                    plan_name=day["plan_name"]
+                )
+                DailyGoalReport.objects.update_or_create(
+                    user=request.user,
+                    weekly_goal=weekly_goal,
+                    day_number=day["day_number"],
+                    date=day["date"],
+                    plan_name=day["plan_name"],
+                    defaults={
+                        "capital": day["capital"],
+                        "gained_amount": day.get("gained_amount", None),
+                        "is_achieved": day.get("is_achieved", False),
+                        "progress": day.get("progress", None),
+                    },
+                )
+
+            return JsonResponse({"success": True, "message": "Reports saved successfully!"})
+        except Exception as e:
+            return JsonResponse({"success": False, "message": f"Error saving reports: {e}"}, status=400)
+
+    return JsonResponse({"success": False, "message": "Invalid request method."}, status=405)
+
+
+def trade_plan_list_view(request):
+    """
+    View to display the list of trading plans.
+    """
+    trading_plans = TradingPlan.objects.all()  # Fetch all trading plans
+    context = {
+        'trading_plans': trading_plans
+    }
+    return render(request, 'dashboard/trade_plan_listview.html', context)
+
+from django.shortcuts import get_object_or_404
+from django.http import JsonResponse, HttpResponse
+from .models import TradingPlan, WeeklyGoalReport, DailyGoalReport
+from datetime import timedelta
+from decimal import Decimal
+
+
+def generate_trading_plan(request, plan_id):
+    # Fetch the trading plan
+    trading_plan = get_object_or_404(TradingPlan, id=plan_id)
+
+    # Retrieve plan data
+    user = trading_plan.user
+    initial_capital = Decimal(trading_plan.initial_capital)  # Ensure Decimal
+    average_weekly_gain = Decimal(trading_plan.average_weekly_gain)  # Ensure Decimal
+    no_of_weeks = trading_plan.no_of_weeks
+    start_date = trading_plan.start_date
+
+    # Clear existing reports for the plan to avoid duplication
+    WeeklyGoalReport.objects.filter(user=user, plan_id=plan_id).delete()
+
+    weeks_growth_rate = Decimal(1 + (average_weekly_gain / 100))
+    accumulated_capital = initial_capital
+    current_date = start_date
+
+    for week_number in range(1, no_of_weeks + 1):
+        # Calculate week start and end dates
+        while current_date.weekday() != 0:  # Ensure it starts on Monday
+            current_date += timedelta(days=1)
+        monday_date = current_date
+        friday_date = monday_date + timedelta(days=4)
+
+        # Weekly calculations
+        weekly_gain = (accumulated_capital * (weeks_growth_rate - 1)).quantize(Decimal('0.01'))
+        accumulated_capital += weekly_gain
+
+        # Progress (percentage gain from initial capital)
+        progress = 0
+
+        # Create WeeklyGoalReport entry
+        weekly_goal = WeeklyGoalReport.objects.create(
+            user=user,
+            plan_id=plan_id,
+            week_number=week_number,
+            start_date=monday_date,
+            end_date=friday_date,
+            accumulated_capital=accumulated_capital,
+            gained_amount=weekly_gain,
+            progress=progress,
+            is_achieved=False,  # This can be updated later
+        )
+
+        # Daily calculations and entries
+        daily_gain = Decimal((weekly_gain / 5).quantize(Decimal('0.01')))  # Ensure Decimal
+        for day in range(5):
+            daily_date = monday_date + timedelta(days=day)
+            day_capital =Decimal( accumulated_capital - (5 - day) * daily_gain)
+
+            DailyGoalReport.objects.create(
+                user=user,
+                weekly_goal=weekly_goal,
+                plan_id=plan_id,
+                day_number=(week_number - 1) * 5 + day + 1,
+                date=daily_date,
+                capital=day_capital,
+                gained_amount=daily_gain,
+                progress=0,
+                is_achieved=False,  # This can be updated later
+            )
+
+        # Move to the next week's Monday
+        current_date += timedelta(days=7)
+
+    # Mark the trading plan as active
+    trading_plan.is_active = True
+    trading_plan.save()
+
+    return HttpResponse(f"Trading plan '{trading_plan.plan_name}' successfully processed and reports generated.")

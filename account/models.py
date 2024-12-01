@@ -205,13 +205,44 @@ class UserRTCUsage(models.Model):
 
 class TradingPlan(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="trading_plans")
-    plan_name = models.CharField(max_length=255)
+    plan_name = models.CharField(max_length=255, unique=True)
     initial_capital = models.DecimalField(max_digits=12, decimal_places=2)
-    expected_growth = models.DecimalField(max_digits=5, decimal_places=2, help_text="Expected growth as a percentage (e.g., 15.5 for 15.5%)")
+    expected_growth = models.DecimalField(max_digits=20, decimal_places=2, help_text="Expected growth as a percentage (e.g., 15.5 for 15.5%)")
     no_of_weeks = models.PositiveIntegerField()
     average_weekly_gain = models.DecimalField(max_digits=5, decimal_places=2, help_text="Average weekly gain as a percentage (e.g., 2.5 for 2.5%)")
     start_date = models.DateField()
     end_date = models.DateField()
+    is_active = models.BooleanField(default=False)  # New field with default False
 
     def __str__(self):
         return f"{self.plan_name} - {self.user.username}"
+class WeeklyGoalReport(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    plan_id = models.IntegerField()  # plan_id to uniquely identify a plan
+    plan_name = models.CharField(max_length=255)  # plan_name added to the WeeklyGoalReport
+    week_number = models.IntegerField()
+    start_date = models.DateField()
+    end_date = models.DateField()
+    accumulated_capital = models.DecimalField(max_digits=15, decimal_places=2)
+    gained_amount = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
+    progress = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    is_achieved = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Week {self.week_number} Report - {self.plan_name}"
+
+
+class DailyGoalReport(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    weekly_goal = models.ForeignKey(WeeklyGoalReport, on_delete=models.CASCADE, related_name="daily_reports")
+    plan_id = models.IntegerField()  # plan_id to uniquely identify a plan
+    plan_name = models.CharField(max_length=255)  # plan_name added to the DailyGoalReport
+    day_number = models.IntegerField()
+    date = models.DateField()
+    capital = models.DecimalField(max_digits=15, decimal_places=2)
+    gained_amount = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
+    is_achieved = models.BooleanField(default=False)
+    progress = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+
+    def __str__(self):
+        return f"Day {self.day_number} Report - {self.plan_name} - {self.date}"
