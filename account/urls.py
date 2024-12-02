@@ -48,6 +48,7 @@ urlpatterns = [
 
     path('trade-plan-list/', views.trade_plan_list_view, name='trade_plan_list_view'),
     path('generate-trading-plan/<int:plan_id>/', views.generate_trading_plan, name='generate-trading-plan'),
+    path('delete-trading-plan/<int:plan_id>/', views.delete_trading_plan, name='delete-trading-plan'),
     path('view-trade-plan/<int:pk>/', views.view_trade_plan, name='view_trade_plan'),
 
 

@@ -1596,3 +1596,26 @@ def view_trade_plan(request, pk):
     }
 
     return render(request, 'dashboard/view_trade_plan.html', context)
+
+
+
+from django.shortcuts import get_object_or_404
+from django.http import HttpResponse
+
+def delete_trading_plan(request, plan_id):
+    # Fetch the trading plan
+    trading_plan = get_object_or_404(TradingPlan, id=plan_id)
+
+    # Retrieve the user associated with the plan
+    user = trading_plan.user
+
+    # Delete all DailyGoalReports linked to the WeeklyGoalReports of the plan
+    DailyGoalReport.objects.filter(weekly_goal__plan_id=plan_id, user=user).delete()
+
+    # Delete all WeeklyGoalReports associated with the plan
+    WeeklyGoalReport.objects.filter(plan_id=plan_id, user=user).delete()
+
+    # Delete the trading plan itself
+    trading_plan.delete()
+
+    return HttpResponse(f"Trading plan '{plan_id}' and related reports have been successfully deleted.")
