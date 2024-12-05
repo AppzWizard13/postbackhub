@@ -318,7 +318,7 @@
         }
         const expectedGrowth = accumulatedCapital - initialCapital;
         const endDate = new Date(currentDate);
-        endDate.setDate(endDate.getDate() + 1);  // End date is the day after the last week's growth.
+        endDate.setDate(endDate.getDate()-2);  // End date is the day after the last week's growth.
 
         // Update the form fields
         document.getElementById('id_expected_growth').value = expectedGrowth.toFixed(2);
