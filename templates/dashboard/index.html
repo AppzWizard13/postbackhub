@@ -781,24 +781,24 @@
                       }
                     </script>
                 </div>
-                <div class="ms-5 me-5 my-3" style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between;">
+                <div class="ms-5 me-5 my-3" style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: start;">
                   {% for week in weekly_progress_data %}
                       {% if week.status %}
                           <!-- Display "N/A" when status exists -->
                           <span class="badge bg-grey fs-2" style="text-align: center;" title="No trade">
-                              T{{ week.serial_number }}
+                              T&nbsp;&nbsp;{{ week.serial_number }}
                           </span>
                       {% else %}
                           <!-- Display badge based on profit condition -->
                           {% if week.actual_profit < 0 %}
                               <!-- Negative profit, use red (danger) badge -->
                               <span class="badge bg-danger fs-2" style="text-align: center;" title="PL: {{ week.actual_profit }} on {{ week.updated_on|date:'Y-m-d' }}">
-                                  T{{ week.serial_number }}
+                                  T&nbsp;&nbsp;{{ week.serial_number }}
                               </span>
                           {% else %}
                               <!-- Positive profit, use green (success) badge -->
                               <span class="badge bg-success fs-2" style="text-align: center;" title="PL: {{ week.actual_profit }} on {{ week.updated_on|date:'Y-m-d' }}">
-                                  T{{ week.serial_number }}
+                                  T&nbsp;&nbsp;{{ week.serial_number }}
                               </span>
                           {% endif %}
                       {% endif %}
@@ -811,14 +811,14 @@
                       display: flex;
                       flex-wrap: wrap;
                       gap: 8px;
-                      justify-content: space-between;
+                      justify-content: start;
                   }
               
                   /* Badge Styling */
                   .badge {
                       text-align: center;
                       font-size: 16px;
-                      flex-basis: calc(33.33% - 8px); /* 25 items per row */
+                      flex-basis: calc(4% - 8px); /* 25 items per row */
                       margin-bottom: 8px;  /* Space between rows */
                   }
               

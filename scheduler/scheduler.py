@@ -686,6 +686,10 @@ def check_and_update_daily_account_overview():
                     day_open = is_first_run
                     day_close = is_last_run 
 
+                    day_open = False
+                    if is_weekday_9am:
+                        day_open = True
+
                     # Create or update the DailyAccountOverview entry
                     DailyAccountOverview.objects.create(
                         user=user,

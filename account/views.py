@@ -399,7 +399,7 @@ class DashboardView(TemplateView):
         print("weekly_trade_count:", weekly_trade_count)
 
         # Query to filter records within the date range
-        results = DailyAccountOverview.objects.filter(user=user,
+        results = DailyAccountOverview.objects.filter(user=user,day_open=False,
             updated_on__date__range=(start_date, end_date)
         ).order_by('id')  # Order by id
 
