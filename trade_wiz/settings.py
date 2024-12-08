@@ -110,33 +110,33 @@ AUTH_USER_MODEL = 'account.User'
 # LIVEDB = True
 
 if LIVEDB == True:
-    DB_NAME='tradewizdblive'
-    DB_USER='appz'
-    DB_PASSWORD='b8Agdnm9r0eVfEQlYwE1ytPWZELPHzub'
-    DB_HOST='dpg-cslqcga3esus73c9csog-a.oregon-postgres.render.com'
+    DB_NAME='tradewiz_live_db'
+    DB_USER='tradewiz_live_db_user'
+    DB_PASSWORD='1woyJJlcEe0wae4cqqhFn2RGE8kbWAjO'
+    DB_HOST='dpg-ctakf9d6l47c73bnbrag-a.oregon-postgres.render.com'
     DB_PORT=5432
 
 # Database
 # Conditional database configuration based on DEBUG mode
 if LIVEDB == True:
     # Database configuration
-    # DATABASES = {
-    #     'default': {
-    #         'ENGINE': 'django.db.backends.postgresql',
-    #         'NAME': DB_NAME,
-    #         'USER': DB_USER,
-    #         'PASSWORD': DB_PASSWORD,
-    #         'HOST': DB_HOST,
-    #         'PORT': DB_PORT
-    #     }
-    # }
-        # Use SQLite for development
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db-live.sqlite3',
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': DB_NAME,
+            'USER': DB_USER,
+            'PASSWORD': DB_PASSWORD,
+            'HOST': DB_HOST,
+            'PORT': DB_PORT
         }
     }
+    # Use SQLite for development
+    # DATABASES = {
+    #     'default': {
+    #         'ENGINE': 'django.db.backends.sqlite3',
+    #         'NAME': BASE_DIR / 'db-live.sqlite3',
+    #     }
+    # }
 else:
     # Use SQLite for development
     DATABASES = {
