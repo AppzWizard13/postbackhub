@@ -107,6 +107,7 @@ class ControlCreateView(CreateView):
     model = User
     form_class = CustomControlCreationForm
     template_name = "dashboard/create_control.html"  # Create this template for the control creation page
+    success_url = reverse_lazy('login')
 
     def form_valid(self, form):
         # Save the form and add a success message
