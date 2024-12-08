@@ -855,7 +855,7 @@ def start_scheduler():
     # scheduler.add_job(autoStopLossLotControlProcess, IntervalTrigger(seconds=1), max_instances=3, replace_existing=True)
     scheduler.add_job(autoStopLossLotControlProcess, IntervalTrigger(seconds=2), max_instances=2, replace_existing=True)
 
-    #  AUTO ADMIN SWITCHING PROCESS TESTED OK NOT USIGN NOW
+    #  AUTO ADMIN SWITCHING PROCESS TESTED OK NOT USING NOW
     # scheduler.add_job(autoAdminSwitchingProcess, IntervalTrigger(hours=1))
 
     #  HOURLY DATA LOG MONITORING TESTED OK

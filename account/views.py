@@ -125,14 +125,21 @@ class DashboardView(TemplateView):
     template_name = "dashboard/index.html"
 
     def dispatch(self, request, *args, **kwargs):
-        # Fetch slug from the URL if present, or default to using request.user
-        self.slug = kwargs.get('slug')
-        self.users = User.objects.filter(is_active=True)  # Query the active users
-        self.allusers = User.objects.filter(is_active=True)  # Query the active users
-        self.dashboard_view = True
+        try:
+            # Fetch slug from the URL if present, or default to using request.user
+            self.slug = kwargs.get('slug')
+            self.users = User.objects.filter(is_active=True)  # Query the active users
+            self.allusers = User.objects.filter(is_active=True)  # Query the active users
+            self.dashboard_view = True
 
-        # Call the parent class's dispatch method
-        return super().dispatch(request, *args, **kwargs)
+            # Call the parent class's dispatch method
+            return super().dispatch(request, *args, **kwargs)
+
+        except Exception as e:
+            # Log the exception (optional, for debugging purposes)
+            print(f"Error in DashboardView: {e}")
+            # Redirect to '/users/' if any exception occurs
+            return redirect('/users/')
 
     def get_context_data(self, **kwargs):
         # Get the existing context
