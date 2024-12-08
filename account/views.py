@@ -1585,9 +1585,6 @@ def view_trade_plan(request, pk):
         else:
             goal.progress_percentage = 0  # avoid division by zero
 
-\
-
-
     # Context for rendering
     context = {
         'trading_plan': trading_plan,

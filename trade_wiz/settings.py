@@ -120,14 +120,21 @@ if LIVEDB == True:
 # Conditional database configuration based on DEBUG mode
 if LIVEDB == True:
     # Database configuration
+    # DATABASES = {
+    #     'default': {
+    #         'ENGINE': 'django.db.backends.postgresql',
+    #         'NAME': DB_NAME,
+    #         'USER': DB_USER,
+    #         'PASSWORD': DB_PASSWORD,
+    #         'HOST': DB_HOST,
+    #         'PORT': DB_PORT
+    #     }
+    # }
+        # Use SQLite for development
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': DB_NAME,
-            'USER': DB_USER,
-            'PASSWORD': DB_PASSWORD,
-            'HOST': DB_HOST,
-            'PORT': DB_PORT
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db-live.sqlite3',
         }
     }
 else:

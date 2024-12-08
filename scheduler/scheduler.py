@@ -661,7 +661,7 @@ def check_and_update_daily_account_overview():
                 if actual_order_count and actual_order_count % 2 == 0:
                     latest_entry = order_list['data'][0]
                     # if ((latest_entry['orderStatus'] == 'TRADED' or latest_entry['orderStatus'] == 'REJECTED') and latest_entry['transactionType'] == 'SELL'): 
-                    time.sleep(30)
+                    time.sleep(10)
                     # Fetch funds and positions data
                     fund_data = dhan.get_fund_limits()
                     position_data = dhan.get_positions()
