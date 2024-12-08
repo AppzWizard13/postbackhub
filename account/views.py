@@ -383,14 +383,18 @@ class DashboardView(TemplateView):
 
 
 
-        used_rtc = UserRTCUsage.objects.get(user=user)
-        used_rt_count = int(used_rtc.usage_count)
+        try:
+            used_rtc = UserRTCUsage.objects.get(user=user)
+            used_rt_count = int(used_rtc.usage_count)
+        except UserRTCUsage.DoesNotExist:
+            # Handle case where no data is found
+            used_rt_count = 0  # or any default value
 
         weekly_trade_count = int((int(control_data.default_peak_order_limit) / 2 * 5) + int(user.reserved_trade_count) + used_rt_count)
         start_date, end_date = get_current_week_start_and_end_dates()
 
         # You can also directly set start_date and end_date like this if needed:
-        start_date = '2024-11-10'  # Example date, adjust as necessary   
+        # start_date = '2024-11-10'  # Example date, adjust as necessary   
 
         print("weekly_trade_count:", weekly_trade_count)
 
