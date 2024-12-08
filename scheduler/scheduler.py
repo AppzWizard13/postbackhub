@@ -635,6 +635,13 @@ def check_and_update_daily_account_overview():
     current_hour = current_time.hour
     is_first_run = current_hour == 9
     is_last_run = current_hour == 15
+    # Check if the current time is 9:00 AM on a weekday
+    is_weekday_9am = (
+        current_time.weekday() < 5 and  # Monday to Friday (0-4)
+        current_time.hour == 9 and
+        current_time.minute == 0
+    )
+
 
     # Query active users
     active_users = User.objects.filter(is_active=True)
@@ -658,7 +665,7 @@ def check_and_update_daily_account_overview():
                 print(f"INFO: Order count changed for {user.username}. Executing update process.")
 
                 # Check specific order conditions for triggering updates
-                if actual_order_count and actual_order_count % 2 == 0:
+                if actual_order_count and actual_order_count % 2 == 0 or is_weekday_9am:
                     latest_entry = order_list['data'][0]
                     # if ((latest_entry['orderStatus'] == 'TRADED' or latest_entry['orderStatus'] == 'REJECTED') and latest_entry['transactionType'] == 'SELL'): 
                     time.sleep(10)
