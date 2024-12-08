@@ -781,7 +781,7 @@
                       }
                     </script>
                 </div>
-                <div class="ms-5 me-5 my-3" style="display: flex; gap: 8px; justify-content: space-evenly; align-items: center; flex-wrap: wrap;">
+                <div class="ms-5 me-5 my-3" style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between;">
                   {% for week in weekly_progress_data %}
                       {% if week.status %}
                           <!-- Display "N/A" when status exists -->
@@ -806,52 +806,33 @@
               </div>
               
               <style>
-                  /* For mobile and smaller devices */
+                  /* General Flexbox Styles */
+                  .ms-5.me-5.my-3 {
+                      display: flex;
+                      flex-wrap: wrap;
+                      gap: 8px;
+                      justify-content: space-between;
+                  }
+              
+                  /* Badge Styling */
+                  .badge {
+                      text-align: center;
+                      font-size: 16px;
+                      flex-basis: calc(33.33% - 8px); /* 3 items per row */
+                      margin-bottom: 8px;  /* Space between rows */
+                  }
+              
+                  /* For smaller devices (Mobile) */
                   @media screen and (max-width: 768px) {
-                      .ms-5, .me-5, .my-3 {
-                          margin-left: 10px;
-                          margin-right: 10px;
-                          margin-top: 5px;
-                          margin-bottom: 5px;
-                      }
-              
-                      /* Adjust the flex container for smaller screens */
-                      .ms-5.me-5.my-3 {
-                          display: flex;
-                          flex-wrap: wrap;
-                          justify-content: space-between;
-                      }
-              
                       .badge {
-                          margin: 5px;
-                          width: 45%; /* Adjust the width to fit a few badges per row (e.g., 4 per row) */
-                          text-align: center;
-                          font-size: 14px;
-                      }
-              
-                      /* For 6 badges per row on mobile */
-                      .badge:nth-child(6n+1) {
-                          margin-left: 0;
-                      }
-              
-                      /* For 4 badges per row on mobile */
-                      .badge:nth-child(4n+1) {
-                          margin-left: 0;
+                          flex-basis: calc(50% - 8px); /* 2 items per row for smaller mobile screens */
                       }
                   }
               
-                  /* For larger devices (desktop) */
-                  @media screen and (min-width: 768px) {
-                      .ms-5.me-5.my-3 {
-                          display: flex;
-                          gap: 8px;
-                          justify-content: space-evenly;
-                          align-items: center;
-                      }
-              
+                  /* For very small devices (Extra Small Mobile) */
+                  @media screen and (max-width: 480px) {
                       .badge {
-                          text-align: center;
-                          font-size: 16px;
+                          flex-basis: 100%; /* 1 item per row for very small screens */
                       }
                   }
               </style>
