@@ -4,83 +4,66 @@
 <div class="container-fluid" style="max-width:none">
     <div class="card w-100">
         <div class="card-body" style="height:100vh">
-            <h5 class="card-title fw-semibold mb-4">Create Control Settings</h5>
+            <h5 class="card-title fw-semibold mb-4 text-center">Create Control Settings</h5>
 
-                    <form method="POST" enctype="multipart/form-data">
-                        {% csrf_token %}
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
 
-                        <!-- Row 1: Max Order Limit and Max Loss Limit -->
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label for="id_max_order_limit" class="form-label">Max Order Limit</label>
-                                {{ form.max_order_limit }}
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="id_peak_order_limit" class="form-label">Peak Order Limit</label>
-                                {{ form.peak_order_limit }}
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="id_default_peak_order_limit" class="form-label">Default Peak Order Limit</label>
-                                {{ form.default_peak_order_limit }}
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="id_max_order_count_mode" class="form-label">Max Order Count Mode</label>
-                                {{ form.max_order_count_mode }}
-                            </div>
-                        </div>
+                <!-- Row 1: Max Order Limit and Max Loss Limit -->
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label for="id_max_order_limit" class="form-label">Max Order Limit</label>
+                        {{ form.max_order_limit }}
+                    </div>
+                    <div class="col-md-4">
+                        <label for="id_peak_order_limit" class="form-label">Peak Order Limit</label>
+                        {{ form.peak_order_limit }}
+                    </div>
+                    <div class="col-md-4">
+                        <label for="id_default_peak_order_limit" class="form-label">Default Peak Order Limit</label>
+                        {{ form.default_peak_order_limit }}
+                    </div>
+                </div>
 
-                        <!-- Row 2: Max Profit Limit and Max Profit Mode -->
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label for="id_max_loss_limit" class="form-label">Max Loss Limit</label>
-                                {{ form.max_loss_limit }}
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="id_peak_loss_limit" class="form-label">Peak Loss Limit</label>
-                                {{ form.peak_loss_limit }}
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="id_max_profit_mode" class="form-label">Max Loss Mode</label>
-                                {{ form.max_profit_mode }}
-                            </div>
+                <!-- Row 2: Max Loss Limit and Peak Loss Limit -->
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label for="id_max_loss_limit" class="form-label">Max Loss Limit</label>
+                        {{ form.max_loss_limit }}
+                    </div>
+                    <div class="col-md-4">
+                        <label for="id_peak_loss_limit" class="form-label">Peak Loss Limit</label>
+                        {{ form.peak_loss_limit }}
+                    </div>
+                    <div class="col-md-4">
+                        <label for="id_max_profit_limit" class="form-label">Max Profit Limit</label>
+                        {{ form.max_profit_limit }}
+                    </div>
+                </div>
 
-                        </div>
+                <!-- Row 3: Stop Loss and User -->
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label for="id_stoploss_parameter" class="form-label">Stop Loss Percentage</label>
+                        {{ form.stoploss_parameter }}
+                    </div>
+                    <div class="col-md-4">
+                        <label for="id_max_profit_mode" class="form-label">Max Profit Mode</label>
+                        {{ form.max_profit_mode }}
+                    </div>
+                    <div class="col-md-4">
+                        <label for="id_user" class="form-label">User</label>
+                        {{ form.user }}
+                    </div>
+                </div>
 
-                        <!-- Row 3: Max Order Count Mode and Stop Loss Percentage -->
-                        <div class="row">
-                            <div class="col-md-3 mb-3">
-                                <label for="id_max_profit_limit" class="form-label">Max Profit Limit</label>
-                                {{ form.max_profit_limit }}
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <label for="id_max_profit_mode" class="form-label">Max Profit Mode</label>
-                                {{ form.max_profit_mode }}
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <label for="id_stoploss_parameter" class="form-label">Stop Loss Percentage</label>
-                                {{ form.stoploss_parameter }}
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <label for="id_user" class="form-label">User</label>
-                                {{ form.user }}
-                            </div>
-                        </div>
-
-
-
-                        <!-- Submit button -->
-                        <div class="row">
-                            <div class="col-md-12">
-                                <button type="submit" class="btn btn-primary w-40 py-2 fs-4 mb-4 rounded-2">Create Control</button>
-                            </div>
-                        </div>
-
-                        {% comment %} <div class="d-flex align-items-center justify-content-center">
-                            <p class="fs-4 mb-0 fw-bold">Need to make changes?</p>
-                            <a class="text-primary fw-bold ms-2" href="{% url 'control_list_view' %}">Back to Control List</a>
-                        </div> {% endcomment %}
-                    </form>
-        
+                <!-- Submit Button -->
+                <div class="row">
+                    <div class="col text-center">
+                        <button type="submit" class="btn btn-primary w-50 py-2 fs-5 rounded-2">Create Control</button>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 </div>

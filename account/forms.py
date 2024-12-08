@@ -112,7 +112,7 @@ class CustomControlCreationForm(forms.ModelForm):
     # You can add any specific fields you want for customization here
     class Meta:
         model = Control
-        fields = ['max_order_limit', 'peak_order_limit', 'max_loss_limit','peak_loss_limit', 'max_profit_limit', 
+        fields = ['max_order_limit', 'peak_order_limit', 'max_loss_limit','peak_loss_limit','default_peak_order_limit', 'max_profit_limit', 
                   'max_profit_mode', 'max_order_count_mode', 'stoploss_parameter', 'user']
         
     def __init__(self, *args, **kwargs):
