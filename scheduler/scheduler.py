@@ -684,7 +684,7 @@ def check_and_update_daily_account_overview():
 
                     # Set day_open and day_close fields based on the time of day
                     day_open = is_first_run
-                    day_close = is_last_run
+                    day_close = is_last_run 
 
                     # Create or update the DailyAccountOverview entry
                     DailyAccountOverview.objects.create(

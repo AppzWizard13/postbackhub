@@ -381,7 +381,57 @@ class DashboardView(TemplateView):
             # You can assign a default value or handle accordingly
             daily_goal_data = None  # or create a new entry if needed
 
+
+
+        used_rtc = UserRTCUsage.objects.get(user=user)
+        used_rt_count = int(used_rtc.usage_count)
+
+        weekly_trade_count = int((int(control_data.default_peak_order_limit) / 2 * 5) + int(user.reserved_trade_count) + used_rt_count)
+        start_date, end_date = get_current_week_start_and_end_dates()
+
+        # You can also directly set start_date and end_date like this if needed:
+        start_date = '2024-11-10'  # Example date, adjust as necessary   
+
+        print("weekly_trade_count:", weekly_trade_count)
+
+        # Query to filter records within the date range
+        results = DailyAccountOverview.objects.filter(user=user,
+            updated_on__date__range=(start_date, end_date)
+        ).order_by('id')  # Order by id
+
+        # Add serial number to each result
+        weekly_data = list(results.values('id', 'actual_profit', 'updated_on'))
+
+        # Add serial number manually in Python
+        for index, entry in enumerate(weekly_data, start=1):
+            entry['serial_number'] = index
+
+        # Optional: Calculate total profit for the week
+        weekly_total_profit = results.aggregate(Sum('actual_profit'))['actual_profit__sum']
+
+        print("weekly_data:", weekly_data)
+        print("Total Profit:", weekly_total_profit)
+
+        # Create weekly_progress_data with length equal to weekly_trade_count
+        weekly_progress_data = []
+        available_serial_numbers = {trade_data['serial_number']: trade_data for trade_data in weekly_data}
+
+        # Iterate over serial numbers from 1 to weekly_trade_count
+        for i in range(1, weekly_trade_count + 1):
+            if i in available_serial_numbers:
+                weekly_progress_data.append(available_serial_numbers[i])  # Add the trade data for matching serial number
+            else:
+                # If no data exists for this serial number, add a placeholder
+                weekly_progress_data.append({'serial_number': i, 'status': 'No trade'})
+
+        # At this point, weekly_progress_data will have the same length as weekly_trade_count
+        print("Weekly Progress Data:", weekly_progress_data)
+                
+         
+
         context['accuracy'] = accuracy
+        context['weekly_progress_data'] = weekly_progress_data
+        context['weekly_trade_count'] = range(weekly_trade_count)
         context['progress_color'] = progress_color
         context['open_position'] = open_position
         context['pending_sl_order'] = pending_sl_order
@@ -433,6 +483,13 @@ class DashboardView(TemplateView):
 
         return context
 
+def get_current_week_start_and_end_dates():
+    today = datetime.today()
+    # Calculate the start of the week (Monday)
+    start_of_week = today - timedelta(days=today.weekday())
+    # Calculate the end of the week (Friday)
+    end_of_week = start_of_week + timedelta(days=4)
+    return start_of_week.date(), end_of_week.date()
 
 def get_traded_order_count(order_list):
     

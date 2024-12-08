@@ -754,6 +754,19 @@
                       .badgclr{
                         background: #3c3c3c
                       }
+                      [title]:hover::after {
+                        content: attr(title);
+                        position: absolute;
+                        background-color: blue; /* Light background */
+                        color: white; /* Dark text */
+                        padding: 10px 10px;
+                        border-radius: 5px;
+                        font-size: 16px;
+                        white-space: nowrap;
+                        z-index: 10;
+                        margin-top:-50px;
+                    }
+                    
                     </style>
 
                     <script>
@@ -768,6 +781,34 @@
                       }
                     </script>
                 </div>
+                <div class="ms-5 me-5 my-3" style="display: flex; gap: 8px; justify-content: space-evenly; align-items: center;">
+                  {% for week in weekly_progress_data %}
+                      {% if week.status %}
+                          <!-- Display "N/A" when status exists -->
+                          <span class="badge bg-grey fs-2" style="text-align: center;" title="No trade">
+                              T{{ week.serial_number }}
+                          </span>
+                      {% else %}
+                          <!-- Display badge based on profit condition -->
+                          {% if week.actual_profit < 0 %}
+                              <!-- Negative profit, use red (danger) badge -->
+                              <span class="badge bg-danger fs-2" style="text-align: center;" title="PL: {{ week.actual_profit }} on {{ week.updated_on|date:'Y-m-d' }}">
+                                  T{{ week.serial_number }}
+                              </span>
+                          {% else %}
+                              <!-- Positive profit, use green (success) badge -->
+                              <span class="badge bg-success fs-2" style="text-align: center;" title="PL: {{ week.actual_profit }} on {{ week.updated_on|date:'Y-m-d' }}">
+                                  T{{ week.serial_number }}
+                              </span>
+                          {% endif %}
+                      {% endif %}
+                  {% endfor %}
+              </div>
+              
+              
+              
+              
+              
               </div>
             </div>
             <div class="col-lg-4">
