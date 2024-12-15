@@ -1685,3 +1685,31 @@ def delete_trading_plan(request, plan_id):
     trading_plan.delete()
 
     return HttpResponse(f"Trading plan '{plan_id}' and related reports have been successfully deleted.")
+
+
+
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+
+@csrf_exempt  # Exempt from CSRF verification since the request is coming from an external source
+def order_postback(request):
+    if request.method == 'POST':
+        try:
+            # Parse the incoming JSON payload
+            data = json.loads(request.body)
+
+            # Print the incoming data for debugging purposes
+            print("Received POST data:", data)
+
+            # Respond with a success message
+            return JsonResponse({"status": "success", "message": "Data received successfully."}, status=200)
+
+        except json.JSONDecodeError:
+            # Handle invalid JSON
+            print("Error: Received invalid JSON")
+            return JsonResponse({"status": "error", "message": "Invalid JSON payload."}, status=400)
+    else:
+        # Handle non-POST requests
+        return JsonResponse({"status": "error", "message": "Only POST requests are allowed."}, status=405)
