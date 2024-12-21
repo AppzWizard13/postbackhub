@@ -1,5 +1,5 @@
 // This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
-// Mxwll Capital
+// Appz Suite Capital
 //@version=5
 indicator("Appz Suite", overlay = true, max_labels_count = 500, max_lines_count = 500, max_boxes_count = 500, max_bars_back = 500)
 
@@ -16,25 +16,13 @@ showLast    = input.int(defval = 10, title = "Swing Order Blocks", minval = 0, g
 showHHLH    = input.bool(defval = true, title = "Show HH/LH", group = "Swing Blocks")
 showHLLL    = input.bool(defval = true, title = "Show LH/LL", group = "Swing Blocks")
 showAOE     = input.bool(defval = true, title = "Show Area of Interest", group = "Swing Blocks")
-show1D      = input.bool(defval = true, title = "Show Previous Day High", group = "High/Low")
-show1DLab   = input.bool(defval = true, title = "Show 1 Day Labels", group = "High/Low")
-show4Hr      = input.bool(defval = true, title = "Show 4 Hour High", group = "High/Low")
-show4HrLab   = input.bool(defval = true, title = "Show 4 Hour Labels", group = "High/Low")
-show1Hr      = input.bool(defval = true, title = "Show 4 Hour High", group = "High/Low")
-show1HrLab   = input.bool(defval = true, title = "Show 4 Hour Labels", group = "High/Low")
-show30Min      = input.bool(defval = true, title = "Show 4 Hour High", group = "High/Low")
-show30MinLab   = input.bool(defval = true, title = "Show 4 Hour Labels", group = "High/Low")
-show15Min      = input.bool(defval = true, title = "Show 4 Hour High", group = "High/Low")
-show15MinLab   = input.bool(defval = true, title = "Show 4 Hour Labels", group = "High/Low")
-show3Min      = input.bool(defval = true, title = "Show 4 Hour High", group = "High/Low")
-show3MinLab   = input.bool(defval = true, title = "Show 4 Hour Labels", group = "High/Low")
 showFVG     = input.bool(defval = true, title = "Show Fair Value Gaps", group = "FVG")
 contract    = input.bool(defval = false, title = "Contract Violated FVG", group = "FVG")
 closeOnly   = input.bool(defval = false, title = "Show Closest Up/Down FVG Only", group = "FVG")
-fvgcol      = input.color(defval = #F2B807, title = "FVG Color", group = "FVG")
+fvgcol      = input.color(defval = color.green, title = "FVG Color", group = "FVG")
 fvgtra      = input.int(defval = 80, minval = 0, maxval = 100, title = "FVG Transparency", group = "FVG")
-
 showFibs    = input.bool(defval = true, title = "Show Auto Fibs", group = "Auto Fibs")
+showEMAs    = input.bool(defval = true, title = "Show EMA", group = "Auto Fibs")
 // extSensFibs = input.int(25, "Fibs Sensitivity", options = [10, 25, 50], group = "Auto Fibs", inline = "22")
 show236     = input.bool(defval = true,  title = "", inline = "1", group = "Auto Fibs")
 show382     = input.bool(defval = true,  title = "", inline = "2", group = "Auto Fibs")
@@ -51,6 +39,42 @@ fib2col     = input.color(title = "", defval = color.lime, inline = "2"  , group
 fib3col     = input.color(title = "", defval = color.yellow, inline = "3", group = "Auto Fibs")
 fib4col     = input.color(title = "", defval = color.orange, inline = "4", group = "Auto Fibs")
 fib5col     = input.color(title = "", defval = color.red   , group = "Auto Fibs", inline = "5")
+
+
+// EMA visibility toggles
+showShortest = input(true, title="Show 9 EMA")
+showMidShortest = input(true, title="Show 20 EMA")
+showShort = input(true, title="Show 50 EMA")
+showLonger = input(true, title="Show 100 EMA")
+showLongest = input(true, title="Show 200 EMA")
+
+// EMA thickness and colors
+shortestColor = input.color(color.yellow, title="Color for 9 EMA")
+midShortestColor = input.color(color.red, title="Color for 20 EMA")
+shortColor = input.color(color.aqua, title="Color for 50 EMA")
+longerColor = input.color(color.orange, title="Color for 100 EMA")
+longestColor = input.color(color.blue, title="Color for 200 EMA")
+
+shortestThickness = input.int(2, title="Thickness for 9 EMA")
+midShortestThickness = input.int(2, title="Thickness for 20 EMA")
+shortThickness = input.int(2, title="Thickness for 50 EMA")
+longerThickness = input.int(2, title="Thickness for 100 EMA")
+longestThickness = input.int(2, title="Thickness for 200 EMA")
+
+
+// EMA values
+shortest = ta.ema(close, 9)
+midshortest = ta.ema(close, 20)
+short = ta.ema(close, 50)
+longer = ta.ema(close, 100)
+longest = ta.ema(close, 200)
+
+// Plot the EMAs if the toggle is enabled
+plot(showShortest ? shortest : na, color=shortestColor, title="9 EMA", linewidth=shortestThickness)
+plot(showMidShortest ? midshortest : na, color=midShortestColor, title="20 EMA", linewidth=midShortestThickness)
+plot(showShort ? short : na, color=shortColor, title="50 EMA", linewidth=shortThickness)
+plot(showLonger ? longer : na, color=longerColor, title="100 EMA", linewidth=longerThickness)
+plot(showLongest ? longest : na, color=longestColor, title="200 EMA", linewidth=longestThickness)
 
 var bigData = map.new<string, float>()
 
@@ -263,39 +287,6 @@ tfDrawLower(bool showRollingLab, simple string tf, bool showLevels) =>
 
     [TFhrdata.volTF, volRolling]
 
-
-// Define bar counts for different timeframes
-var r3minbars = math.floor(timeframe.in_seconds("3") / timeframe.in_seconds(timeframe.period))
-var r15minbars = math.floor(timeframe.in_seconds("15") / timeframe.in_seconds(timeframe.period))
-var r30minbars = math.floor(timeframe.in_seconds("30") / timeframe.in_seconds(timeframe.period))
-var r1hrbars   = math.floor(timeframe.in_seconds("60") / timeframe.in_seconds(timeframe.period))
-// var r4hrbars   = math.floor(timeframe.in_seconds("240") / timeframe.in_seconds(timeframe.period))
-// var rDbars     = math.floor(timeframe.in_seconds("1D") / timeframe.in_seconds(timeframe.period))
-
-// Handle volumes and activity for each timeframe
-[vol3min, vol3minArr] = switch 
-    timeframe.in_seconds() <= 60 => r3minbars.tfDraw(show3MinLab, "3", show3Min)
-    =>                              tfDrawLower(show3MinLab, "3", show3Min)
-
-[vol15min, vol15minArr] = switch 
-    timeframe.in_seconds() <= 60 => r15minbars.tfDraw(show15MinLab, "15", show15Min)
-    =>                              tfDrawLower(show15MinLab, "15", show15Min)
-
-[vol30min, vol30minArr] = switch 
-    timeframe.in_seconds() <= 60 => r30minbars.tfDraw(show30MinLab, "30", show30Min)
-    =>                              tfDrawLower(show30MinLab, "30", show30Min)
-
-[vol1hr, vol1hrArr] = switch 
-    timeframe.in_seconds() <= 60 => r1hrbars.tfDraw(show1HrLab, "60", show1Hr)
-    =>                              tfDrawLower(show1HrLab, "60", show1Hr)
-
-// [vol4hr, vol4hrArr] = switch 
-//     timeframe.in_seconds() <= 240 => r4hrbars.tfDraw(show4HrLab, "240", show4Hr)
-//     =>                              tfDrawLower(show4HrLab, "240", show4Hr)
-
-// [vol1D, vol1DArr] = switch
-//     timeframe.in_seconds() <= 86400 => rDbars.tfDraw(show1DLab, "1D", show1D)
-//     =>                                tfDrawLower(show1DLab, "1D", show1D)
 
 calculatePivots(length)=>
 
@@ -593,7 +584,7 @@ drawFibs() =>
                     =>   [sub * fib5 + getY2, show786 ? fib5col : color.new(chart.bg_color, 100), fib5] 
 
                 // Define extended length
-                length_extension = 60  // Adjust this value to extend the line length
+                length_extension = 100  // Adjust this value to extend the line length
 
                 // Replace `quickLine` with `line.new` and increase line length
                 fibLine.set(i, line.new(getX2 - length_extension, y, getX2 + length_extension, y, color=col, width=2))
@@ -840,57 +831,6 @@ if showFVG
             fvgUp.get(int(minDist.get(0, 0))).set_right(last_bar_time)
 
 
-
-calculateTimeDifference(timestamp1, timestamp2) =>
-    timeDifference = timestamp2 - timestamp1
-    hours = math.floor(timeDifference / 3600000)
-    minutes = math.floor((timeDifference % 3600000) / 60000)
-    [hours, minutes]
-
-
-dayAdjustment = (hour(timenow, "Asia/Kolkata") < 2) ? dayofmonth(timenow) + 1 : dayofmonth(timenow)
-dayAdjustment2 = nyHour >= 20 or nyHour < 2 ? dayofmonth(timenow) + 1 : dayofmonth(timenow)
-
-timeIsInRange(startHour, startMinute, endHour, endMinute) =>
-
-    (nyHour > startHour or (nyHour == startHour and nyMinute >= startMinute)) and (nyHour < endHour or (nyHour == endHour and nyMinute <= endMinute))
-
-
-// [chartcol, timetilchange, stringCol, stringCol2] = switch 
-
-//     timeIsInRange(9, 30, 16, 0) => [#f24968  , timestamp("Asia/Kolkata", year(timenow), month(timenow), dayofmonth(timenow), 16, 0, 0), "New York", "Asia"]
-//     timeIsInRange(20, 0, 2 , 0) => [#14D990  , timestamp("Asia/Kolkata", year(timenow), month(timenow), dayAdjustment, 2, 0, 0), "Asia", "London"]
-//     timeIsInRange(3, 0, 11, 30) => [#F2B807  , timestamp("Asia/Kolkata", year(timenow), month(timenow), dayofmonth(timenow), 11, 30, 0), "London", "New York"]
-//     => [color.gray, int(na), "Dead Zone", (nyHour > 16 or nyHour < 3) ? "London" : (nyHour >= 11 and nyHour < 20) ? "Asia" : "New York"]                        
-
-// [hours, minutes] = calculateTimeDifference(timenow, timetilchange)
-
-[chartcol, timetilchange, stringCol, stringCol2] = switch 
-
-    timeIsInRange(9, 15, 15, 30) => [#14D990, timestamp("Asia/Kolkata", year(timenow), month(timenow), dayofmonth(timenow), 15, 30, 0), "Indian Market Open", "Asia"]
-    timeIsInRange(15, 30, 9, 15) => [#f24968, timestamp("Asia/Kolkata", year(timenow), month(timenow), dayAdjustment, 9, 15, 0), "Indian Market Closed", "Asia"]
-    => [color.gray, int(na), "Dead Zone", "Off Hours"]
-
-[hours, minutes] = calculateTimeDifference(timenow, timetilchange)
-
-
-timetilchange2 = switch
-
-    timeIsInRange(9, 30, 16, 0)  => timestamp("Asia/Kolkata", year(timenow), month(timenow), dayofmonth(timenow), 20, 0, 0) 
-    timeIsInRange(20, 0, 2 , 0)  => timestamp("Asia/Kolkata", year(timenow), month(timenow), dayofmonth(timenow), 3, 0, 0)  
-    timeIsInRange(3, 0, 11, 30)  => timestamp("Asia/Kolkata", year(timenow), month(timenow), dayofmonth(timenow), 9, 30, 0) 
-    => na 
-
-
-if na(timetilchange2)
-    timetilchange2 := switch
-        nyHour < 9 or (nyHour == 9 and nyMinute < 30) => timestamp("Asia/Kolkata", year(timenow), month(timenow), dayofmonth(timenow), 9, 30, 0) 
-        nyHour < 20 or (nyHour >= 16 and nyHour < 20) => timestamp("Asia/Kolkata", year(timenow), month(timenow), dayofmonth(timenow), 20, 0, 0) 
-        nyHour < 3 or (nyHour >= 2 and nyHour < 3)    => timestamp("Asia/Kolkata", year(timenow), month(timenow), dayofmonth(timenow), 3, 0, 0)     
-        => na  
-
-[hours2, minutes2] = calculateTimeDifference(timenow, timetilchange2)
-
 method getActivity(array<float> id, float id2) => 
 
     if id.size() > 0
@@ -913,65 +853,3 @@ method getActivity(array<float> id, float id2) =>
 
 
         activity
-    
-
-if barstate.islast 
-    min3Act = vol3minArr.getActivity(vol3min)
-    min15Act = vol15minArr.getActivity(vol15min)
-    min30Act = vol30minArr.getActivity(vol30min)
-    hr1Act = vol1hrArr.getActivity(vol1hr)
-    hr4Act = vol4hrArr.getActivity(vol4hr)
-    // D1Act  = vol1DArr .getActivity(vol1D)
-
-    str = str.tostring(timetilchange)
-    ch  = str.substring(str, str.pos(str, ".") + 1, str.length(str))
-    nu  = str.tonumber(ch) * 6
-    nu2 = str.substring(str.tostring(nu), 0, 2)
-
-
-    table.cell(tab2, 0, 2, text = "3-min Volume :"  ,       text_color = color.white, text_halign = text.align_left)
-    table.cell(tab2, 0, 3, text = "15-Min Volume:"  , text_color = color.white, text_halign = text.align_left)
-    table.cell(tab2, 0, 4, text = "30-Min Volume:"  , text_color = color.white, text_halign = text.align_left)
-    table.cell(tab2, 0, 5, text = "1-Hr Volume:"  , text_color = color.white, text_halign = text.align_left)
-
-    table.cell(tab2, 0, 6, text = "4-Hr Volume:"  ,   text_color = color.white, text_halign = text.align_left)
-    table.cell(tab2, 0, 7, text = "24-Hr Volume:"  ,  text_color = color.white, text_halign = text.align_left)
-
-    table.cell(tab2, 1, 2, text = min3Act, text_color = color.white)
-    table.cell(tab2, 1, 3, text = min15Act, text_color = color.white)
-    table.cell(tab2, 1, 4, text = min30Act, text_color = color.white)
-    table.cell(tab2, 1, 5, text = hr1Act, text_color = color.white)
-    table.cell(tab2, 1, 6, text = hr4Act, text_color = color.white)
-    // table.cell(tab2, 1, 7, text = D1Act, text_color = color.white)
-
-
-nyHour2   = hour  (time, "Asia/Kolkata")
-nyMinute2 = minute(time, "Asia/Kolkata")
-
-timeIsInRange2(startHour, startMinute, endHour, endMinute) =>
-    if endHour >= startHour
-        (nyHour2 > startHour or (nyHour2 == startHour and nyMinute2 >= startMinute)) and 
-         (nyHour2 < endHour or (nyHour2 == endHour and nyMinute2 <= endMinute))
-    else
-        (nyHour2 > startHour or (nyHour2 == startHour and nyMinute2 >= startMinute)) or
-         (nyHour2 < endHour or (nyHour2 == endHour and nyMinute2 <= endMinute))
-
-// nyCol = input.color(defval = #f24968, title = "NY Color")
-// asCol = input.color(defval = #14D990, title = "Asia Color")
-// loCol = input.color(defval = #F2B807, title = "London Color")
-// tra   = input.int(defval = 98, minval = 0, maxval = 100, title = "Transparency")
-
-// bgcolor(timeIsInRange2(9, 30, 16, 0) ? color.new(nyCol, tra) : na)
-// bgcolor(timeIsInRange2(20, 0, 2 , 0) ? color.new(asCol, tra) : na)
-// bgcolor(timeIsInRange2(3, 0, 11, 30) ? color.new(loCol, tra) : na)
-
-
-// # Define colors for the Indian Stock Market
-marketOpenCol = input.color(defval = #14D990, title = "Market Open Color")  // Green for market open
-marketClosedCol = input.color(defval = #f24968, title = "Market Closed Color")  // Red for market closed
-tra = input.int(defval = 98, minval = 0, maxval = 100, title = "Transparency")
-
-// # Set background colors based on Indian market hours
-bgcolor(timeIsInRange2(9, 15, 15, 30) ? color.new(marketOpenCol, tra) : na)  // Market open time
-bgcolor(timeIsInRange2(15, 30, 9, 15) ? color.new(marketClosedCol, tra) : na)  // Market closed time
-
