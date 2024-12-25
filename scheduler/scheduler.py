@@ -102,12 +102,15 @@ def handle_order_limits(user, dhan, order_list, traded_order_count, control_data
     pending_order_ids, pending_order_count = get_pending_order_list_and_count(order_list)
     if control_data.max_order_count_mode:
         print("control_data.peak_order_limit:", control_data.peak_order_limit)
-        if traded_order_count >= control_data.max_order_limit and traded_order_count < control_data.peak_order_limit and not user.kill_switch_1 and not user.kill_switch_2:
-            print(f"WARNING: Max order limit exceeded for user {user.username}: Limit = {control_data.max_order_limit}, Traded = {traded_order_count}")
-            activate_kill_switch(user, dhan_access_token, traded_order_count, switch="kill_switch_1")
-        elif traded_order_count >= control_data.peak_order_limit and user.kill_switch_1 and not user.kill_switch_2:
+        if traded_order_count >= control_data.peak_order_limit:
+            complete_kill_account(user, dhan_access_token)
             print(f"WARNING: Peak order limit exceeded for user {user.username}: Limit = {control_data.peak_order_limit}, Traded = {traded_order_count}")
-            activate_kill_switch(user, dhan_access_token, traded_order_count, switch="kill_switch_2")
+            print("INFO: COMPLETELY FREEZING ACCOUNT, SEE YOU ANOTHER DAY")
+        # if traded_order_count >= control_data.max_order_limit and traded_order_count < control_data.peak_order_limit and not user.kill_switch_1 and not user.kill_switch_2:
+        #     print(f"WARNING: Max order limit exceeded for user {user.username}: Limit = {control_data.max_order_limit}, Traded = {traded_order_count}")
+        #     activate_kill_switch(user, dhan_access_token, traded_order_count, switch="kill_switch_1")
+        # elif traded_order_count >= control_data.peak_order_limit and user.kill_switch_1 and not user.kill_switch_2:
+        #     activate_kill_switch(user, dhan_access_token, traded_order_count, switch="kill_switch_2")
         elif user.kill_switch_2:
             print(f"INFO: Kill Switch 2 Activated for {user.username}: Count = {traded_order_count}, Limit = {control_data.max_order_limit}")
         else:
@@ -798,6 +801,7 @@ def update_order_history():
             # Fetch order list
             order_list = dhan.get_order_list() or []
             actual_order_count = len(order_list.get('data', []))
+            actual_traded_order_count = get_traded_order_count(order_list)
 
             # Process if there are orders
             if actual_order_count:
@@ -807,7 +811,8 @@ def update_order_history():
                 position_data = dhan.get_positions() or {}
 
                 # Calculate expenses and profits
-                total_expense = actual_order_count * float(settings.BROKERAGE_PARAMETER)
+                
+                total_expense = actual_traded_order_count * float(settings.BROKERAGE_PARAMETER)
                 total_realized_profit = sum(
                     position.get('realizedProfit', 0) for position in position_data.get('data', [])
                 )
@@ -842,6 +847,136 @@ def update_order_history():
 
 
 
+def max_threshold_complete_autokill_process():
+    active_users = User.objects.filter(is_active=True,kill_switch_2=False )
+
+    for user in active_users:
+        try:
+            # Get Dhan client information
+            dhan_client_id = user.dhan_client_id
+            dhan_access_token = user.dhan_access_token
+
+            # Initialize the Dhan client
+            dhan = dhanhq(dhan_client_id, dhan_access_token)
+
+            # Fetch order list
+            order_list = dhan.get_order_list() or []
+            traded_order_count = get_traded_order_count(order_list)
+            total_expense = traded_order_count * setting.BROKERAGE_PARAMETER
+            position_data = dhan.get_positions() or {}
+            total_realized_profit = sum(
+                position.get('realizedProfit', 0) for position in position_data.get('data', [])
+            )
+            actual_pnl = float(total_realized_profit) - float(total_expense) 
+            control_data = Control.objects.filter(user=user).first()
+            max_loss_mode = control_data.max_loss_mode
+            max_loss_limit = float(control_data.max_loss_limit)
+            peak_loss_limit = float(control_data.peak_loss_limit)
+            max_profit_mode = control_data.max_profit_mode
+
+            # Check if actual_pnl is negative and make it positive
+            if max_loss_mode:
+
+                if actual_pnl < 0 and :
+                    actual_pnl = abs(actual_pnl)
+                    # Now check if the actual_pnl exceeds the loss_threshold
+                    if actual_pnl >= loss_threshold and actual_pnl < peak_loss_limit  and not user.kill_switch_1 and not user.kill_switch_2:
+                        print(f"WARNING: Max Loss limit exceeded for user {user.username}: Limit = {control_data.loss_limit}, Traded = {traded_order_count}")
+                        activate_kill_switch(user, dhan_access_token, traded_order_count, switch="kill_switch_1")
+                    elif actual_pnl >= peak_loss_limit and not user.kill_switch_2 :
+                        activate_kill_switch(user, dhan_access_token, traded_order_count, switch="kill_switch_2")
+                        print(f"WARNING: Peak Loss limit exceeded for user {user.username}: Limit = {control_data.peak_order_limit}, Traded = {traded_order_count}")
+                    elif user.kill_switch_2:
+                        print(f"INFO: Kill Switch 2 Activated for {user.username}: Count = {traded_order_count}, Limit = {control_data.max_order_limit}")
+                    else:
+                        print(f"INFO: Order count within limits for user {user.username}: Count = {traded_order_count}, Limit = {control_data.max_order_limit}")
+                else:
+                    print(f"INFO: NOTHING TO WORRY ACCOUNT IN SAFE ZONE {user.username}. No update required.")
+
+            if max_profit_mode:
+
+                if actual_pnl > 0 and :
+                    actual_pnl = abs(actual_pnl)
+                    # Now check if the actual_pnl exceeds the loss_threshold
+                    if actual_pnl >= peak_profit_limit and not user.kill_switch_1 and not user.kill_switch_2:
+                        print(f"WARNING: Max PROFIT limit exceeded for user {user.username}: Limit = {control_data.loss_limit}, Traded = {traded_order_count}")
+                        complete_kill_account(user, dhan_access_token)
+                        print("INFO: COMPLETELY FREEZING ACCOUNT, SEE YOU ANOTHER DAY, GO AND CHILL BRO")
+                    elif user.kill_switch_2:
+                        print(f"INFO: Kill Switch 2 Activated for {user.username}: Count = {traded_order_count}, Limit = {control_data.max_order_limit}")
+                    else:
+                        print(f"INFO: Order count within limits for user {user.username}: Count = {traded_order_count}, Limit = {control_data.max_order_limit}")
+
+                else:
+                    print(f"INFO: NOTHING TO WORRY ACCOUNT IN SAFE ZONE {user.username}. No update required.")
+                
+        except Exception as e:
+            print(f"INFO: Error processing user {user.username}: {e}")
+            continue
+
+
+
+
+
+def complete_kill_account(user, access_token):
+    """
+    Automatically performs the kill account process by activating, deactivating, and reactivating the kill switch.
+
+    Args:
+        user: The user instance for which the process needs to be completed.
+        access_token: The access token for the API.
+    """
+    headers = {'Accept': 'application/json', 'Content-Type': 'application/json', 'access-token': access_token}
+
+    # Step 1: Activate
+    url_activate = 'https://api.dhan.co/killSwitch?killSwitchStatus=ACTIVATE'
+    try:
+        response = requests.post(url_activate, headers=headers)
+        if response.status_code == 200:
+            print(f"INFO: Kill switch activation successful for user: {user.username}")
+            DhanKillProcessLog.objects.create(user=user, log="Kill switch activated", order_count=None)
+        else:
+            print(f"ERROR: Failed to activate kill switch for user {user.username}: Status code {response.status_code}")
+            return
+    except requests.RequestException as e:
+        print(f"ERROR: Error while activating kill switch for user {user.username}: {e}")
+        return
+
+    # Step 2: Deactivate
+    url_deactivate = 'https://api.dhan.co/killSwitch?killSwitchStatus=DEACTIVATE'
+    try:
+        response = requests.post(url_deactivate, headers=headers)
+        if response.status_code == 200:
+            print(f"INFO: Kill switch deactivation successful for user: {user.username}")
+            DhanKillProcessLog.objects.create(user=user, log="Kill switch deactivated", order_count=None)
+        else:
+            print(f"ERROR: Failed to deactivate kill switch for user {user.username}: Status code {response.status_code}")
+            return
+    except requests.RequestException as e:
+        print(f"ERROR: Error while deactivating kill switch for user {user.username}: {e}")
+        return
+
+    # Step 3: Reactivate
+    try:
+        response = requests.post(url_activate, headers=headers)
+        if response.status_code == 200:
+            print(f"INFO: Kill switch Completely successful for user: {user.username}")
+            DhanKillProcessLog.objects.create(user=user, log="Kill switch reactivated", order_count=None)
+        else:
+            print(f"ERROR: Failed to reactivate kill switch for user {user.username}: Status code {response.status_code}")
+            return
+    except requests.RequestException as e:
+        print(f"ERROR: Error while reactivating kill switch for user {user.username}: {e}")
+        return
+
+    # Finalize by setting kill switches
+    user.kill_switch_1 = True
+    user.kill_switch_2 = True
+    user.save()
+    print(f"INFO: Kill switches set to true for user: {user.username}")
+
+
+
 # CRON JOBS STRAT PROCESS :  TESTED OK -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -852,28 +987,31 @@ def start_scheduler():
     # SELF PING TESTED OK
     scheduler.add_job(self_ping, IntervalTrigger(seconds=180))
 
-    # #  RESTORE KILL SWITCH BY 9 AM AND 4 PM TESTED OK
-    # scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=9, minute=0,  timezone=ist))
-    # scheduler.add_job(restore_super_user_after_market, CronTrigger(day_of_week='mon-fri', hour=15, minute=30,  timezone=ist))
+    #  RESTORE KILL SWITCH BY 9 AM AND 4 PM TESTED OK
+    scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=9, minute=0,  timezone=ist))
+    scheduler.add_job(restore_super_user_after_market, CronTrigger(day_of_week='mon-fri', hour=15, minute=30,  timezone=ist))
 
-    # #  ORDER COUNT-KILL FEATURE TESTED OK 
-    # scheduler.add_job(auto_order_count_monitoring_process, IntervalTrigger(seconds=2), max_instances=3, replace_existing=True)
+    #  ORDER COUNT-KILL FEATURE TESTED OK 
+    scheduler.add_job(auto_order_count_monitoring_process, IntervalTrigger(seconds=2), max_instances=3, replace_existing=True)
 
-    # #  QUICK EXIT FEATURE TESTED OK 
-    # scheduler.add_job(autoclosePositionProcess, IntervalTrigger(seconds=1), max_instances=3, replace_existing=True)
+    #  QUICK EXIT FEATURE TESTED OK 
+    scheduler.add_job(autoclosePositionProcess, IntervalTrigger(seconds=1), max_instances=3, replace_existing=True)
 
-    # #  AUTO STOPLOSS FEATURE TESTED OK
-    # # scheduler.add_job(autoStopLossLotControlProcess, IntervalTrigger(seconds=1), max_instances=3, replace_existing=True)
-    # scheduler.add_job(autoStopLossLotControlProcess, IntervalTrigger(seconds=2), max_instances=2, replace_existing=True)
+    #  AUTO STOPLOSS FEATURE TESTED OK
+    # scheduler.add_job(autoStopLossLotControlProcess, IntervalTrigger(seconds=1), max_instances=3, replace_existing=True)
+    scheduler.add_job(autoStopLossLotControlProcess, IntervalTrigger(seconds=2), max_instances=2, replace_existing=True)
 
-    # #  AUTO ADMIN SWITCHING PROCESS TESTED OK NOT USING NOW
-    # # scheduler.add_job(autoAdminSwitchingProcess, IntervalTrigger(hours=1))
+    #  AUTO ADMIN SWITCHING PROCESS TESTED OK NOT USING NOW
+    # scheduler.add_job(autoAdminSwitchingProcess, IntervalTrigger(hours=1))
 
-    # #  HOURLY DATA LOG MONITORING TESTED OK
-    # scheduler.add_job( check_and_update_daily_account_overview, IntervalTrigger(seconds=15), max_instances=10, replace_existing=True)
+    #  HOURLY DATA LOG MONITORING TESTED OK
+    scheduler.add_job( check_and_update_daily_account_overview, IntervalTrigger(seconds=15), max_instances=10, replace_existing=True)
 
-    # #  ORDER DATA  LOG MONITORING TESTED OK
-    # scheduler.add_job( update_order_history, CronTrigger(day_of_week='mon-fri', hour=15, minute=30,  timezone=ist))
+    #  ORDER DATA  LOG MONITORING TESTED OK
+    scheduler.add_job( update_order_history, CronTrigger(day_of_week='mon-fri', hour=15, minute=30,  timezone=ist))
+
+    # MAX LOSS THRESHOLD AUTO COMPLETE KILL
+    scheduler.add_job(max_threshold_complete_autokill_process , IntervalTrigger(seconds=2), max_instances=3, replace_existing=True)
     
     
 

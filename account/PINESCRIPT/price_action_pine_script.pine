@@ -24,21 +24,39 @@ fvgtra      = input.int(defval = 80, minval = 0, maxval = 100, title = "FVG Tran
 showFibs    = input.bool(defval = true, title = "Show Auto Fibs", group = "Auto Fibs")
 showEMAs    = input.bool(defval = true, title = "Show EMA", group = "Auto Fibs")
 // extSensFibs = input.int(25, "Fibs Sensitivity", options = [10, 25, 50], group = "Auto Fibs", inline = "22")
+
+show0       = input.bool(defval = true,  title = "", inline = "0", group = "Auto Fibs")
 show236     = input.bool(defval = true,  title = "", inline = "1", group = "Auto Fibs")
 show382     = input.bool(defval = true,  title = "", inline = "2", group = "Auto Fibs")
-show5       = input.bool(defval = true,    title = "", inline = "3", group = "Auto Fibs")
+show5       = input.bool(defval = true,  title = "", inline = "3", group = "Auto Fibs")
 show618     = input.bool(defval = true,  title = "", inline = "4", group = "Auto Fibs")
-show786     = input.bool(defval = true,  title = "", group = "Auto Fibs", inline = "5")
-fib1        = input.float(defval = .236, title = "", minval = 0, step = 0.01, inline = "1", group = "Auto Fibs")
-fib2        = input.float(defval = .382, title = "", minval = 0, step = 0.01, inline = "2", group = "Auto Fibs")
-fib3        = input.float(defval = .5,   title = "", minval = 0, step = 0.01, inline = "3", group = "Auto Fibs")
-fib4        = input.float(defval = .618, title = "", minval = 0, step = 0.01, inline = "4", group = "Auto Fibs")
-fib5        = input.float(defval = .786, title = "", minval = 0, step = 0.01, group = "Auto Fibs", inline = "5")
-fib1col     = input.color(title = "", defval = color.gray, inline = "1"  , group = "Auto Fibs")
-fib2col     = input.color(title = "", defval = color.lime, inline = "2"  , group = "Auto Fibs")
-fib3col     = input.color(title = "", defval = color.yellow, inline = "3", group = "Auto Fibs")
-fib4col     = input.color(title = "", defval = color.orange, inline = "4", group = "Auto Fibs")
-fib5col     = input.color(title = "", defval = color.red   , group = "Auto Fibs", inline = "5")
+show786     = input.bool(defval = true,  title = "", inline = "5", group = "Auto Fibs")
+show1       = input.bool(defval = true,  title = "", inline = "6", group = "Auto Fibs")
+show1618    = input.bool(defval = true,  title = "", inline = "7", group = "Auto Fibs")
+
+// Fibonacci Levels
+fib0        = input.float(defval = 0.00, title = "", minval = 0, step = 0.01, inline = "0", group = "Auto Fibs")
+fib1        = input.float(defval = 0.236, title = "", minval = 0, step = 0.01, inline = "1", group = "Auto Fibs")
+fib2        = input.float(defval = 0.382, title = "", minval = 0, step = 0.01, inline = "2", group = "Auto Fibs")
+fib3        = input.float(defval = 0.5, title = "", minval = 0, step = 0.01, inline = "3", group = "Auto Fibs")
+fib4        = input.float(defval = 0.618, title = "", minval = 0, step = 0.01, inline = "4", group = "Auto Fibs")
+fib5        = input.float(defval = 0.786, title = "", minval = 0, step = 0.01, inline = "5", group = "Auto Fibs")
+fib6        = input.float(defval = 1.0, title = "", minval = 0, step = 0.01, inline = "6", group = "Auto Fibs")
+fib7        = input.float(defval = 1.618, title = "", minval = 0, step = 0.01, inline = "7", group = "Auto Fibs")
+
+// Colors for Fibonacci Levels
+fib0col     = input.color(title = "0%", defval = color.new(color.gray, 50), inline = "0", group = "Auto Fibs") // 0%
+fib1col     = input.color(title = "23.6%", defval = color.new(#9370DB, 0), inline = "1", group = "Auto Fibs") // Light Purple
+fib2col     = input.color(title = "38.2%", defval = #007FFF, inline = "2", group = "Auto Fibs") // Medium Blue
+fib3col     = input.color(title = "50%", defval = #32CD32, inline = "3", group = "Auto Fibs") // Bright Green
+fib4col     = input.color(title = "61.8%", defval = #FFA500, inline = "4", group = "Auto Fibs") // Bright Orange (most important)
+fib5col     = input.color(title = "78.6%", defval = color.new(#00CED1, 0), inline = "5", group = "Auto Fibs") // Cyan
+fib6col     = input.color(title = "100%", defval = color.new(color.gray, 20), inline = "6", group = "Auto Fibs") // Gray
+fib7col     = input.color(title = "161.8%", defval = color.new(#FF7F7F, 0), inline = "7", group = "Auto Fibs") // Pale Red
+
+
+
+
 
 
 // EMA visibility toggles
@@ -55,11 +73,11 @@ shortColor = input.color(color.aqua, title="Color for 50 EMA")
 longerColor = input.color(color.orange, title="Color for 100 EMA")
 longestColor = input.color(color.blue, title="Color for 200 EMA")
 
-shortestThickness = input.int(2, title="Thickness for 9 EMA")
+shortestThickness = input.int(1, title="Thickness for 9 EMA")
 midShortestThickness = input.int(2, title="Thickness for 20 EMA")
-shortThickness = input.int(2, title="Thickness for 50 EMA")
-longerThickness = input.int(2, title="Thickness for 100 EMA")
-longestThickness = input.int(2, title="Thickness for 200 EMA")
+shortThickness = input.int(3, title="Thickness for 50 EMA")
+longerThickness = input.int(4, title="Thickness for 100 EMA")
+longestThickness = input.int(5, title="Thickness for 200 EMA")
 
 
 // EMA values
@@ -552,44 +570,46 @@ quickLabel(y, txt, color) =>
 
     label.new(bar_index + 5, y, text = str.tostring(txt), color = #00000000, style = label.style_label_left, textcolor = color)
 
-
-drawFibs() => 
-
+drawFibs() =>
     if barstate.islast
-
-        var fibLine = array.new<line>(5)
-        var fibLab = array.new<label>(5) 
+        // Initialize arrays for fib lines and labels
+        var fibLine = array.new<line>(8)
+        var fibLab = array.new<label>(8)
         
-        if fibLine.size() > 0 
-            for i = 0 to fibLine.size() - 1
-            
-                fibLine .get(i).delete()
-                fibLab  .get(i).delete()
-
+        // Clear existing lines and labels
+        for i = 0 to array.size(fibLine) - 1
+            line.delete(array.get(fibLine, i))
+            label.delete(array.get(fibLab, i))
 
         if showFibs
+            getY2 = main.get_y2()
+            sub = main.get_y1() - getY2
+            getX1 = main.get_x1()
+            getX2 = main.get_x2()
 
-            getY2 = main.get_y2(), sub   = main.get_y1() - getY2, 
-            getX1 = main.get_x1(), getX2 = main.get_x2()
-
-            for i = 0 to fibLine.size() - 1
-
-                mod = i % fibLine.size() - 1   
-
+            // Iterate and draw Fibonacci levels
+            for i = 0 to array.size(fibLine) - 1
+                mod = i % array.size(fibLine)  // Fix mod calculation for array size
+                
                 [y, col, txt] = switch mod
-                    0 => [sub * fib1 + getY2, show236 ? fib1col : color.new(chart.bg_color, 100), fib1]
-                    1 => [sub * fib2 + getY2, show382 ? fib2col : color.new(chart.bg_color, 100), fib2]
-                    2 => [sub * fib3 + getY2, show5   ? fib3col : color.new(chart.bg_color, 100), fib3]
-                    3 => [sub * fib4 + getY2, show618 ? fib4col : color.new(chart.bg_color, 100), fib4]
-                    =>   [sub * fib5 + getY2, show786 ? fib5col : color.new(chart.bg_color, 100), fib5] 
+                    0 => [sub * fib0 + getY2, show0 ? fib0col : color.new(chart.bg_color, 100), fib0]
+                    1 => [sub * fib1 + getY2, show236 ? fib1col : color.new(chart.bg_color, 100), fib1]
+                    2 => [sub * fib2 + getY2, show382 ? fib2col : color.new(chart.bg_color, 100), fib2]
+                    3 => [sub * fib3 + getY2, show5 ? fib3col : color.new(chart.bg_color, 100), fib3]
+                    4 => [sub * fib4 + getY2, show618 ? fib4col : color.new(chart.bg_color, 100), fib4]
+                    5 => [sub * fib5 + getY2, show786 ? fib5col : color.new(chart.bg_color, 100), fib5]
+                    6 => [sub * fib6 + getY2, show1 ? fib6col : color.new(chart.bg_color, 100), fib6]
+                    7 => [sub * fib7 + getY2, show1618 ? fib7col : color.new(chart.bg_color, 100), fib7]
+                    =>  [na, color.new(chart.bg_color, 100), na]  // Default case
 
                 // Define extended length
                 length_extension = 100  // Adjust this value to extend the line length
 
-                // Replace `quickLine` with `line.new` and increase line length
-                fibLine.set(i, line.new(getX2 - length_extension, y, getX2 + length_extension, y, color=col, width=2))
-                fibLab.set(i, quickLabel(y, txt, col))
-
+                // Create and set new lines and labels dynamically
+                line = line.new(x1=getX2 - length_extension, y1=y, x2=getX2 + length_extension, y2=y, color=col, width=2)
+                label = label.new(x=getX2 + length_extension, y=y, text=str.tostring(txt), style=label.style_label_upper_left, color=col, textcolor=color.white)
+                array.set(fibLine, i, line)
+                array.set(fibLab, i, label)
 
 
 drawFibs()
@@ -853,3 +873,54 @@ method getActivity(array<float> id, float id2) =>
 
 
         activity
+
+
+
+
+
+PrevBars = input.bool(title = "Show previous highs and lows?", defval = false)
+condition = not (timeframe.isweekly or timeframe.ismonthly)
+
+h = request.security(syminfo.tickerid, "D", high, barmerge.gaps_off, barmerge.lookahead_on)
+l = request.security(syminfo.tickerid, "D", low, barmerge.gaps_off, barmerge.lookahead_on)
+
+// Draw lines from the previous highs and lows
+newSession = ta.change(time('D'))
+count = ta.barssince(newSession)
+
+var line PrevHigh = na
+var line PrevLow = na
+
+length = 15 // Set the length of the lines to 300 bars
+
+// Declare the labels outside the if block
+var label prevHighLabel = na
+var label prevLowLabel = na
+
+if (newSession)
+    // Create the lines for PDH and PDL
+    PrevHigh := line.new(x1 = bar_index, y1 = h[1], x2 = bar_index + length, y2 = h[1], color = #1100ff, width = 4)
+    PrevLow := line.new(x1 = bar_index, y1 = l[1], x2 = bar_index + length, y2 = l[1], color = #ff7402, width = 4)
+
+    // Delete the previous labels if they exist
+    if (not na(prevHighLabel)) 
+        label.delete(prevHighLabel)
+    if (not na(prevLowLabel)) 
+        label.delete(prevLowLabel)
+
+
+
+    // Create hardcoded labels at the end of the lines
+    prevHighLabel := label.new(x = bar_index + length, y = h[1], text = "PDH", color = #1100ff, style = label.style_label_left, textcolor = color.white, size = size.small)
+    prevLowLabel := label.new(x = bar_index + length, y = l[1], text = "PDL", color = #ff7402, style = label.style_label_left, textcolor = color.white, size = size.small)
+
+
+    // Delete the previous lines if they exist
+    if (not na(PrevHigh[1])) 
+        line.delete(PrevHigh[1])
+    if (not na(PrevLow[1])) 
+        line.delete(PrevLow[1])
+
+    // Set the x-location of the lines
+    line.set_xloc(PrevHigh, time[count + 1], time[count + 1] + (length * 86400000), xloc.bar_time)
+    line.set_xloc(PrevLow, time[count + 1], time[count + 1] + (length * 86400000), xloc.bar_time)

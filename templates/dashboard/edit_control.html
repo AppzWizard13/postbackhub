@@ -30,10 +30,10 @@
                         {% csrf_token %}
                         
                         <!-- Max Order Limit -->
-                        <div class="mb-3">
+                        {% comment %} <div class="mb-3">
                             <label for="id_max_order_limit" class="form-label">Max Order Limit</label>
                             {{ form.max_order_limit }} <!-- Field for max order limit -->
-                        </div>
+                        </div> {% endcomment %}
                         <!-- Peak Order  Limit -->
                         <div class="mb-3">
                             <label for="id_peak_order_limit" class="form-label">Peak Order Limit</label>

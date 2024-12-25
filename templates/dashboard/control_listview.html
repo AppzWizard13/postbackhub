@@ -70,9 +70,9 @@
                     <td class="border-bottom-0">
                         <h6 class="fw-semibold mb-1">{{ control.user.username }}</h6>
                     </td>
-                    <td class="border-bottom-0">
+                    {% comment %} <td class="border-bottom-0">
                       <p class="mb-0 fw-normal">{{ control.max_order_limit }}</p>
-                    </td>
+                    </td> {% endcomment %}
                     <td class="border-bottom-0">
                       <p class="mb-0 fw-normal">{{ control.peak_order_limit }}</p>
                     </td>
@@ -98,7 +98,7 @@
                       <p class="mb-0 fw-normal">{{ control.peak_loss_limit }}</p>
                     </td>
                     <td class="border-bottom-0">
-                      <p class="mb-0 fw-normal">{{ control.max_profit_limit }}</p>
+                      <p class="mb-0 fw-normal">{{ control.peak_profit_limit }}</p>
                     </td>
                     <td class="border-bottom-0">
                         <p class="mb-0 fw-normal">{{ control.max_loss_mode|yesno:"Enabled,Disabled" }}</p>
