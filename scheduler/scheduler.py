@@ -151,110 +151,7 @@ def activate_kill_switch(user, access_token, traded_order_count, switch):
         print(f"ERROR: Error activating kill switch for user {user.username}: {e}")
 
 
-# QUICK EXIT WHILE CLOSING STOPLOSS TESTED OK--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-# def autoclosePositionProcess():
-#     print("AUTO CLOSE POSITIONS PROCESS RUNNING....")
-#     ist = pytz.timezone('Asia/Kolkata')
-#     now =  datetime.now(ist)
-#     print(f"Current date and time: {now.strftime('%Y-%m-%d %H:%M:%S')}")
-#     if now.weekday() < 5 and (9 <= now.hour < 16):  # Monday to Friday, 9 AM to 4 PM
-#         try:
-#             print("STARTING AUTO CLOSE POSITION  MONITORING PROCESS...!")
-#             active_users = User.objects.filter(is_active=True, status=True, quick_exit=True)
-#             for user in active_users:
-#                 try:
-#                     if user.quick_exit:
-#                         dhan_client_id = user.dhan_client_id
-#                         dhan_access_token = user.dhan_access_token
-#                         print(f"STARTING QUICK CLOSE POSITION : Processing user: {user.username}, Client ID: {dhan_client_id}")
-#                         # Fetch control data
-#                         control_data = Control.objects.filter(user=user).first()
-#                         # Initialize Dhan client
-#                         dhan = dhanhq(dhan_client_id, dhan_access_token)
-#                         order_list = dhan.get_order_list()
-#                         # print("order_listorder_listorder_list", order_list)
-#                         # Step 1: Sort filtered orders by timestamp in descending order
-#                         traded_order_count = get_traded_order_count(order_list)
-#                         if traded_order_count:
-#                             latest_entry = order_list['data'][0]
-#                             print('LATEST ENTRY : ' , latest_entry)
-#                             if latest_entry['orderType'] == 'STOP_LOSS' and latest_entry['orderStatus'] == 'CANCELLED'and latest_entry['transactionType'] == 'SELL':
-#                                 print("LATEST CANCELLED STOPLOSS ENTRY DETECTED")
-#                                 sl_order_id = latest_entry['orderId']
-#                                 symbol = latest_entry['tradingSymbol']
-#                                 security_id = latest_entry['securityId']
-#                                 client_id = latest_entry['dhanClientId']
-#                                 exchange_segment = latest_entry['exchangeSegment']
-#                                 quantity = latest_entry['quantity']
-#                                 traded_price = float(latest_entry['price'])
-#                                 print("***************************************************************************")
-#                                 print("QUICK EXIT : SELL ORDER PAYLOAD DATA FOR USER     :", user.username)
-#                                 print("SECURITY ID                                       :", security_id)
-#                                 print("CLIENT ID                                         :", client_id)
-#                                 print("EXCHANGE SEGMENT                                  :", exchange_segment)
-#                                 print("QUANTITY                                          :", quantity)
-#                                 print("***************************************************************************")
-#                                 # Place an order for NSE Futures & Options
-#                                 sellOrderResponse = dhan.place_order(
-#                                             security_id=security_id, 
-#                                             exchange_segment=exchange_segment,
-#                                             transaction_type='SELL',
-#                                             quantity=quantity,
-#                                             order_type='MARKET',
-#                                             product_type='INTRADAY',
-#                                             price=0
-#                                         )
-#                                 try:
-#                                     # Save the response in the database
-#                                     DhanKillProcessLog.objects.create(user=user, log=sellOrderResponse, order_count=quantity)
-#                                     # Check for failure in response and save the error message if present
-#                                     if sellOrderResponse.get('status') == 'failure':
-#                                         error_message = sellOrderResponse.get('remarks', {}).get('error_message', 'Unknown error')
-#                                         error_code = sellOrderResponse.get('remarks', {}).get('error_code', 'Unknown code')
-#                                         # Log error in the database
-#                                         DhanKillProcessLog.objects.create(
-#                                             user=user,
-#                                             log={"error_message": error_message, "error_code": error_code},
-#                                             order_count=0
-#                                         )
-#                                         print("Order failed:", error_message)
-
-#                                 except Exception as e:
-#                                     # If an exception occurs, log it in the database and print it
-#                                     DhanKillProcessLog.objects.create(
-#                                         user=user,
-#                                         log={"error_message": str(e), "error_code": "Exception"},
-#                                         order_count=0
-#                                     )
-#                                     print("An error occurred while placing the order:", str(e))
-
-#                                 print(f"INFO: Position Closing Executed Successfully..!")
-#                             else:
-#                                 print(f"INFO: No Open Order for User {user.username}")
-#                         else:
-#                             print(f"INFO: No Open Order for User :{user.username}")
-#                     else:
-#                         print(f"WARNING: Auto SL Disabled for User : {user.username}")
-
-#                 except Exception as e:
-#                     print(f"ERROR: Error processing user {user.username}: {e}")
-
-#             print("No User Found.(May be Killed Already/Not Active)")
-#             print("Auto Quick Exit process completed successfully.")
-#             return JsonResponse({'status': 'success', 'message': 'Monitoring process completed'})
-
-#         except Exception as e:
-#             print(f"ERROR: Error in  stoploss monitoring process: {e}")
-#             return JsonResponse({'status': 'error', 'message': 'An error occurred'}, status=500)
-#     else:
-#         print("INFO: Current time is outside of the scheduled range.")
-
-
 # OPTIMIZED CODE FOR QUICK EXIT PERFOMANCE IS Execution Time: 0.55 seconds -----------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 
 import time
 def autoclosePositionProcess():
@@ -728,49 +625,6 @@ def check_and_update_daily_account_overview():
             continue
 
 
-# AUTO ADMIN SWITCHING PROCESS :  TESTED OK ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-# def autoAdminSwitchingProcess():
-#     print(f"INFO:  AUTO ADMIN SWITCHING PROCESS : RUNNING")
-#     ist = pytz.timezone('Asia/Kolkata')
-#     current_hour = datetime.now(ist).hour
-#     try:
-#         if current_hour == 9:
-#             # Set vicky as superuser and remove superuser status from juztin and tradingwitch every day at 9 AM
-#             acting_admin = settings.ACTING_ADMIN
-#             acting_traders_list = settings.ACTING_TRADERS
-#             vicky = User.objects.get(username=acting_admin)
-#             vicky.is_superuser = True
-#             vicky.save()
-#             print(f"INFO: Set", acting_admin, "as superuser at 9 AM")
-
-#             for username in acting_traders_list:
-#                 user = User.objects.get(username=username)
-#                 user.is_superuser = False
-#                 user.save()
-#                 print(f"INFO: Removed superuser status from '{username}'")
-
-#         elif current_hour == 16:
-#             # Set tradingwitch as superuser and remove superuser status from vicky every day at 4 PM
-#             dev_admin = settings.DEV_ADMIN
-#             tradingwitch = User.objects.get(username=dev_admin)
-#             tradingwitch.is_superuser = True
-#             tradingwitch.save()
-#             print("INFO: Set", dev_admin, "as superuser at 4 PM")
-
-#             vicky = User.objects.get(username='vicky')
-#             vicky.is_superuser = False
-#             vicky.save()
-#             print("INFO: Removed superuser status from 'vicky'")
-
-#         else:
-#             print("Admin Switching Process not in time range")
-
-#     except User.DoesNotExist as e:
-#         print(f"ERROR: User not found: {e}")
-#     except Exception as e:
-#         print(f"ERROR: An error occurred in update_superuser_status: {e}")
-
 # RESTORE SUPER ADMIN :  TESTED OK -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 def restore_super_user_after_market():
@@ -877,7 +731,7 @@ def max_threshold_complete_autokill_process():
             # Check if actual_pnl is negative and make it positive
             if max_loss_mode:
 
-                if actual_pnl < 0 and :
+                if actual_pnl < 0  :
                     actual_pnl = abs(actual_pnl)
                     # Now check if the actual_pnl exceeds the loss_threshold
                     if actual_pnl >= loss_threshold and actual_pnl < peak_loss_limit  and not user.kill_switch_1 and not user.kill_switch_2:
@@ -895,10 +749,10 @@ def max_threshold_complete_autokill_process():
 
             if max_profit_mode:
 
-                if actual_pnl > 0 and :
+                if actual_pnl > 0  :
                     actual_pnl = abs(actual_pnl)
                     # Now check if the actual_pnl exceeds the loss_threshold
-                    if actual_pnl >= peak_profit_limit and not user.kill_switch_1 and not user.kill_switch_2:
+                    if actual_pnl >= max_profit_limit and not user.kill_switch_1 and not user.kill_switch_2:
                         print(f"WARNING: Max PROFIT limit exceeded for user {user.username}: Limit = {control_data.loss_limit}, Traded = {traded_order_count}")
                         complete_kill_account(user, dhan_access_token)
                         print("INFO: COMPLETELY FREEZING ACCOUNT, SEE YOU ANOTHER DAY, GO AND CHILL BRO")
@@ -1005,10 +859,10 @@ def start_scheduler():
     # scheduler.add_job(autoAdminSwitchingProcess, IntervalTrigger(hours=1))
 
     #  HOURLY DATA LOG MONITORING TESTED OK
-    scheduler.add_job( check_and_update_daily_account_overview, IntervalTrigger(seconds=15), max_instances=10, replace_existing=True)
+    scheduler.add_job(check_and_update_daily_account_overview, IntervalTrigger(seconds=15), max_instances=10, replace_existing=True)
 
     #  ORDER DATA  LOG MONITORING TESTED OK
-    scheduler.add_job( update_order_history, CronTrigger(day_of_week='mon-fri', hour=15, minute=30,  timezone=ist))
+    scheduler.add_job(update_order_history, CronTrigger(day_of_week='mon-fri', hour=15, minute=30,  timezone=ist))
 
     # MAX LOSS THRESHOLD AUTO COMPLETE KILL
     scheduler.add_job(max_threshold_complete_autokill_process , IntervalTrigger(seconds=2), max_instances=3, replace_existing=True)
