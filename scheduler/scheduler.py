@@ -716,7 +716,7 @@ def max_threshold_complete_autokill_process():
             # Fetch order list
             order_list = dhan.get_order_list() or []
             traded_order_count = get_traded_order_count(order_list)
-            total_expense = traded_order_count * setting.BROKERAGE_PARAMETER
+            total_expense = traded_order_count * settings.BROKERAGE_PARAMETER
             position_data = dhan.get_positions() or {}
             total_realized_profit = sum(
                 position.get('realizedProfit', 0) for position in position_data.get('data', [])
@@ -838,34 +838,34 @@ def start_scheduler():
     scheduler = BackgroundScheduler()
     ist = pytz.timezone('Asia/Kolkata')
 
-    # SELF PING TESTED OK
-    scheduler.add_job(self_ping, IntervalTrigger(seconds=180))
+    # # SELF PING TESTED OK
+    # scheduler.add_job(self_ping, IntervalTrigger(seconds=180))
 
-    #  RESTORE KILL SWITCH BY 9 AM AND 4 PM TESTED OK
-    scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=9, minute=0,  timezone=ist))
-    scheduler.add_job(restore_super_user_after_market, CronTrigger(day_of_week='mon-fri', hour=15, minute=30,  timezone=ist))
+    # #  RESTORE KILL SWITCH BY 9 AM AND 4 PM TESTED OK
+    # scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=9, minute=0,  timezone=ist))
+    # scheduler.add_job(restore_super_user_after_market, CronTrigger(day_of_week='mon-fri', hour=15, minute=30,  timezone=ist))
 
-    #  ORDER COUNT-KILL FEATURE TESTED OK 
-    scheduler.add_job(auto_order_count_monitoring_process, IntervalTrigger(seconds=2), max_instances=3, replace_existing=True)
+    # #  ORDER COUNT-KILL FEATURE TESTED OK 
+    # scheduler.add_job(auto_order_count_monitoring_process, IntervalTrigger(seconds=2), max_instances=3, replace_existing=True)
 
-    #  QUICK EXIT FEATURE TESTED OK 
-    scheduler.add_job(autoclosePositionProcess, IntervalTrigger(seconds=1), max_instances=3, replace_existing=True)
+    # #  QUICK EXIT FEATURE TESTED OK 
+    # scheduler.add_job(autoclosePositionProcess, IntervalTrigger(seconds=1), max_instances=3, replace_existing=True)
 
-    #  AUTO STOPLOSS FEATURE TESTED OK
-    # scheduler.add_job(autoStopLossLotControlProcess, IntervalTrigger(seconds=1), max_instances=3, replace_existing=True)
-    scheduler.add_job(autoStopLossLotControlProcess, IntervalTrigger(seconds=2), max_instances=2, replace_existing=True)
+    # #  AUTO STOPLOSS FEATURE TESTED OK
+    # # scheduler.add_job(autoStopLossLotControlProcess, IntervalTrigger(seconds=1), max_instances=3, replace_existing=True)
+    # scheduler.add_job(autoStopLossLotControlProcess, IntervalTrigger(seconds=2), max_instances=2, replace_existing=True)
 
-    #  AUTO ADMIN SWITCHING PROCESS TESTED OK NOT USING NOW
-    # scheduler.add_job(autoAdminSwitchingProcess, IntervalTrigger(hours=1))
+    # #  AUTO ADMIN SWITCHING PROCESS TESTED OK NOT USING NOW
+    # # scheduler.add_job(autoAdminSwitchingProcess, IntervalTrigger(hours=1))
 
-    #  HOURLY DATA LOG MONITORING TESTED OK
-    scheduler.add_job(check_and_update_daily_account_overview, IntervalTrigger(seconds=15), max_instances=10, replace_existing=True)
+    # #  HOURLY DATA LOG MONITORING TESTED OK
+    # scheduler.add_job(check_and_update_daily_account_overview, IntervalTrigger(seconds=15), max_instances=10, replace_existing=True)
 
-    #  ORDER DATA  LOG MONITORING TESTED OK
-    scheduler.add_job(update_order_history, CronTrigger(day_of_week='mon-fri', hour=15, minute=30,  timezone=ist))
+    # #  ORDER DATA  LOG MONITORING TESTED OK
+    # scheduler.add_job(update_order_history, CronTrigger(day_of_week='mon-fri', hour=15, minute=30,  timezone=ist))
 
-    # MAX LOSS THRESHOLD AUTO COMPLETE KILL
-    scheduler.add_job(max_threshold_complete_autokill_process , IntervalTrigger(seconds=2), max_instances=3, replace_existing=True)
+    # # MAX LOSS THRESHOLD AUTO COMPLETE KILL
+    # scheduler.add_job(max_threshold_complete_autokill_process , IntervalTrigger(seconds=2), max_instances=3, replace_existing=True)
     
     
 
