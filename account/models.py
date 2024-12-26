@@ -55,7 +55,7 @@ class Control(models.Model):
         ('price', 'Price'),
     ]
 
-    max_order_limit = models.IntegerField(default=0)
+    max_order_limit = models.IntegerField(default=0, null=True )
     peak_order_limit = models.IntegerField(default=0)
     default_peak_order_limit = models.IntegerField(default=0)
     max_loss_limit = models.FloatField(default=0.0)
