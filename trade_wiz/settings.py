@@ -118,7 +118,7 @@ if LIVEDB == True:
 
 # Database
 # Conditional database configuration based on DEBUG mode
-if LIVEDB == True:
+if LIVEDB == False:
     # Database configuration
     DATABASES = {
         'default': {
