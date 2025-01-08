@@ -110,15 +110,15 @@ AUTH_USER_MODEL = 'account.User'
 LIVEDB = True
 
 if LIVEDB == True:
-    DB_NAME='tradewiz_live_db'
-    DB_USER='tradewiz_live_db_user'
-    DB_PASSWORD='1woyJJlcEe0wae4cqqhFn2RGE8kbWAjO'
-    DB_HOST='dpg-ctakf9d6l47c73bnbrag-a.oregon-postgres.render.com'
+    DB_NAME='tradewiz_live_db1'
+    DB_USER='tradewiz_live_db1_user'
+    DB_PASSWORD='KxWbwNqKAfhGLLJ77sM7Y2HrgU3rCHTW'
+    DB_HOST='dpg-ctv0f4ogph6c73asead0-a.oregon-postgres.render.com'
     DB_PORT=5432
 
 # Database
 # Conditional database configuration based on DEBUG mode
-if LIVEDB == False:
+if LIVEDB == True:
     # Database configuration
     DATABASES = {
         'default': {
