@@ -865,8 +865,7 @@ def check_and_create_default_user():
 
 # CRON JOBS STRAT PROCESS :  TESTED OK -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-
-def job_exists(job_id):
+def job_exists(scheduler, job_id):
     """
     Check if a job with the given ID already exists.
     """
@@ -892,31 +891,29 @@ def start_scheduler():
         scheduler.add_job(update_order_history, CronTrigger(day_of_week='mon-fri', hour=15, minute=30, timezone=ist))
 
         # ORDER COUNT-KILL FEATURE TESTED OK
-        if not job_exists("auto_order_count_monitoring_process"):
+        if not job_exists(scheduler, "auto_order_count_monitoring_process"):
             scheduler.add_job(auto_order_count_monitoring_process, DateTrigger(run_date=now()), max_instances=1, replace_existing=False)
 
         # QUICK EXIT FEATURE TESTED OK
-        if not job_exists("autoclosePositionProcess"):
+        if not job_exists(scheduler, "autoclosePositionProcess"):
             scheduler.add_job(autoclosePositionProcess, DateTrigger(run_date=now()), max_instances=1, replace_existing=False)
 
         # AUTO STOPLOSS FEATURE TESTED OK
-        if not job_exists("autoStopLossLotControlProcess"):
+        if not job_exists(scheduler, "autoStopLossLotControlProcess"):
             scheduler.add_job(autoStopLossLotControlProcess, DateTrigger(run_date=now()), max_instances=1, replace_existing=False)
 
         # HOURLY DATA LOG MONITORING TESTED OK
-        if not job_exists("check_and_update_daily_account_overview"):
+        if not job_exists(scheduler, "check_and_update_daily_account_overview"):
             scheduler.add_job(check_and_update_daily_account_overview, DateTrigger(run_date=now()), max_instances=1, replace_existing=False)
 
         # MAX LOSS THRESHOLD AUTO COMPLETE KILL
-        if not job_exists("max_threshold_complete_autokill_process"):
+        if not job_exists(scheduler, "max_threshold_complete_autokill_process"):
             scheduler.add_job(max_threshold_complete_autokill_process, DateTrigger(run_date=now()), max_instances=1, replace_existing=False)
 
 
     else:
         print("INFO: Scheduler is not active. Set ACTIVE_CRONM to True in settings.py to enable additional jobs.")
 
-    
-    
     scheduler.start()
     print("INFO: Scheduler started.")
 
