@@ -13,8 +13,9 @@ from pathlib import Path
 import os
 
 
-LIVE_MODE=True  
-
+LIVE_MODE=False  
+# ACTIVE_CRON = True
+LIVEDB = True
 if LIVE_MODE:
     ACTIVE_CRON = True
     LIVEDB = True

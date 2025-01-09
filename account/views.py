@@ -116,8 +116,15 @@ class ControlCreateView(CreateView):
         return response
 
     def form_invalid(self, form):
-        # Add an error message if the form is invalid
+        # Log the exact errors in the form fields
+        for field, errors in form.errors.items():
+            for error in errors:
+                print(f"Error in {field}: {error}")
+        
+        # Add a general error message
         messages.error(self.request, "There was an error creating the control. Please check the form and try again.")
+        
+        # Optionally, you can pass specific field errors to the context for more detailed feedback in the template
         return super().form_invalid(form)
 
 import pytz
@@ -1713,3 +1720,4 @@ def order_postback(request):
     else:
         # Handle non-POST requests
         return JsonResponse({"status": "error", "message": "Only POST requests are allowed."}, status=405)
+
