@@ -12,6 +12,7 @@ from datetime import datetime
 from django.db.models import F
 import pytz
 User = get_user_model()
+from django.utils.timezone import now
 
 # LOGGER  ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -34,7 +35,7 @@ def self_ping():
 
 # RESTORE KILL ON 9 AND 4 TESTED OK----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-def restore_user_kill_switches():
+def restore_user_kill_switches_and_previllage_control():
     active_users = User.objects.filter(is_active=True)
     active_users.update(kill_switch_1=False, kill_switch_2=False, status=True,last_order_count=0, is_superuser = False)
     all_controls = Controls.objects.all()
@@ -829,10 +830,45 @@ def complete_kill_account(user, access_token):
     user.save()
     print(f"INFO: Kill switches set to true for user: {user.username}")
 
+# CRON JOBS STRAT PROCESS :  TESTED OK -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+def check_and_create_default_user():
+    if not User.objects.exists():
+        user = User.objects.create_user(
+            username='appz',
+            password='Appz@11011',
+            is_active=True,
+            is_superuser=True,
+            is_staff=True
+        )
+        user.phone_number = '7736500760'
+        user.country = 'India'
+        user.status = True
+        user.dhan_access_token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJkaGFuIiwicGFydG5lcklkIjoiIiwiZXhwIjoxNzM4OTg0ODE1LCJ0b2tlbkNvbnN1bWVyVHlwZSI6IlNFTEYiLCJ3ZWJob29rVXJsIjoiaHR0cHM6Ly90cmFkZXdpei5vbnJlbmRlci5jb20vb3JkZXJfcG9zdGJhY2svIiwiZGhhbkNsaWVudElkIjoiMTEwNDg3ODI3NyJ9.dY9bLkzx99J-yMR14O39I7n4_l9yoVhY9bf60Y1sBdr2nFp6ItZ2st7LPIcvH4g8NWWJtAsR0pBk9EPZFeH2zg'
+        user.dhan_client_id = '1104878277'
+        user.auto_stop_loss = True
+        user.kill_switch_1 = False
+        user.kill_switch_2 = False
+        user.quick_exit = True
+        user.last_order_count = 0
+        user.reserved_trade_count = 0
+        user.sl_control_mode = True
+        user.role = 'admin'
+        user.save()
+        print("INFO: Successfully created the default user.")
+    else:
+        print("INFO: Users already exist in the database.")
+
 
 
 # CRON JOBS STRAT PROCESS :  TESTED OK -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+
+def job_exists(job_id):
+    """
+    Check if a job with the given ID already exists.
+    """
+    return any(job.id == job_id for job in scheduler.get_jobs())
 
 def start_scheduler():
     scheduler = BackgroundScheduler()
@@ -841,32 +877,38 @@ def start_scheduler():
     # SELF PING TESTED OK
     scheduler.add_job(self_ping, IntervalTrigger(seconds=180))
 
-    if getattr(settings, "ACTIVE_CRONM", False):
-        
-        #  RESTORE KILL SWITCH BY 9 AM AND 4 PM TESTED OK
-        scheduler.add_job(restore_user_kill_switches, CronTrigger(day_of_week='mon-fri', hour=9, minute=0,  timezone=ist))
-        scheduler.add_job(restore_super_user_after_market, CronTrigger(day_of_week='mon-fri', hour=15, minute=30,  timezone=ist))
+    if getattr(settings, "ACTIVE_CRON", False):
 
-        #  ORDER COUNT-KILL FEATURE TESTED OK 
-        scheduler.add_job(auto_order_count_monitoring_process, IntervalTrigger(seconds=2), max_instances=3, replace_existing=True)
+        # CREATE DEFAULT USER
+        scheduler.add_job(check_and_create_default_user, DateTrigger(run_date=now()), max_instances=1, replace_existing=True)
 
-        #  QUICK EXIT FEATURE TESTED OK 
-        scheduler.add_job(autoclosePositionProcess, IntervalTrigger(seconds=1), max_instances=3, replace_existing=True)
+        # RESTORE KILL SWITCH BY 9 AM AND 4 PM TESTED OK
+        scheduler.add_job(restore_user_kill_switches_and_previllage_control, CronTrigger(day_of_week='mon-fri', hour=9, minute=0, timezone=ist))
+        scheduler.add_job(restore_super_user_after_market, CronTrigger(day_of_week='mon-fri', hour=15, minute=30, timezone=ist))
 
-        #  AUTO STOPLOSS FEATURE TESTED OK
-        scheduler.add_job(autoStopLossLotControlProcess, IntervalTrigger(seconds=2), max_instances=2, replace_existing=True)
+        # ORDER DATA LOG MONITORING TESTED OK
+        scheduler.add_job(update_order_history, CronTrigger(day_of_week='mon-fri', hour=15, minute=30, timezone=ist))
 
-        #  AUTO ADMIN SWITCHING PROCESS TESTED OK NOT USING NOW
-        # scheduler.add_job(autoAdminSwitchingProcess, IntervalTrigger(hours=1))
+        # ORDER COUNT-KILL FEATURE TESTED OK
+        if not job_exists("auto_order_count_monitoring_process"):
+            scheduler.add_job(auto_order_count_monitoring_process, DateTrigger(run_date=now()), max_instances=1, replace_existing=False)
 
-        #  HOURLY DATA LOG MONITORING TESTED OK
-        scheduler.add_job(check_and_update_daily_account_overview, IntervalTrigger(seconds=15), max_instances=10, replace_existing=True)
+        # QUICK EXIT FEATURE TESTED OK
+        if not job_exists("autoclosePositionProcess"):
+            scheduler.add_job(autoclosePositionProcess, DateTrigger(run_date=now()), max_instances=1, replace_existing=False)
 
-        #  ORDER DATA  LOG MONITORING TESTED OK
-        scheduler.add_job(update_order_history, CronTrigger(day_of_week='mon-fri', hour=15, minute=30,  timezone=ist))
+        # AUTO STOPLOSS FEATURE TESTED OK
+        if not job_exists("autoStopLossLotControlProcess"):
+            scheduler.add_job(autoStopLossLotControlProcess, DateTrigger(run_date=now()), max_instances=1, replace_existing=False)
+
+        # HOURLY DATA LOG MONITORING TESTED OK
+        if not job_exists("check_and_update_daily_account_overview"):
+            scheduler.add_job(check_and_update_daily_account_overview, DateTrigger(run_date=now()), max_instances=1, replace_existing=False)
 
         # MAX LOSS THRESHOLD AUTO COMPLETE KILL
-        scheduler.add_job(max_threshold_complete_autokill_process , IntervalTrigger(seconds=2), max_instances=3, replace_existing=True)
+        if not job_exists("max_threshold_complete_autokill_process"):
+            scheduler.add_job(max_threshold_complete_autokill_process, DateTrigger(run_date=now()), max_instances=1, replace_existing=False)
+
 
     else:
         print("INFO: Scheduler is not active. Set ACTIVE_CRONM to True in settings.py to enable additional jobs.")
