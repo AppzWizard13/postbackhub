@@ -13,10 +13,11 @@ from pathlib import Path
 import os
 
 
-
-# Set LIVE_MODE as a variable in your code
 LIVE_MODE=True  
 
+if LIVE_MODE:
+    ACTIVE_CRON = True
+    LIVEDB = True
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -107,7 +108,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'trade_wiz.wsgi.application'
 AUTH_USER_MODEL = 'account.User'
 
-LIVEDB = True
+
 
 if LIVEDB == True:
     DB_NAME='tradewiz_live_db1'
