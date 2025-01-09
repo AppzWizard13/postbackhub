@@ -13,6 +13,8 @@ from django.db.models import F
 import pytz
 User = get_user_model()
 from django.utils.timezone import now
+from apscheduler.triggers.date import DateTrigger
+
 
 # LOGGER  ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
