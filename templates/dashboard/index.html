@@ -1035,6 +1035,199 @@
             </div>
           </div>
           <div class="row">
+            <div class="row">
+              <div class="col-12">
+                <div class="row">
+                  <div class="col-6">
+                    <!-- Card: Option Chain Overview -->
+                    <div class="card">
+                      <div class="card-body">
+                        <h5 class="card-title fw-semibold" style="margin-bottom: 10px !important;">Option Chain Overview</h5>
+                        <!-- Underlying Value -->
+                        <h3 class="underlying-value mt-4">NIFTY: <span id="underlying-value">N/A</span></h3>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <!-- Card: Fetch Fyers Auth Code -->
+                    <div class="card">
+                      <div class="card-body">
+                        <h5>Fetch Fyers Auth Code</h5>
+                        <button type="button" class="btn btn-primary" id="getAuthCodeButton">Get Auth Code</button>
+                        <p id="authCodeDisplay"></p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% comment %} </div> {% endcomment %}
+              <!-- Card: ITM and OTM CALL Options -->
+              <div class="col-6">
+                  <div class="card">
+                      <div class="card-body">
+                          <h6>CALL Options</h6>
+                          <!-- ITM and OTM CALL Options in the same row -->
+                          <div class="row">
+                              <!-- ITM CALL Options Table (col-6) -->
+                              <div class="col-6">
+                                  <h6 class="text-success" >ITM CALL Options</h6>
+                                  <table class="table itm-call-table">
+                                      <thead>
+                                          <tr>
+                                              <th>Strike</th>
+                                              <th>Last Price</th>
+                                              <th>Ask Price</th>
+                                              <th>OI</th>
+                                              <th>Strike Type</th>
+                                          </tr>
+                                      </thead>
+                                      <tbody id="itm-calls">
+                                          <!-- Data will be populated via AJAX -->
+                                      </tbody>
+                                  </table>
+                              </div>
+          
+                              <!-- OTM CALL Options Table (col-6) -->
+                              <div class="col-6">
+                                  <h6 class="text-success">OTM CALL Options</h6>
+                                  <table class="table otm-call-table">
+                                      <thead>
+                                          <tr>
+                                              <th>Strike</th>
+                                              <th>Last Price</th>
+                                              <th>Ask Price</th>
+                                              <th>OI</th>
+                                              <th>Strike Type</th>
+                                          </tr>
+                                      </thead>
+                                      <tbody id="otm-calls">
+                                          <!-- Data will be populated via AJAX -->
+                                      </tbody>
+                                  </table>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+                </div>
+             
+          
+              <!-- Card: ITM and OTM PUT Options -->
+              <div class="col-6">
+                  <div class="card">
+                      <div class="card-body">
+                          <h6>PUT Options</h6>
+                          <!-- ITM and OTM PUT Options in the same row -->
+                          <div class="row">
+                              <!-- ITM PUT Options Table (col-6) -->
+                              <div class="col-6">
+                                  <h6 class="text-danger">ITM PUT Options</h6>
+                                  <table class="table itm-put-table">
+                                      <thead>
+                                          <tr>
+                                              <th>Strike</th>
+                                              <th>Last Price</th>
+                                              <th>Ask Price</th>
+                                              <th>OI</th>
+                                              <th>Strike Type</th>
+                                          </tr>
+                                      </thead>
+                                      <tbody id="itm-puts">
+                                          <!-- Data will be populated via AJAX -->
+                                      </tbody>
+                                  </table>
+                              </div>
+          
+                              <!-- OTM PUT Options Table (col-6) -->
+                              <div class="col-6">
+                                  <h6 class="text-danger">OTM PUT Options</h6>
+                                  <table class="table otm-put-table">
+                                      <thead>
+                                          <tr>
+                                              <th>Strike</th>
+                                              <th>Last Price</th>
+                                              <th>Ask Price</th>
+                                              <th>OI</th>
+                                              <th>Strike Type</th>
+                                          </tr>
+                                      </thead>
+                                      <tbody id="otm-puts">
+                                          <!-- Data will be populated via AJAX -->
+                                      </tbody>
+                                  </table>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+      
+          
+          <style>
+            /* Scoped styles for Option Chain table only */
+            .option-chain-table {
+                font-family: Arial, sans-serif;
+                background-color: #f4f7fc;
+                color: #333;
+                padding: 20px;
+                margin: 20px;
+                border-color: #34483a4f !important;
+            }
+            .table{
+              border-color: #34483a4f !important;
+            }
+    
+            .option-chain-table h3 {
+                font-size: 18px;
+                color: #333;
+                margin-bottom: 20px;
+            }
+    
+            .option-chain-table .table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 20px 0;
+                font-size: 14px;
+                
+            }
+    
+            .option-chain-table th,
+            .option-chain-table td {
+                padding: 12px;
+                text-align: center;
+                border: 1px solid #ddd;
+            }
+    
+            .option-chain-table th {
+                background-color: #4CAF50;
+                color: white;
+            }
+    
+            .option-chain-table .itm-call {
+                background-color: #d4edda;
+            }
+    
+            .option-chain-table .otm-call {
+                background-color: #cce5ff;
+            }
+    
+            .option-chain-table .itm-put {
+                background-color: #f8d7da;
+            }
+    
+            .option-chain-table .otm-put {
+                background-color: #fff3cd;
+            }
+    
+            .option-chain-table .strike-type {
+                font-weight: bold;
+            }
+    
+            .option-chain-table .underlying-value {
+                font-size: 18px;
+                color: #4CAF50;
+                margin-bottom: 20px;
+            }
+        </style>
 
 
 
@@ -2227,6 +2420,119 @@
             });
         });
     </script>
+    {% comment %} <script>
+      function updateNseData() {
+          $.ajax({
+              url: '{% url "fetch_nse_data" %}', // URL of the Django view
+              method: 'GET',
+              success: function(data) {
+                  if (data.error) {
+                      $('#nse-data').html('<p>Error fetching data: ' + data.error + '</p>');
+                  } else {
+                      // Clear existing data
+                      $('#underlying-value').empty();
+                      $('#itm-calls').empty();
+                      $('#otm-calls').empty();
+                      $('#itm-puts').empty();
+                      $('#otm-puts').empty();
+  
+                      // Update the Underlying Value
+                      $('#underlying-value').text(data.underlying_value);
+  
+                      // Populate ITM CALL Options Table
+                      let itmCallsHtml = '';
+                      data.itm_calls.forEach(option => {
+                          itmCallsHtml += `<tr class="itm-call">
+                                              <td>${option.strikePrice}</td>
+                                              <td>${option.CE.lastPrice}</td>
+                                              <td>${option.CE.identifier}</td>
+                                              <td>${option.CE.openInterest}</td>
+                                              <td class="strike-type">${option.opt_strike}</td>
+                                           </tr>`;
+                      });
+                      $('#itm-calls').html(itmCallsHtml);
+  
+                      // Populate OTM CALL Options Table
+                      let otmCallsHtml = '';
+                      data.otm_calls.forEach(option => {
+                          otmCallsHtml += `<tr class="otm-call">
+                                              <td>${option.strikePrice}</td>
+                                              <td>${option.CE.lastPrice}</td>
+                                              <td>${option.CE.identifier}</td>
+                                              <td>${option.CE.openInterest}</td>
+                                              <td class="strike-type">${option.opt_strike}</td>
+                                           </tr>`;
+                      });
+                      $('#otm-calls').html(otmCallsHtml);
+  
+                      // Populate ITM PUT Options Table
+                      let itmPutsHtml = '';
+                      data.itm_puts.forEach(option => {
+                          itmPutsHtml += `<tr class="itm-put">
+                                              <td>${option.strikePrice}</td>
+                                              <td>${option.PE.lastPrice}</td>
+                                              <td>${option.PE.identifier}</td>
+                                              <td>${option.PE.openInterest}</td>
+                                              <td class="strike-type">${option.opt_strike}</td>
+                                           </tr>`;
+                      });
+                      $('#itm-puts').html(itmPutsHtml);
+  
+                      // Populate OTM PUT Options Table
+                      let otmPutsHtml = '';
+                      data.otm_puts.forEach(option => {
+                          otmPutsHtml += `<tr class="otm-put">
+                                              <td>${option.strikePrice}</td>
+                                              <td>${option.PE.lastPrice}</td>
+                                              <td>${option.PE.identifier}</td>
+                                              <td>${option.PE.openInterest}</td>
+                                              <td class="strike-type">${option.opt_strike}</td>
+                                           </tr>`;
+                      });
+                      $('#otm-puts').html(otmPutsHtml);
+                  }
+              },
+              error: function(error) {
+                  $('#nse-data').html('<p>Error fetching data.</p>');
+              }
+          });
+      }
+  
+      // Trigger update every 2 seconds (2000ms)
+      setInterval(updateNseData, 2000);
+  
+      // Initial call on page load
+      $(document).ready(function() {
+          updateNseData();
+      });
+  </script> {% endcomment %}
+  <script>
+      $(document).ready(function() {
+          $('#getAuthCodeButton').on('click', function() {
+              $.ajax({
+                  url: '/get-auth-code/',  // Match your Django view's URL pattern
+                  type: 'GET',
+                  success: function(response) {
+                      // Get the current host
+                      var currentHost = window.location.host;
+                      
+                      // Create a button or link dynamically
+                      $('#authCodeDisplay').html(`
+                          <a href="${response}" target="_blank">
+                              Click here to view the Auth Code
+                          </a>
+                      `);
+                  },
+                  error: function(error) {
+                      $('#authCodeDisplay').text('Error fetching auth code.');
+                      console.error('Error:', error);
+                  }
+              });
+          });
+      });
+  </script>
+
+  
     <script src="{% static 'dashboard/assets/js/dashboard.js' %}"></script>
     <script src="{% static 'dashboard/assets/libs/apexcharts/dist/apexcharts.min.js' %}"></script>
     {% endblock %}

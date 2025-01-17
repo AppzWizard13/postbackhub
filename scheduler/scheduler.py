@@ -862,6 +862,26 @@ def check_and_create_default_user():
         print("INFO: Users already exist in the database.")
 
 
+# CRON JOBS STRAT PROCESS :  TESTED OK -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+from datetime import datetime
+from jugaad_data.nse import NSELive
+
+def FetchNseData():
+    # Fetch live index data for NIFTY 50
+    import requests
+    headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36','Accept-Encoding': 'gzip, deflate, br','Accept-Language': 'en-US,en;q=0.9,hi;q=0.8'}
+    url = "https://www.nseindia.com/api/option-chain-indices?symbol=NIFTY"
+    json_obj = requests.get(url, headers = headers).json()
+    if json_obj:
+        print("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+        print("json_objjson_objjson_objjson_objjson_obj", json_obj)
+        print("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+    else:
+        print("No upcoming dates found.")
+
+
 
 # CRON JOBS STRAT PROCESS :  TESTED OK -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -879,7 +899,8 @@ def start_scheduler():
     scheduler.add_job(self_ping, IntervalTrigger(seconds=180))
 
     if getattr(settings, "ACTIVE_CRON", False):
-
+        
+        scheduler.add_job(FetchNseData,  DateTrigger(run_date=now()), max_instances=1, replace_existing=True)
         # CREATE DEFAULT USER
         scheduler.add_job(check_and_create_default_user, DateTrigger(run_date=now()), max_instances=1, replace_existing=True)
 

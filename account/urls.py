@@ -63,6 +63,9 @@ urlpatterns = [
     path('order_postback/', views.order_postback, name='order_postback'),
 
 
+    path('fetch_nse_data/', views.fetch_nse_data, name='fetch_nse_data'),
+    path('get-auth-code/', views.get_auth_code, name='get_auth_code'),
+
 
     
 
