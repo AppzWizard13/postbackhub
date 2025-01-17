@@ -2420,117 +2420,85 @@
             });
         });
     </script>
-    {% comment %} <script>
-      function updateNseData() {
-          $.ajax({
-              url: '{% url "fetch_nse_data" %}', // URL of the Django view
-              method: 'GET',
-              success: function(data) {
-                  if (data.error) {
-                      $('#nse-data').html('<p>Error fetching data: ' + data.error + '</p>');
-                  } else {
-                      // Clear existing data
-                      $('#underlying-value').empty();
+    <script>
+      $(document).ready(function() {
+          function fetchOptionChainData() {
+              $.ajax({
+                  url: '/get-option-chain-data/',
+                  type: 'GET',
+                  success: function(response) {
+                      const optionsChain = response.data.optionsChain;
+                      
+                      // Clear the existing table data
                       $('#itm-calls').empty();
                       $('#otm-calls').empty();
                       $('#itm-puts').empty();
                       $('#otm-puts').empty();
   
-                      // Update the Underlying Value
-                      $('#underlying-value').text(data.underlying_value);
+                      optionsChain.forEach(option => {
+                          const row = `
+                              <tr>
+                                  <td>${option.strike_price}</td>
+                                  <td>${option.ltp}</td>
+                                  <td>${option.ask}</td>
+                                  <td>${option.oi}</td>
+                                  <td>${option.option_type}</td>
+                              </tr>
+                          `;
   
-                      // Populate ITM CALL Options Table
-                      let itmCallsHtml = '';
-                      data.itm_calls.forEach(option => {
-                          itmCallsHtml += `<tr class="itm-call">
-                                              <td>${option.strikePrice}</td>
-                                              <td>${option.CE.lastPrice}</td>
-                                              <td>${option.CE.identifier}</td>
-                                              <td>${option.CE.openInterest}</td>
-                                              <td class="strike-type">${option.opt_strike}</td>
-                                           </tr>`;
+                          if (option.option_type === 'CE') {
+                              if (option.strike_price < response.data.callOi) {
+                                  $('#itm-calls').append(row);
+                              } else {
+                                  $('#otm-calls').append(row);
+                              }
+                          } else if (option.option_type === 'PE') {
+                              if (option.strike_price < response.data.putOi) {
+                                  $('#itm-puts').append(row);
+                              } else {
+                                  $('#otm-puts').append(row);
+                              }
+                          }
                       });
-                      $('#itm-calls').html(itmCallsHtml);
-  
-                      // Populate OTM CALL Options Table
-                      let otmCallsHtml = '';
-                      data.otm_calls.forEach(option => {
-                          otmCallsHtml += `<tr class="otm-call">
-                                              <td>${option.strikePrice}</td>
-                                              <td>${option.CE.lastPrice}</td>
-                                              <td>${option.CE.identifier}</td>
-                                              <td>${option.CE.openInterest}</td>
-                                              <td class="strike-type">${option.opt_strike}</td>
-                                           </tr>`;
-                      });
-                      $('#otm-calls').html(otmCallsHtml);
-  
-                      // Populate ITM PUT Options Table
-                      let itmPutsHtml = '';
-                      data.itm_puts.forEach(option => {
-                          itmPutsHtml += `<tr class="itm-put">
-                                              <td>${option.strikePrice}</td>
-                                              <td>${option.PE.lastPrice}</td>
-                                              <td>${option.PE.identifier}</td>
-                                              <td>${option.PE.openInterest}</td>
-                                              <td class="strike-type">${option.opt_strike}</td>
-                                           </tr>`;
-                      });
-                      $('#itm-puts').html(itmPutsHtml);
-  
-                      // Populate OTM PUT Options Table
-                      let otmPutsHtml = '';
-                      data.otm_puts.forEach(option => {
-                          otmPutsHtml += `<tr class="otm-put">
-                                              <td>${option.strikePrice}</td>
-                                              <td>${option.PE.lastPrice}</td>
-                                              <td>${option.PE.identifier}</td>
-                                              <td>${option.PE.openInterest}</td>
-                                              <td class="strike-type">${option.opt_strike}</td>
-                                           </tr>`;
-                      });
-                      $('#otm-puts').html(otmPutsHtml);
-                  }
-              },
-              error: function(error) {
-                  $('#nse-data').html('<p>Error fetching data.</p>');
-              }
-          });
-      }
-  
-      // Trigger update every 2 seconds (2000ms)
-      setInterval(updateNseData, 2000);
-  
-      // Initial call on page load
-      $(document).ready(function() {
-          updateNseData();
-      });
-  </script> {% endcomment %}
-  <script>
-      $(document).ready(function() {
-          $('#getAuthCodeButton').on('click', function() {
-              $.ajax({
-                  url: '/get-auth-code/',  // Match your Django view's URL pattern
-                  type: 'GET',
-                  success: function(response) {
-                      // Get the current host
-                      var currentHost = window.location.host;
-                      
-                      // Create a button or link dynamically
-                      $('#authCodeDisplay').html(`
-                          <a href="${response}" target="_blank">
-                              Click here to view the Auth Code
-                          </a>
-                      `);
                   },
                   error: function(error) {
-                      $('#authCodeDisplay').text('Error fetching auth code.');
-                      console.error('Error:', error);
+                      console.error('Error fetching option chain data:', error);
                   }
               });
-          });
-      });
-  </script>
+          }
+  
+          // Fetch data immediately when the page loads
+          fetchOptionChainData();
+  
+          // Set an interval to fetch the data every 1 second
+            setInterval(fetchOptionChainData, 1000);
+        });
+    </script>
+    <script>
+        $(document).ready(function() {
+            $('#getAuthCodeButton').on('click', function() {
+                $.ajax({
+                    url: '/get-auth-code/',  // Match your Django view's URL pattern
+                    type: 'GET',
+                    success: function(response) {
+                        // Get the current host
+                        var currentHost = window.location.host;
+                        
+                        // Create a button or link dynamically
+                        $('#authCodeDisplay').html(`
+                            <a href="${response}" target="_blank">
+                                Click here to view the Auth Code
+                            </a>
+                        `);
+                    },
+                    error: function(error) {
+                        $('#authCodeDisplay').text('Error fetching auth code.');
+                        console.error('Error:', error);
+                    }
+                });
+            });
+        });
+    </script>
 
   
     <script src="{% static 'dashboard/assets/js/dashboard.js' %}"></script>

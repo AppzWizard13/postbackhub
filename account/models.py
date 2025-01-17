@@ -19,6 +19,7 @@ class User(AbstractUser):
     sl_control_mode = models.BooleanField(default=False)
     last_order_count = models.IntegerField(default=0)
     reserved_trade_count = models.IntegerField(default=0)
+    auth_code = models.CharField(max_length=1000, null=True)
 
 
     # Adding related_name to prevent reverse accessor clashes

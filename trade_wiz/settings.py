@@ -13,7 +13,7 @@ from pathlib import Path
 import os
 
 
-LIVE_MODE=True  
+LIVE_MODE=True   
 # ACTIVE_CRON=True
 
 
@@ -49,7 +49,7 @@ else:
 
 ALLOWED_HOSTS = ['*']
 
-CSRF_TRUSTED_ORIGINS = ['https://tradewiz-2kym.onrender.com', "http://localhost:8001", "http://127.0.0.1:8001","https://tradewiz.onrender.com", "https://ecc1-2401-4900-627b-9749-5c02-ee80-f6bf-be57.ngrok-free.app"]
+CSRF_TRUSTED_ORIGINS = ['https://tradewiz-2kym.onrender.com', "http://localhost:8001", "http://127.0.0.1:8001","https://tradewiz.onrender.com"]
 
 # Application definition
 INSTALLED_APPS = [
@@ -172,8 +172,12 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# Internationalization
 
+FYERS_APP_ID="M3E14TH6XB-100"
+
+FYERS_SECRET_KEY="LF1V8JY0EZ"
+
+# Internationalization
 LANGUAGE_CODE = 'en-us'
 
 USE_I18N = True

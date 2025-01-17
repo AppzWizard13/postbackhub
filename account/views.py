@@ -136,6 +136,9 @@ class DashboardView(TemplateView):
         try:
             # Fetch slug from the URL if present, or default to using request.user
             self.slug = kwargs.get('slug')
+            self.auth_code  = kwargs.get('auth_code')
+
+
             self.users = User.objects.filter(is_active=True)  # Query the active users
             self.allusers = User.objects.filter(is_active=True)  # Query the active users
             self.dashboard_view = True
@@ -170,6 +173,11 @@ class DashboardView(TemplateView):
         else:
             # Use request.user if no slug is provided
             user = self.request.user
+
+        if self.auth_code:
+            # Update the auth_code in the user's profile
+            request.user.auth_code = auth_code
+            request.user.save()
 
         # Fetch dhan_client_id and dhan_access_token from the user
         dhan_client_id = user.dhan_client_id
@@ -1800,19 +1808,14 @@ from django.http import JsonResponse
 from fyers_apiv3 import fyersModel
 
 def get_auth_code(request):
-    # Replace these values with your actual API credentials
-    client_id = "QS50N9ETP5-100"
-    secret_key = "GZ4MPBJJQK"
+    client_id = settings.FYERS_APP_ID
+    secret_key = settings.FYERS_SECRET_KEY
     response_type = "code"
     state = "sample_state"
 
-    # Get the current host from the request
     current_host = request.get_host()
-    # Construct the redirect URI using the current host
     redirect_uri = f"https://{current_host}/dashboard"
-    print("redirect_uriredirect_uriredirect_uriredirect_uri", redirect_uri)
 
-    # Create a session model with the provided credentials
     session = fyersModel.SessionModel(
         client_id=client_id,
         secret_key=secret_key,
@@ -1820,10 +1823,49 @@ def get_auth_code(request):
         response_type=response_type
     )
 
-    # Generate the auth code using the session model
     response = session.generate_authcode()
-
-    print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", response)
-
-    # Return the response as JSON, allowing non-dict objects
     return JsonResponse(response, safe=False)
+
+
+from django.http import JsonResponse
+from django.conf import settings
+from fyers_apiv3 import fyersModel
+
+def get_option_chain_data(request):
+    client_id = settings.FYERS_APP_ID
+    access_token = request.user.auth_code
+
+    if not access_token:
+        return JsonResponse({"error": "Access token not found"}, status=400)
+
+    # Initialize the FyersModel instance with client_id, access_token, and async mode disabled
+    fyers = fyersModel.FyersModel(client_id=client_id, token=access_token, is_async=False, log_path="")
+
+    if 'first_expiry_ts' in request.session:
+        first_expiry_ts = request.session['first_expiry_ts']
+        print("First expiry timestamp found in session:", first_expiry_ts)
+    else:
+        # Fetch the initial expiry data if not found in the session
+        data = {
+            "symbol": "NSE:NIFTY50-INDEX",
+            "strikecount": 3,
+            "timestamp": ""
+        }
+        expiry_response = fyers.optionchain(data=data)
+        first_expiry_ts = expiry_response.get('data', {}).get('expiryData', [{}])[0].get('expiry')
+        
+        if first_expiry_ts:
+            request.session['first_expiry_ts'] = first_expiry_ts
+        else:
+            return JsonResponse({"error": "Unable to fetch expiry timestamp"}, status=500)
+
+    # Fetch the option chain data with the available or newly fetched expiry timestamp
+    data = {
+        "symbol": "NSE:NIFTY50-INDEX",
+        "strikecount": 3,
+        "timestamp": first_expiry_ts
+    }
+    option_chain_response = fyers.optionchain(data=data)
+    print("Option Chain Response:", option_chain_response)
+
+    return JsonResponse(option_chain_response, safe=False)

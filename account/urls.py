@@ -67,6 +67,10 @@ urlpatterns = [
     path('get-auth-code/', views.get_auth_code, name='get_auth_code'),
 
 
+    path('get-option-chain-data/', views.get_option_chain_data, name='get_option_chain_data'),
+
+
+
     
 
 
