@@ -2424,7 +2424,7 @@
       $(document).ready(function() {
           function fetchOptionChainData() {
               $.ajax({
-                  url: "{% url 'get-option-chain-data' %}",
+                  url: "{% url 'get_option_chain_data' %}",
                   type: 'GET',
                   success: function(response) {
                       const optionsChain = response.data.optionsChain;
