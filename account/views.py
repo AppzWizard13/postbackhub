@@ -1729,77 +1729,77 @@ def order_postback(request):
         # Handle non-POST requests
         return JsonResponse({"status": "error", "message": "Only POST requests are allowed."}, status=405)
 
-from django.http import JsonResponse
-from datetime import datetime
-from jugaad_data.nse import NSELive
+# from django.http import JsonResponse
+# from datetime import datetime
+# from jugaad_data.nse import NSELive
 
-def fetch_nse_data(request):
-    n = NSELive()
-    option_chain = n.index_option_chain("NIFTY")
-    expirydates = option_chain['records']['expiryDates']
+# def fetch_nse_data(request):
+#     n = NSELive()
+#     option_chain = n.index_option_chain("NIFTY")
+#     expirydates = option_chain['records']['expiryDates']
 
-    # Get today's date dynamically
-    today = datetime.today()
+#     # Get today's date dynamically
+#     today = datetime.today()
 
-    # Find the closest upcoming expiry date
-    upcoming_dates = [datetime.strptime(date, '%d-%b-%Y') for date in expirydates]
-    closest_upcoming_date = min(
-        (date for date in upcoming_dates if date > today),
-        default=None
-    )
+#     # Find the closest upcoming expiry date
+#     upcoming_dates = [datetime.strptime(date, '%d-%b-%Y') for date in expirydates]
+#     closest_upcoming_date = min(
+#         (date for date in upcoming_dates if date > today),
+#         default=None
+#     )
 
-    if closest_upcoming_date:
-        closest_upcoming_date_str = closest_upcoming_date.strftime('%d-%b-%Y')
+#     if closest_upcoming_date:
+#         closest_upcoming_date_str = closest_upcoming_date.strftime('%d-%b-%Y')
 
-        # Filter options for the closest upcoming expiry date
-        filtered_options = [
-            option for option in option_chain['records']['data']
-            if option['expiryDate'] == closest_upcoming_date_str
-        ]
+#         # Filter options for the closest upcoming expiry date
+#         filtered_options = [
+#             option for option in option_chain['records']['data']
+#             if option['expiryDate'] == closest_upcoming_date_str
+#         ]
 
-        # Get the current underlying value (e.g., NIFTY index value)
-        underlying_value = filtered_options[0]['CE']['underlyingValue']
+#         # Get the current underlying value (e.g., NIFTY index value)
+#         underlying_value = filtered_options[0]['CE']['underlyingValue']
 
-        # Separate ITM and OTM options for CALL and PUT
-        itm_calls = [opt for opt in filtered_options if opt['strikePrice'] < underlying_value and opt['CE']['lastPrice'] > 0]
-        otm_calls = [opt for opt in filtered_options if opt['strikePrice'] >= underlying_value and opt['CE']['lastPrice'] > 0]
-        itm_puts = [opt for opt in filtered_options if opt['strikePrice'] > underlying_value and opt['PE']['lastPrice'] > 0]
-        otm_puts = [opt for opt in filtered_options if opt['strikePrice'] <= underlying_value and opt['PE']['lastPrice'] > 0]
+#         # Separate ITM and OTM options for CALL and PUT
+#         itm_calls = [opt for opt in filtered_options if opt['strikePrice'] < underlying_value and opt['CE']['lastPrice'] > 0]
+#         otm_calls = [opt for opt in filtered_options if opt['strikePrice'] >= underlying_value and opt['CE']['lastPrice'] > 0]
+#         itm_puts = [opt for opt in filtered_options if opt['strikePrice'] > underlying_value and opt['PE']['lastPrice'] > 0]
+#         otm_puts = [opt for opt in filtered_options if opt['strikePrice'] <= underlying_value and opt['PE']['lastPrice'] > 0]
 
-        # Sort ITM and OTM options by proximity to the underlying value
-        itm_calls.sort(key=lambda option: abs(option['strikePrice'] - underlying_value))
-        otm_calls.sort(key=lambda option: abs(option['strikePrice'] - underlying_value))
-        itm_puts.sort(key=lambda option: abs(option['strikePrice'] - underlying_value))
-        otm_puts.sort(key=lambda option: abs(option['strikePrice'] - underlying_value))
+#         # Sort ITM and OTM options by proximity to the underlying value
+#         itm_calls.sort(key=lambda option: abs(option['strikePrice'] - underlying_value))
+#         otm_calls.sort(key=lambda option: abs(option['strikePrice'] - underlying_value))
+#         itm_puts.sort(key=lambda option: abs(option['strikePrice'] - underlying_value))
+#         otm_puts.sort(key=lambda option: abs(option['strikePrice'] - underlying_value))
 
-        # Add 'opt_strike' field for OTM and ITM options
-        for i, option in enumerate(itm_calls):
-            option['opt_strike'] = f"ITM-{i+1}"  # ITM options
-        for i, option in enumerate(otm_calls):
-            option['opt_strike'] = f"OTM-{i+1}"  # OTM options
-        for i, option in enumerate(itm_puts):
-            option['opt_strike'] = f"ITM-{i+1}"  # ITM options
-        for i, option in enumerate(otm_puts):
-            option['opt_strike'] = f"OTM-{i+1}"  # OTM options
+#         # Add 'opt_strike' field for OTM and ITM options
+#         for i, option in enumerate(itm_calls):
+#             option['opt_strike'] = f"ITM-{i+1}"  # ITM options
+#         for i, option in enumerate(otm_calls):
+#             option['opt_strike'] = f"OTM-{i+1}"  # OTM options
+#         for i, option in enumerate(itm_puts):
+#             option['opt_strike'] = f"ITM-{i+1}"  # ITM options
+#         for i, option in enumerate(otm_puts):
+#             option['opt_strike'] = f"OTM-{i+1}"  # OTM options
 
-        # Limit to 4 options per category
-        itm_calls = itm_calls[:4]
-        otm_calls = otm_calls[:4]
-        itm_puts = itm_puts[:4]
-        otm_puts = otm_puts[:4]
+#         # Limit to 4 options per category
+#         itm_calls = itm_calls[:4]
+#         otm_calls = otm_calls[:4]
+#         itm_puts = itm_puts[:4]
+#         otm_puts = otm_puts[:4]
 
-        # Prepare the response data
-        response_data = {
-            'underlying_value': underlying_value,
-            'itm_calls': itm_calls,
-            'otm_calls': otm_calls,
-            'itm_puts': itm_puts,
-            'otm_puts': otm_puts
-        }
+#         # Prepare the response data
+#         response_data = {
+#             'underlying_value': underlying_value,
+#             'itm_calls': itm_calls,
+#             'otm_calls': otm_calls,
+#             'itm_puts': itm_puts,
+#             'otm_puts': otm_puts
+#         }
 
-        return JsonResponse(response_data)
-    else:
-        return JsonResponse({'error': 'No upcoming dates found.'})
+#         return JsonResponse(response_data)
+#     else:
+#         return JsonResponse({'error': 'No upcoming dates found.'})
 
 
 
