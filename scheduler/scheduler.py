@@ -900,7 +900,7 @@ def start_scheduler():
 
     if getattr(settings, "ACTIVE_CRON", False):
         
-        scheduler.add_job(FetchNseData,  DateTrigger(run_date=now()), max_instances=1, replace_existing=True)
+        # scheduler.add_job(FetchNseData,  DateTrigger(run_date=now()), max_instances=1, replace_existing=True)
         # CREATE DEFAULT USER
         scheduler.add_job(check_and_create_default_user, DateTrigger(run_date=now()), max_instances=1, replace_existing=True)
 
