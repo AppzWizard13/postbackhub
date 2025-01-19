@@ -23,6 +23,8 @@ from .models import Control
 from django.views.generic import ListView
 from .models import DhanKillProcessLog
 from .models import DailyAccountOverview
+from django.http import HttpResponse
+from urllib.parse import urlparse, parse_qs
 
 from dhanhq import dhanhq
 from datetime import datetime, timedelta
