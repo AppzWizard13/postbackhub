@@ -865,21 +865,21 @@ def check_and_create_default_user():
 # CRON JOBS STRAT PROCESS :  TESTED OK -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-from datetime import datetime
-from jugaad_data.nse import NSELive
+# from datetime import datetime
+# from jugaad_data.nse import NSELive
 
-def FetchNseData():
-    # Fetch live index data for NIFTY 50
-    import requests
-    headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36','Accept-Encoding': 'gzip, deflate, br','Accept-Language': 'en-US,en;q=0.9,hi;q=0.8'}
-    url = "https://www.nseindia.com/api/option-chain-indices?symbol=NIFTY"
-    json_obj = requests.get(url, headers = headers).json()
-    if json_obj:
-        print("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
-        print("json_objjson_objjson_objjson_objjson_obj", json_obj)
-        print("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
-    else:
-        print("No upcoming dates found.")
+# def FetchNseData():
+#     # Fetch live index data for NIFTY 50
+#     import requests
+#     headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36','Accept-Encoding': 'gzip, deflate, br','Accept-Language': 'en-US,en;q=0.9,hi;q=0.8'}
+#     url = "https://www.nseindia.com/api/option-chain-indices?symbol=NIFTY"
+#     json_obj = requests.get(url, headers = headers).json()
+#     if json_obj:
+#         print("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+#         print("json_objjson_objjson_objjson_objjson_obj", json_obj)
+#         print("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+#     else:
+#         print("No upcoming dates found.")
 
 
 
