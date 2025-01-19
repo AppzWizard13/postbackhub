@@ -136,7 +136,7 @@ class DashboardView(TemplateView):
         try:
             # Fetch slug from the URL if present, or default to using request.user
             self.slug = kwargs.get('slug')
-            self.auth_code  = kwargs.get('auth_code')
+            # self.auth_code  = kwargs.get('auth_code')
 
 
             self.users = User.objects.filter(is_active=True)  # Query the active users
@@ -155,6 +155,21 @@ class DashboardView(TemplateView):
     def get_context_data(self, **kwargs):
         # Get the existing context
         context = super().get_context_data(**kwargs)
+        full_url = self.request.build_absolute_uri()
+        
+        # Parse the URL to get the query parameters
+        parsed_url = urlparse(full_url)
+        query_params = parse_qs(parsed_url.query)
+        
+        # Get the auth_code from the query parameters
+        auth_code = query_params.get('auth_code', [None])[0]
+
+        if auth_code:
+            request.user.auth_code = auth_code
+            request.user.save()
+            print("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+
+
         import pytz
         from datetime import datetime
 
@@ -174,10 +189,10 @@ class DashboardView(TemplateView):
             # Use request.user if no slug is provided
             user = self.request.user
 
-        if self.auth_code:
-            # Update the auth_code in the user's profile
-            request.user.auth_code = auth_code
-            request.user.save()
+        # if self.auth_code:
+        #     # Update the auth_code in the user's profile
+        #     request.user.auth_code = auth_code
+        #     request.user.save()
 
         # Fetch dhan_client_id and dhan_access_token from the user
         dhan_client_id = user.dhan_client_id
