@@ -1872,6 +1872,7 @@ def get_option_chain_data(request):
             "timestamp": ""
         }
         expiry_response = fyers.optionchain(data=data)
+        print("expiry_responseexpiry_responseexpiry_responseexpiry_responseexpiry_response", expiry_response)
         first_expiry_ts = expiry_response.get('data', {}).get('expiryData', [{}])[0].get('expiry')
 
         print("first_expiry_tsfirst_expiry_tsfirst_expiry_tsfirst_expiry_tsmm11", first_expiry_ts)
