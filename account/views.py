@@ -1834,12 +1834,15 @@ from fyers_apiv3 import fyersModel
 def get_option_chain_data(request):
     client_id = settings.FYERS_APP_ID
     access_token = request.user.auth_code
+    print("client_idclient_idclient_id", client_id)
+    print("access_tokenaccess_tokenaccess_tokenaccess_token", access_token)
 
     if not access_token:
         return JsonResponse({"error": "Access token not found"}, status=400)
 
     # Initialize the FyersModel instance with client_id, access_token, and async mode disabled
     fyers = fyersModel.FyersModel(client_id=client_id, token=access_token, is_async=False, log_path="")
+    print("fyersfyersfyersfyersfyersfyers", fyers)
 
     if 'first_expiry_ts' in request.session:
         first_expiry_ts = request.session['first_expiry_ts']
@@ -1853,6 +1856,8 @@ def get_option_chain_data(request):
         }
         expiry_response = fyers.optionchain(data=data)
         first_expiry_ts = expiry_response.get('data', {}).get('expiryData', [{}])[0].get('expiry')
+
+        print("first_expiry_tsfirst_expiry_tsfirst_expiry_tsfirst_expiry_tsmm11", first_expiry_ts)
         
         if first_expiry_ts:
             request.session['first_expiry_ts'] = first_expiry_ts
@@ -1865,6 +1870,7 @@ def get_option_chain_data(request):
         "strikecount": 3,
         "timestamp": first_expiry_ts
     }
+    print("datadatadatadatadatadatadatadatadata", data)
     option_chain_response = fyers.optionchain(data=data)
     print("Option Chain Response:", option_chain_response)
 
