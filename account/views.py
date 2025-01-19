@@ -167,8 +167,8 @@ class DashboardView(TemplateView):
         auth_code = query_params.get('auth_code', [None])[0]
 
         if auth_code:
-            request.user.auth_code = auth_code
-            request.user.save()
+            self.request.user.auth_code = auth_code
+            self.request.user.save()
             print("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
 
 
