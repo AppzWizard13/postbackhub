@@ -1866,49 +1866,60 @@ def get_auth_code(request):
 from django.http import JsonResponse
 from django.conf import settings
 from fyers_apiv3 import fyersModel
+import logging
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 def get_option_chain_data(request):
-    client_id = settings.FYERS_APP_ID
-    access_token = request.user.auth_code
-    print("client_idclient_idclient_id", client_id)
-    print("access_tokenaccess_tokenaccess_tokenaccess_token", access_token)
+    try:
+        client_id = settings.FYERS_APP_ID
+        access_token = request.user.auth_code
+        print("client_idclient_idclient_id", client_id)
+        print("access_tokenaccess_tokenaccess_tokenaccess_token", access_token)
 
-    if not access_token:
-        return JsonResponse({"error": "Access token not found"}, status=400)
+        if not access_token:
+            return JsonResponse({"error": "Access token not found"}, status=400)
 
-    # Initialize the FyersModel instance with client_id, access_token, and async mode disabled
-    fyers = fyersModel.FyersModel(client_id=client_id, token=access_token, is_async=False, log_path="")
-    print("fyersfyersfyersfyersfyersfyers", fyers)
+        # Initialize the FyersModel instance
+        fyers = fyersModel.FyersModel(client_id=client_id, token=access_token, is_async=False, log_path="")
+        print("fyersfyersfyersfyersfyersfyers", fyers)
 
-    if 'first_expiry_ts' in request.session:
-        first_expiry_ts = request.session['first_expiry_ts']
-        print("First expiry timestamp found in session:", first_expiry_ts)
-    else:
-        # Fetch the initial expiry data if not found in the session
+        if 'first_expiry_ts' in request.session:
+            first_expiry_ts = request.session['first_expiry_ts']
+            print("First expiry timestamp found in session:", first_expiry_ts)
+        else:
+            # Fetch the initial expiry data if not found in the session
+            data = {
+                "symbol": "NSE:NIFTY50-INDEX",
+                "strikecount": 3,
+                "timestamp": ""
+            }
+            expiry_response = fyers.optionchain(data=data)
+            print("expiry_responseexpiry_responseexpiry_responseexpiry_responseexpiry_response", expiry_response)
+            first_expiry_ts = expiry_response.get('data', {}).get('expiryData', [{}])[0].get('expiry')
+
+            print("first_expiry_tsfirst_expiry_tsfirst_expiry_tsfirst_expiry_tsmm11", first_expiry_ts)
+
+            if first_expiry_ts:
+                request.session['first_expiry_ts'] = first_expiry_ts
+            else:
+                return JsonResponse({"error": "Unable to fetch expiry timestamp"}, status=500)
+
+        # Fetch the option chain data
         data = {
             "symbol": "NSE:NIFTY50-INDEX",
             "strikecount": 3,
-            "timestamp": ""
+            "timestamp": first_expiry_ts
         }
-        expiry_response = fyers.optionchain(data=data)
-        print("expiry_responseexpiry_responseexpiry_responseexpiry_responseexpiry_response", expiry_response)
-        first_expiry_ts = expiry_response.get('data', {}).get('expiryData', [{}])[0].get('expiry')
+        print("datadatadatadatadatadatadatadatadata", data)
+        option_chain_response = fyers.optionchain(data=data)
+        print("Option Chain Response:", option_chain_response)
 
-        print("first_expiry_tsfirst_expiry_tsfirst_expiry_tsfirst_expiry_tsmm11", first_expiry_ts)
-        
-        if first_expiry_ts:
-            request.session['first_expiry_ts'] = first_expiry_ts
-        else:
-            return JsonResponse({"error": "Unable to fetch expiry timestamp"}, status=500)
+        return JsonResponse(option_chain_response, safe=False)
 
-    # Fetch the option chain data with the available or newly fetched expiry timestamp
-    data = {
-        "symbol": "NSE:NIFTY50-INDEX",
-        "strikecount": 3,
-        "timestamp": first_expiry_ts
-    }
-    print("datadatadatadatadatadatadatadatadata", data)
-    option_chain_response = fyers.optionchain(data=data)
-    print("Option Chain Response:", option_chain_response)
-
-    return JsonResponse(option_chain_response, safe=False)
+    except Exception as e:
+        # Log the error and return an error response
+        logger.error(f"An error occurred: {str(e)}", exc_info=True)
+        print(f"An error occurred: {str(e)}")
+        return JsonResponse({"error": "An unexpected error occurred", "details": str(e)}, status=500)
