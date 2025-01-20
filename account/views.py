@@ -1897,6 +1897,14 @@ def get_option_chain_data(request):
             }
             expiry_response = fyers.optionchain(data=data)
             print("expiry_responseexpiry_responseexpiry_responseexpiry_responseexpiry_response", expiry_response)
+
+            # Check if the response indicates an error
+            if expiry_response.get('s') == 'error' or expiry_response.get('code') == -15:
+                error_message = expiry_response.get('message', 'Unknown error occurred')
+                print(f"Error fetching expiry data: {error_message}")
+                return JsonResponse({"error": "Failed to fetch expiry data", "details": error_message}, status=400)
+
+            # Extract expiry timestamp
             first_expiry_ts = expiry_response.get('data', {}).get('expiryData', [{}])[0].get('expiry')
 
             print("first_expiry_tsfirst_expiry_tsfirst_expiry_tsfirst_expiry_tsmm11", first_expiry_ts)
@@ -1905,6 +1913,7 @@ def get_option_chain_data(request):
                 request.session['first_expiry_ts'] = first_expiry_ts
             else:
                 return JsonResponse({"error": "Unable to fetch expiry timestamp"}, status=500)
+
 
         # Fetch the option chain data
         data = {
