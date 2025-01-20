@@ -167,10 +167,29 @@ class DashboardView(TemplateView):
         auth_code = query_params.get('auth_code', [None])[0]
 
         if auth_code:
-            self.request.user.auth_code = auth_code
-            self.request.user.save()
-            print("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+            client_id = settings.FYERS_APP_ID
+            secret_key = settings.FYERS_SECRET_ID
+            redirect_uri = settings.FYERS_REDIRECT_URL+"/dashboard"
+            response_type = "code" 
+            grant_type = "authorization_code"  
 
+            session = fyersModel.SessionModel(
+                client_id=client_id,
+                secret_key=secret_key, 
+                redirect_uri=redirect_uri, 
+                response_type=response_type, 
+                grant_type=grant_type
+            )
+            session.set_token(auth_code)
+            response = session.generate_token()
+            print("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", response)
+            access_token = response.get('access_token')
+            refresh_token = response.get('refresh_token')
+            if access_token and refresh_token:
+                request.session['access_token'] = access_token
+                request.session['refresh_token'] = refresh_token
+                self.request.user.auth_code = access_token
+                self.request.user.save()
 
         import pytz
         from datetime import datetime
