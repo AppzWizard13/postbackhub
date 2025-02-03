@@ -14,7 +14,7 @@ import os
 
 
 LIVE_MODE=True   
-# ACTIVE_CRON=True
+ACTIVE_CRON=True
 
 
 if LIVE_MODE:

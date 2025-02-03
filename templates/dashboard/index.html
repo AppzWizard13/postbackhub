@@ -2420,7 +2420,7 @@
             });
         });
     </script>
-    <script>
+    {% comment %} <script>
       $(document).ready(function() {
           function fetchOptionChainData() {
               $.ajax({
@@ -2473,7 +2473,7 @@
           // Set an interval to fetch the data every 1 second
         // setInterval(fetchOptionChainData, 100000);
         });
-    </script>
+    </script> {% endcomment %}
     <script>
         $(document).ready(function() {
             $('#getAuthCodeButton').on('click', function() {
